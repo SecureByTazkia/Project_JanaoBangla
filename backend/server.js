@@ -16,6 +16,7 @@ const path           = require('path');
 // Project er nija middleware ar route files import kora hocche
 const { testDatabaseConnection } = require('./config/DatabaseConnection');
 const healthCheckRoutes          = require('./routes/HealthCheckRoutes');
+const userAuthenticationRoutes   = require('./routes/UserAuthenticationRoutes'); // Phase 2
 const notFoundMiddleware         = require('./middleware/NotFoundMiddleware');
 const errorHandlingMiddleware    = require('./middleware/ErrorHandlingMiddleware');
 
@@ -76,12 +77,7 @@ app.use('/uploads', express.static(uploadDir));
 // Porer phase e authentication, reports etc jog hobe
 // ==========================================
 app.use('/api/health', healthCheckRoutes);
-
-// ==========================================
-// PLACEHOLDER ROUTES — Future phases er jonno
-// Ekhane comment hisebe ache, pore uncomment hobe
-// ==========================================
-// app.use('/api/auth',          authRoutes);           // Phase 2
+app.use('/api/auth',   userAuthenticationRoutes); // Phase 2 — User Authentication & Security
 // app.use('/api/reports',       reportRoutes);         // Phase 3
 // app.use('/api/location',      locationRoutes);       // Phase 4
 // app.use('/api/community',     communityRoutes);      // Phase 5

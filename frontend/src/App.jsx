@@ -1,113 +1,128 @@
 // ==========================================
 // JanaoBangla — App Root Component
-// BRANCH: main
-// React Router setup ar global layout define kora hocche
-// Navbar + content + Footer — sob page e same structure
+// BRANCH: feature-user-authentication-and-security
+// React Router setup, AuthProvider wrapper, and authenticated routes
 // ==========================================
 
 import { Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './routes/ProtectedRoute';
 
-// Layout components import kora hocche
-import Navbar  from './components/Navbar';
-import Footer  from './components/Footer';
+// Layout components
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
-// Pages import kora hocche
+// Pages
 import HomePage from './pages/HomePage';
+import UserLoginPage from './pages/UserLoginPage';
+import UserRegistrationPage from './pages/UserRegistrationPage';
+import UserProfilePage from './pages/UserProfilePage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import ChangePasswordPage from './pages/ChangePasswordPage';
 
 // ==========================================
-// PLACEHOLDER PAGE COMPONENT
-// Phase 2+ e real page gulo replace korbe ei placeholder ke
+// ComingSoonPage — Future phase placeholders
 // ==========================================
 function ComingSoonPage({ title }) {
   return (
-    <div style={{
-      display:         'flex',
-      flexDirection:   'column',
-      alignItems:      'center',
-      justifyContent:  'center',
-      minHeight:       '60vh',
-      padding:         '40px 20px',
-      textAlign:       'center'
-    }}>
-      {/* Ekhane future feature er placeholder */}
-      <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚧</div>
-      <h1 style={{
-        fontSize:     '1.5rem',
-        fontWeight:   700,
-        color:        '#1F2937',
-        marginBottom: '8px'
-      }}>
-        {title} — Coming Soon
-      </h1>
-      <p style={{ color: '#64748B', fontSize: '0.95rem' }}>
-        This feature is being built in the next development phase.
-      </p>
-    </div>
+    <main className="page-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '40px 20px', textAlign: 'center' }}>
+      <div className="jb-card" style={{ maxWidth: '480px', padding: '40px 32px' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚧</div>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+          {title} — Coming Soon
+        </h1>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.95rem', margin: 0 }}>
+          This feature will be built in an upcoming development phase.
+        </p>
+      </div>
+    </main>
   );
 }
 
-// ==========================================
-// App — Root component
-// BrowserRouter er moddhe thakbe (main.jsx e define)
-// Sob route ekhane define kora hocche
-// ==========================================
 function App() {
   return (
-    // Page wrapper — navbar + content + footer flex column layout
-    <div className="page-wrapper">
+    <AuthProvider>
+      <div className="page-wrapper">
+        <Navbar />
 
-      {/* Global Navbar — sob page e dekhabe */}
-      <Navbar />
+        <Routes>
+          {/* Phase 1 — Homepage */}
+          <Route path="/" element={<HomePage />} />
 
-      {/* ==========================================
-          ROUTES — Kono URL e ki page dekhabe
-          Phase onujayi phase e route jog hobe
-      ========================================== */}
-      <Routes>
-        {/* Phase 1 — Main branch routes */}
-        <Route path="/"          element={<HomePage />} />
+          {/* Phase 2 — Authentication & User Security */}
+          <Route path="/login" element={<UserLoginPage />} />
+          <Route path="/register" element={<UserRegistrationPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Phase 2 — Authentication (coming) */}
-        <Route path="/login"     element={<ComingSoonPage title="Login" />} />
-        <Route path="/register"  element={<ComingSoonPage title="Register" />} />
-        <Route path="/profile"   element={<ComingSoonPage title="Profile" />} />
+          {/* Phase 2 — Protected Authenticated Routes */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <UserProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/verify-email"
+            element={
+              <ProtectedRoute>
+                <EmailVerificationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangePasswordPage />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Phase 3 — Reports (coming) */}
-        <Route path="/report"    element={<ComingSoonPage title="Report a Problem" />} />
-        <Route path="/reports"   element={<ComingSoonPage title="My Reports" />} />
+          {/* Phase 3 — Reports (Future) */}
+          <Route path="/report" element={<ComingSoonPage title="Report a Problem" />} />
+          <Route path="/reports" element={<ComingSoonPage title="My Reports" />} />
 
-        {/* Phase 4 — Map (coming) */}
-        <Route path="/map"       element={<ComingSoonPage title="Civic Map" />} />
+          {/* Phase 4 — Map (Future) */}
+          <Route path="/map" element={<ComingSoonPage title="Civic Map" />} />
 
-        {/* Phase 5 — Community (coming) */}
-        <Route path="/community" element={<ComingSoonPage title="Community Feed" />} />
+          {/* Phase 5 — Community (Future) */}
+          <Route path="/community" element={<ComingSoonPage title="Community Feed" />} />
 
-        {/* Phase 7 — SOS (coming) */}
-        <Route path="/sos"       element={<ComingSoonPage title="SOS Emergency" />} />
+          {/* Phase 7 — SOS (Future) */}
+          <Route path="/sos" element={<ComingSoonPage title="SOS Emergency" />} />
 
-        {/* Phase 8 — Admin (coming) */}
-        <Route path="/admin"     element={<ComingSoonPage title="Admin Dashboard" />} />
+          {/* Phase 8 — Admin (Future) */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <ComingSoonPage title="Admin Dashboard" />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Phase 9 — Search & Analytics (coming) */}
-        <Route path="/search"    element={<ComingSoonPage title="Search" />} />
-        <Route path="/analytics" element={<ComingSoonPage title="Analytics" />} />
+          {/* Phase 9 — Search & Analytics (Future) */}
+          <Route path="/search" element={<ComingSoonPage title="Search" />} />
+          <Route path="/analytics" element={<ComingSoonPage title="Analytics" />} />
 
-        {/* Static pages */}
-        <Route path="/about"     element={<ComingSoonPage title="About" />} />
-        <Route path="/privacy"   element={<ComingSoonPage title="Privacy Policy" />} />
-        <Route path="/terms"     element={<ComingSoonPage title="Terms of Service" />} />
-        <Route path="/contact"   element={<ComingSoonPage title="Contact" />} />
+          {/* Static Pages */}
+          <Route path="/about" element={<ComingSoonPage title="About" />} />
+          <Route path="/privacy" element={<ComingSoonPage title="Privacy Policy" />} />
+          <Route path="/terms" element={<ComingSoonPage title="Terms of Service" />} />
+          <Route path="/contact" element={<ComingSoonPage title="Contact" />} />
 
-        {/* 404 — Kono route match na korle */}
-        <Route path="*"          element={
-          <ComingSoonPage title="404 — Page Not Found" />
-        } />
-      </Routes>
+          {/* 404 Catch-All */}
+          <Route path="*" element={<ComingSoonPage title="404 — Page Not Found" />} />
+        </Routes>
 
-      {/* Global Footer — sob page e dekhabe */}
-      <Footer />
-
-    </div>
+        <Footer />
+      </div>
+    </AuthProvider>
   );
 }
 

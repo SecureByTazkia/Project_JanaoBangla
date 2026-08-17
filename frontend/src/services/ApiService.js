@@ -83,8 +83,37 @@ export const healthApi = {
 // Ekhane structure ready rakhchi
 // ==========================================
 
-// Phase 2 — Authentication
-export const authApi = {};
+// ==========================================
+// Phase 2 — Authentication API
+// ==========================================
+export const authApi = {
+  // Noya user register korar jonno
+  register: (data) => apiClient.post('/auth/register', data),
+
+  // User login korar jonno
+  login: (data) => apiClient.post('/auth/login', data),
+
+  // Current logged in user er profile data
+  getProfile: () => apiClient.get('/auth/profile'),
+
+  // Profile data update korar jonno
+  updateProfile: (data) => apiClient.put('/auth/profile', data),
+
+  // Email verification OTP submit korar jonno
+  verifyEmail: (otp) => apiClient.post('/auth/verify-email', { otp }),
+
+  // OTP resend korar jonno
+  resendVerification: () => apiClient.post('/auth/resend-verification'),
+
+  // Forgot password email request pathanor jonno
+  forgotPassword: (email) => apiClient.post('/auth/forgot-password', { email }),
+
+  // Reset token diye password update korar jonno
+  resetPassword: (data) => apiClient.post('/auth/reset-password', data),
+
+  // Logged-in user er password change korar jonno
+  changePassword: (data) => apiClient.put('/auth/change-password', data)
+};
 
 // Phase 3 — Reports
 export const reportApi = {};
