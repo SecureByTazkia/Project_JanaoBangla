@@ -83,8 +83,39 @@ export const healthApi = {
 // Ekhane structure ready rakhchi
 // ==========================================
 
-// Phase 2 — Authentication
-export const authApi = {};
+// ==========================================
+// Phase 2 — Authentication API
+// Sob auth related API call ekhane define kora hobe
+// Component e directly axios call korbo na
+// ==========================================
+export const authApi = {
+  // Noya user register korar jonno
+  register: (data) => apiClient.post('/auth/register', data),
+
+  // User login korar jonno
+  login: (data) => apiClient.post('/auth/login', data),
+
+  // Logged-in user er profile nebar jonno
+  getProfile: () => apiClient.get('/auth/profile'),
+
+  // Profile update korar jonno
+  updateProfile: (data) => apiClient.put('/auth/profile', data),
+
+  // Email OTP verify korar jonno
+  verifyEmail: (otp) => apiClient.post('/auth/verify-email', { otp }),
+
+  // Noya OTP pathano jonno
+  resendVerification: () => apiClient.post('/auth/resend-verification'),
+
+  // Forgot password — email pathabe
+  forgotPassword: (email) => apiClient.post('/auth/forgot-password', { email }),
+
+  // Noya password set korar jonno (reset token use kore)
+  resetPassword: (data) => apiClient.post('/auth/reset-password', data),
+
+  // Logged-in user er password change korar jonno
+  changePassword: (data) => apiClient.put('/auth/change-password', data)
+};
 
 // Phase 3 — Reports
 export const reportApi = {};
