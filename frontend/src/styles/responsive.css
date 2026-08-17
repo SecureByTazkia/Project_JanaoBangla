@@ -1,0 +1,146 @@
+/* ==========================================
+   JanaoBangla — Responsive CSS
+   BRANCH: main
+   Mobile, Tablet ar Desktop breakpoints
+   ========================================== */
+
+/* ==========================================
+   BREAKPOINTS:
+   Mobile:  < 576px
+   Tablet:  576px — 991px
+   Desktop: >= 992px
+   Large:   >= 1200px
+   ========================================== */
+
+/* ==========================================
+   TABLET BREAKPOINT — max 991px
+   ========================================== */
+@media (max-width: 991px) {
+
+  /* Navbar — Desktop links hide, hamburger show */
+  .jb-navbar-links {
+    display: none;
+  }
+
+  .jb-hamburger {
+    display: flex;
+  }
+
+  .jb-mobile-menu {
+    display: block;
+  }
+
+  /* Homepage hero text smaller on tablet */
+  .hero-title {
+    font-size: 2.5rem !important;
+  }
+
+  /* Footer grid 2-column on tablet */
+  .jb-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-6);
+  }
+
+  /* Feature cards 2 per row */
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ==========================================
+   MOBILE BREAKPOINT — max 576px
+   ========================================== */
+@media (max-width: 576px) {
+
+  /* Navbar SOS button shorter text */
+  .jb-sos-button .sos-label {
+    display: none;
+  }
+
+  /* Homepage hero - single column */
+  .hero-section {
+    padding: var(--spacing-12) var(--spacing-4) !important;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: 1.875rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: var(--font-size-base) !important;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center !important;
+  }
+
+  /* Feature cards single column */
+  .features-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stats single column */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: var(--spacing-4) !important;
+  }
+
+  /* Workflow single column */
+  .workflow-steps {
+    flex-direction: column !important;
+    align-items: center;
+  }
+
+  .workflow-arrow {
+    transform: rotate(90deg);
+  }
+
+  /* Footer single column */
+  .jb-footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jb-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+
+  /* Section padding smaller on mobile */
+  .jb-section {
+    padding: var(--spacing-10) 0;
+  }
+
+  /* Cards padding smaller */
+  .jb-card {
+    padding: var(--spacing-4);
+  }
+
+  /* Container padding */
+  .jb-container {
+    padding: 0 var(--spacing-4);
+  }
+}
+
+/* ==========================================
+   LARGE SCREEN — min 1400px
+   ========================================== */
+@media (min-width: 1400px) {
+  .jb-container {
+    max-width: 1320px;
+  }
+}
+
+/* ==========================================
+   TOUCH DEVICE — Min tap target 44px
+   ========================================== */
+@media (hover: none) {
+  .jb-navbar-link,
+  .btn-primary-jb,
+  .btn-outline-jb,
+  .btn-sos {
+    min-height: 44px;
+  }
+}
