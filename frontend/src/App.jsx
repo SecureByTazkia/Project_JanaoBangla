@@ -68,11 +68,7 @@ function App() {
           />
           <Route
             path="/verify-email"
-            element={
-              <ProtectedRoute>
-                <EmailVerificationPage />
-              </ProtectedRoute>
-            }
+            element={<EmailVerificationPage />}
           />
           <Route
             path="/change-password"

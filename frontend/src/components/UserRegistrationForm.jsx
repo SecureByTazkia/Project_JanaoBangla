@@ -13,8 +13,8 @@ import ErrorMessage from './ErrorMessage';
 import LoadingSpinner from './LoadingSpinner';
 
 function UserRegistrationForm() {
-  const navigate  = useNavigate();
-  const { login } = useAuth();
+  const navigate = useNavigate();
+  useAuth(); // AuthContext mount check — login ekhane dorkar nei (Step 1 e token nai)
 
   const [formData, setFormData] = useState({
     fullName:        '',
@@ -59,7 +59,7 @@ function UserRegistrationForm() {
 
     setIsLoading(true);
     try {
-      // Backend e registration API call
+      // Backend e registration API call pathano hocche
       const response = await authApi.register({
         fullName:        formData.fullName.trim(),
         email:           formData.email.trim(),
@@ -68,14 +68,17 @@ function UserRegistrationForm() {
         confirmPassword: formData.confirmPassword
       });
 
-      if (response.data.success) {
-        // Token save kore automatic login kora hocche
-        login(response.data.accessToken, response.data.user);
-        // Direct email verification page e niye jabe
+      // Step 1 registration shofol hole — user unverified thakbe ebong OTP send/fallback hobe
+      if (response.data.success && response.data.requiresVerification) {
+        // Pending email ebong status sessionStorage e save kora hocche
+        sessionStorage.setItem('jb_pending_email', response.data.email);
+        sessionStorage.setItem('jb_pending_msg', response.data.message || '');
+        sessionStorage.setItem('jb_pending_email_sent', response.data.emailSent ? 'true' : 'false');
         navigate('/verify-email', { replace: true });
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed. Please try again.';
+      // Backend response error ba network error handle kora hocche
+      const message = error.response?.data?.message || (error.response ? 'Registration failed. Please check your details.' : 'Unable to connect to server. Please ensure the backend is running.');
       setErrorMsg(message);
     } finally {
       setIsLoading(false);

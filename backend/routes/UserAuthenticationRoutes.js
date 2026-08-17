@@ -19,7 +19,10 @@ const {
   changePassword
 } = require('../controllers/UserAuthenticationController');
 
-const { requireAuthentication } = require('../middleware/UserAuthenticationMiddleware');
+const {
+  requireAuthentication,
+  optionalAuthentication
+} = require('../middleware/UserAuthenticationMiddleware');
 const {
   loginRateLimiter,
   registrationRateLimiter,
@@ -28,20 +31,20 @@ const {
 } = require('../middleware/AuthenticationRateLimitMiddleware');
 
 // ==========================================
-// Public routes — Registration, login, password recovery
+// Public routes — Registration, login, password recovery, verification
 // ==========================================
-router.post('/register',        registrationRateLimiter, registerUser);
-router.post('/login',           loginRateLimiter,        loginUser);
-router.post('/forgot-password', passwordResetRateLimiter, forgotPassword);
-router.post('/reset-password',  resetPassword);
+router.post('/register',            registrationRateLimiter, registerUser);
+router.post('/login',               loginRateLimiter,        loginUser);
+router.post('/forgot-password',     passwordResetRateLimiter, forgotPassword);
+router.post('/reset-password',      resetPassword);
+router.post('/verify-email',        optionalAuthentication, emailVerificationRateLimiter, verifyEmail);
+router.post('/resend-verification', optionalAuthentication, emailVerificationRateLimiter, resendVerificationOTP);
 
 // ==========================================
 // Protected routes — Authenticated user only
 // ==========================================
-router.get('/profile',            requireAuthentication, getMyProfile);
-router.put('/profile',            requireAuthentication, updateMyProfile);
-router.post('/verify-email',       requireAuthentication, emailVerificationRateLimiter, verifyEmail);
-router.post('/resend-verification',requireAuthentication, emailVerificationRateLimiter, resendVerificationOTP);
-router.put('/change-password',     requireAuthentication, changePassword);
+router.get('/profile',              requireAuthentication, getMyProfile);
+router.put('/profile',              requireAuthentication, updateMyProfile);
+router.put('/change-password',       requireAuthentication, changePassword);
 
 module.exports = router;

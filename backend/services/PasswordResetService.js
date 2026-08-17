@@ -11,44 +11,37 @@ const { sendPasswordResetEmail }     = require('./EmailVerificationService');
 
 // ==========================================
 // createPasswordResetRequest — Forgot password request create korbe
-// Token generate kore database e save korbe, email pathabe
+// Ei function password reset token generate kore users table-e save kore ar reset email pathay.
 // ==========================================
 async function createPasswordResetRequest(user) {
-  // Purano unused reset token gulo delete kora hocche (cleanup)
-  await db.query(
-    'DELETE FROM password_resets WHERE user_id = ? AND used_at IS NULL',
-    [user.id]
-  );
-
   // Noya reset token generate kora hocche
   const resetToken = generatePasswordResetToken();
 
   // Token er expiry time set kora hocche — 1 ghanta
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-  // Token database e save kora hocche
-  await db.insert(
-    'INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)',
-    [user.id, resetToken, expiresAt]
+  // Token database e users table-e save kora hocche
+  await db.update(
+    'UPDATE users SET password_reset_code = ?, password_reset_expires_at = ?, updated_at = NOW() WHERE id = ?',
+    [resetToken, expiresAt, user.id]
   );
 
   // Password reset email pathano hocche
-  const emailResult = await sendPasswordResetEmail(user.email, user.full_name, resetToken);
+  const emailResult = await sendPasswordResetEmail(user.email, user.name, resetToken);
 
   return { resetToken, emailResult };
 }
 
 // ==========================================
 // validatePasswordResetToken — Reset token valid ki na check korbe
-// Token database e ache ki, expire hoyeche ki, use hoyeche ki check korbe
+// Ei function reset token database-e valid ar unexpired ki na check kore user record return kore.
 // ==========================================
 async function validatePasswordResetToken(token) {
   // Database theke token fetch kora hocche
   const resetRecord = await db.queryOne(
-    `SELECT pr.*, u.email, u.full_name, u.id as user_id
-     FROM password_resets pr
-     JOIN users u ON u.id = pr.user_id
-     WHERE pr.token = ? AND pr.used_at IS NULL`,
+    `SELECT id as user_id, email, name, password_reset_code, password_reset_expires_at
+     FROM users
+     WHERE password_reset_code = ?`,
     [token]
   );
 
@@ -58,7 +51,7 @@ async function validatePasswordResetToken(token) {
   }
 
   // Token expire hoyeche ki check kora hocche
-  if (new Date() > new Date(resetRecord.expires_at)) {
+  if (new Date() > new Date(resetRecord.password_reset_expires_at)) {
     return { valid: false, message: 'Reset token has expired. Please request a new one.' };
   }
 
@@ -67,12 +60,12 @@ async function validatePasswordResetToken(token) {
 
 // ==========================================
 // markPasswordResetTokenUsed — Password reset hoye gele token mark korbe
-// Used token diye abar reset kora jabe na
+// Ei function password reset hoye jawar por reset code clear kore dei jate abar use na kora jay.
 // ==========================================
-async function markPasswordResetTokenUsed(tokenId) {
+async function markPasswordResetTokenUsed(userId) {
   await db.update(
-    'UPDATE password_resets SET used_at = NOW() WHERE id = ?',
-    [tokenId]
+    'UPDATE users SET password_reset_code = NULL, password_reset_expires_at = NULL, updated_at = NOW() WHERE id = ?',
+    [userId]
   );
 }
 

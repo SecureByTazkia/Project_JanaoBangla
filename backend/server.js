@@ -6,12 +6,13 @@
 // ==========================================
 
 // .env file theke environment variables load kora hocche
-require('dotenv').config();
+const path      = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-const express        = require('express');
-const cors           = require('cors');
-const rateLimit      = require('express-rate-limit');
-const path           = require('path');
+// Core packages import kora hocche — Express framework, CORS, ar Rate Limiter
+const express   = require('express');
+const cors      = require('cors');
+const rateLimit = require('express-rate-limit');
 
 // Project er nija middleware ar route files import kora hocche
 const { testDatabaseConnection } = require('./config/DatabaseConnection');
@@ -22,6 +23,7 @@ const errorHandlingMiddleware    = require('./middleware/ErrorHandlingMiddleware
 
 // ==========================================
 // Express app create kora hocche
+// Ei app object diye sob route, middleware ar static file server run korbe
 // ==========================================
 const app  = express();
 const PORT = process.env.PORT || 5000;

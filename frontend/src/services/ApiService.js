@@ -99,11 +99,17 @@ export const authApi = {
   // Profile data update korar jonno
   updateProfile: (data) => apiClient.put('/auth/profile', data),
 
-  // Email verification OTP submit korar jonno
-  verifyEmail: (otp) => apiClient.post('/auth/verify-email', { otp }),
+  // Email verification OTP submit korar jonno (Step 2 registration or authenticated)
+  verifyEmail: (data) => {
+    const payload = typeof data === 'string' ? { otp: data } : data;
+    return apiClient.post('/auth/verify-email', payload);
+  },
 
   // OTP resend korar jonno
-  resendVerification: () => apiClient.post('/auth/resend-verification'),
+  resendVerification: (data) => {
+    const payload = typeof data === 'string' ? { email: data } : (data || {});
+    return apiClient.post('/auth/resend-verification', payload);
+  },
 
   // Forgot password email request pathanor jonno
   forgotPassword: (email) => apiClient.post('/auth/forgot-password', { email }),

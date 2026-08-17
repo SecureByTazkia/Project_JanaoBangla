@@ -66,13 +66,12 @@ function generateEmailVerificationToken() {
 }
 
 // ==========================================
-// generatePasswordResetToken — Password reset er jonno
-// Random 32-byte hex string generate korbe
+// generatePasswordResetToken — Password reset er jonno 6-digit OTP
+// MySQL users table-er password_reset_code VARCHAR(10) column e fit hobe
 // ==========================================
 function generatePasswordResetToken() {
-  const crypto = require('crypto');
-  // Cryptographically secure random token generate kora hocche
-  return crypto.randomBytes(32).toString('hex');
+  // 6-digit cryptographically secure random OTP generate kora hocche
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // ==========================================

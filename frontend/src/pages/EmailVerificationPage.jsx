@@ -2,6 +2,7 @@
 // JanaoBangla — Email Verification Page
 // BRANCH: feature-user-authentication-and-security
 // Citizen email OTP verification screen
+// Public route — 2-step registration flow e unverified user o ashte parbe
 // ==========================================
 
 import { useEffect } from 'react';
@@ -10,15 +11,30 @@ import { useAuth } from '../context/AuthContext';
 import EmailVerificationForm from '../components/EmailVerificationForm';
 
 function EmailVerificationPage() {
-  const { user, isVerified } = useAuth();
+  const { isAuthenticated, isVerified, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Already verified hole profile e redirect hobe
+  // Pending email sessionStorage e ache kina check kora hocche
+  const pendingEmail = sessionStorage.getItem('jb_pending_email');
+
   useEffect(() => {
+    if (isLoading) return; // Auth init hoa porjonto wait korbo
+
+    // Already verified user hole profile e redirect
     if (isVerified) {
       navigate('/profile', { replace: true });
+      return;
     }
-  }, [isVerified, navigate]);
+
+    // Valid access: either (a) pending registration email in sessionStorage,
+    // OR (b) logged-in user who hasn't verified yet (e.g., came from profile/login)
+    const hasValidAccess = pendingEmail || (isAuthenticated && !isVerified);
+
+    if (!hasValidAccess) {
+      // Kono valid path nei — register e pathano hocche
+      navigate('/register', { replace: true });
+    }
+  }, [isVerified, isAuthenticated, isLoading, pendingEmail, navigate]);
 
   const handleSuccess = () => {
     navigate('/profile', { replace: true });

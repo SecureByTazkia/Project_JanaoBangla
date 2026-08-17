@@ -1,7 +1,7 @@
 // ==========================================
 // JanaoBangla — Reset Password Form Component
 // BRANCH: feature-user-authentication-and-security
-// Token diye noya password set korar form
+// 6-digit OTP code / token diye noya password set korar form
 // ==========================================
 
 import { useState } from 'react';
@@ -11,9 +11,10 @@ import ErrorMessage from './ErrorMessage';
 import SuccessMessage from './SuccessMessage';
 import LoadingSpinner from './LoadingSpinner';
 
-function ResetPasswordForm({ token }) {
+function ResetPasswordForm({ initialToken = '' }) {
   const navigate = useNavigate();
 
+  const [token, setToken] = useState(initialToken);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -22,15 +23,16 @@ function ResetPasswordForm({ token }) {
   const [successMsg, setSuccessMsg] = useState('');
 
   // ==========================================
-  // handleSubmit — Reset password token ar new password backend e pathabe
+  // handleSubmit — Reset password OTP token ar new password backend e pathabe
   // ==========================================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (!token) {
-      return setErrorMsg('Reset token is missing or invalid. Please request a new reset link.');
+    const trimmedToken = token.trim();
+    if (!trimmedToken) {
+      return setErrorMsg('Please enter the 6-digit reset code sent to your email.');
     }
 
     if (!newPassword) {
@@ -43,8 +45,9 @@ function ResetPasswordForm({ token }) {
 
     setIsLoading(true);
     try {
+      // Backend e password reset API call pathano hocche
       const response = await authApi.resetPassword({
-        token,
+        token: trimmedToken,
         newPassword,
         confirmPassword
       });
@@ -56,7 +59,7 @@ function ResetPasswordForm({ token }) {
         }, 2000);
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Password reset failed. The link may have expired.';
+      const message = error.response?.data?.message || 'Password reset failed. The code may have expired or is invalid.';
       setErrorMsg(message);
     } finally {
       setIsLoading(false);
@@ -67,6 +70,29 @@ function ResetPasswordForm({ token }) {
     <form onSubmit={handleSubmit} noValidate id="reset-password-form">
       <SuccessMessage message={successMsg} onDismiss={() => setSuccessMsg('')} />
       <ErrorMessage message={errorMsg} onDismiss={() => setErrorMsg('')} />
+
+      {/* 6-digit Reset OTP Code Input */}
+      <div style={{ marginBottom: '16px' }}>
+        <label className="jb-label" htmlFor="reset-token-code">
+          6-Digit Reset Code <span style={{ color: '#FF1744' }}>*</span>
+        </label>
+        <input
+          id="reset-token-code"
+          type="text"
+          maxLength={10}
+          className="jb-input"
+          placeholder="e.g. 123456"
+          value={token}
+          onChange={(e) => { setToken(e.target.value); setErrorMsg(''); }}
+          required
+          autoComplete="one-time-code"
+          disabled={isLoading}
+          style={{ letterSpacing: '3px', fontWeight: 700, fontSize: '1.1rem' }}
+        />
+        <p style={{ color: '#64748B', fontSize: '0.75rem', marginTop: '4px' }}>
+          Check your Gmail inbox for the 6-digit password reset code
+        </p>
+      </div>
 
       <div style={{ marginBottom: '16px' }}>
         <label className="jb-label" htmlFor="reset-new-password">
@@ -130,7 +156,7 @@ function ResetPasswordForm({ token }) {
         id="reset-password-submit-button"
         className="btn-primary-jb"
         style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
-        disabled={isLoading || !token}
+        disabled={isLoading || !token.trim()}
       >
         {isLoading ? (
           <>
