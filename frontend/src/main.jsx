@@ -12,6 +12,9 @@ import { BrowserRouter } from 'react-router-dom';
 // Bootstrap CSS import — responsive grid, utilities er jonno
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+// Leaflet CSS import — Map tile ar markers rendering style er jonno
+import 'leaflet/dist/leaflet.css';
+
 // JanaoBangla global CSS import kora hocche — design system
 import './styles/global.css';
 import './styles/responsive.css';
