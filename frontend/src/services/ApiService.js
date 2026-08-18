@@ -154,7 +154,58 @@ export const duplicateApi = {
 };
 
 // Phase 7 — SOS Emergency
-export const sosApi = {};
+export const sosApi = {
+  // SOS trigger kora — location data sহ
+  trigger: (data) => apiClient.post('/sos/trigger', data),
+
+  // Active SOS status check — SOS button state manage er jonno
+  getActiveStatus: () => apiClient.get('/sos/active'),
+
+  // SOS history fetch — user er previous alerts
+  getHistory: (params) => apiClient.get('/sos/history', { params }),
+
+  // Single SOS detail fetch
+  getById: (id) => apiClient.get(`/sos/${id}`),
+
+  // SOS resolve kora — safe ache
+  resolve: (id) => apiClient.put(`/sos/${id}/resolve`),
+
+  // SOS cancel kora — false alarm
+  cancel: (id) => apiClient.put(`/sos/${id}/cancel`)
+};
+
+// Phase 7 — Emergency Contacts
+export const emergencyContactApi = {
+  // Sob emergency contacts list
+  getAll: () => apiClient.get('/emergency-contacts'),
+
+  // Notun contact add kora
+  create: (data) => apiClient.post('/emergency-contacts', data),
+
+  // Contact update kora
+  update: (id, data) => apiClient.put(`/emergency-contacts/${id}`, data),
+
+  // Contact delete kora
+  delete: (id) => apiClient.delete(`/emergency-contacts/${id}`)
+};
+
+// Phase 7 — Notifications
+export const notificationApi = {
+  // Sob notifications fetch
+  getAll: (params) => apiClient.get('/notifications', { params }),
+
+  // Shudhu unread count
+  getUnreadCount: () => apiClient.get('/notifications/unread-count'),
+
+  // Sob notifications read mark kora
+  markAllRead: () => apiClient.put('/notifications/read-all'),
+
+  // Specific notification read mark kora
+  markRead: (id) => apiClient.put(`/notifications/${id}/read`),
+
+  // Notification delete kora
+  delete: (id) => apiClient.delete(`/notifications/${id}`)
+};
 
 // Phase 8 — Admin Dashboard API
 export const adminApi = {

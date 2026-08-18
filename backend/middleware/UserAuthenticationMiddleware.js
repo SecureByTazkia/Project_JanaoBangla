@@ -95,6 +95,7 @@ async function optionalAuthentication(req, res, next) {
 
 module.exports = {
   requireAuthentication,
+  authenticateToken: requireAuthentication, // Alias for requireAuthentication
   requireAdmin,
   optionalAuthentication
 };
