@@ -165,7 +165,13 @@ export const searchApi = {};
 export const analyticsApi = {};
 
 // Phase 10 — AI
-export const aiApi = {};
+export const aiApi = {
+  analyzeImage: (formData) => apiClient.post('/ai/analyze-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  getSuggestions: (data) => apiClient.post('/ai/suggest', data),
+  detectDuplicates: (data) => apiClient.post('/ai/detect-duplicates', data)
+};
 
 // Default export hisebe apiClient export kora hocche
 export default apiClient;

@@ -1,0 +1,298 @@
+/* ==========================================
+   JanaoBangla — AI Civic Problem Recognition & Suggestions Styles
+   BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
+   ========================================== */
+
+.ai-widget-card {
+  background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+  border: 1.5px solid #006A4E;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 106, 78, 0.08);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.ai-widget-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(180deg, #006A4E 0%, #2962FF 100%);
+}
+
+.ai-widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed #CBD5E1;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #E8F5F0;
+  color: #006A4E;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  border: 1px solid rgba(0, 106, 78, 0.2);
+}
+
+.ai-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #006A4E;
+  border-radius: 50%;
+  display: inline-block;
+  animation: ai-pulse 1.8s infinite;
+}
+
+@keyframes ai-pulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 8px #006A4E; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+.ai-confidence-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-confidence-bar {
+  width: 120px;
+  height: 8px;
+  background-color: #E2E8F0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ai-confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFB300 0%, #2E7D32 100%);
+  border-radius: 4px;
+  transition: width 0.6s ease-in-out;
+}
+
+.ai-confidence-text {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #006A4E;
+}
+
+/* Result Grid */
+.ai-recognition-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ai-info-box {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 0.95rem;
+}
+
+.ai-info-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #64748B;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.ai-info-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1F2937;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.ai-tag {
+  background-color: #F1F5F9;
+  color: #334155;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  border: 1px solid #E2E8F0;
+}
+
+/* Suggestions & Advice Box */
+.ai-suggestion-box {
+  background-color: #F8FAFC;
+  border-left: 4px solid #2962FF;
+  border-radius: 0 8px 8px 0;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+.ai-suggestion-title {
+  font-weight: 700;
+  color: #1E40AF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+/* Action Buttons */
+.ai-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.btn-ai-apply {
+  background: linear-gradient(135deg, #006A4E 0%, #004D3A 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 106, 78, 0.2);
+}
+
+.btn-ai-apply:hover {
+  background: linear-gradient(135deg, #004D3A 0%, #003326 100%);
+  transform: translateY(-1px);
+  color: #FFFFFF;
+}
+
+.btn-ai-secondary {
+  background-color: #FFFFFF;
+  color: #475569;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 500;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-ai-secondary:hover {
+  background-color: #F8FAFC;
+  border-color: #94A3B8;
+}
+
+.btn-ai-enhance {
+  background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+  color: #4338CA;
+  border: 1px solid #C7D2FE;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-ai-enhance:hover {
+  background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+  transform: translateY(-1px);
+}
+
+/* Duplicate Warning Banner */
+.ai-duplicate-warning {
+  background-color: #FFFBEB;
+  border: 1.5px solid #F59E0B;
+  border-radius: 10px;
+  padding: 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.ai-duplicate-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #B45309;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.ai-duplicate-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 8px 0;
+}
+
+.ai-duplicate-item {
+  background: #FFFFFF;
+  border: 1px solid #FDE68A;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.86rem;
+}
+
+.ai-duplicate-match-badge {
+  background-color: #FEF3C7;
+  color: #92400E;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+}
+
+/* Loading Shimmer Box */
+.ai-analyzing-box {
+  background: #F0FDF4;
+  border: 2px dashed #16A34A;
+  border-radius: 12px;
+  padding: 1.75rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .ai-recognition-grid {
+    grid-template-columns: 1fr;
+  }
+  .ai-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn-ai-apply, .btn-ai-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}

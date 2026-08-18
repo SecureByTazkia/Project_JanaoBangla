@@ -23,6 +23,7 @@ const errorHandlingMiddleware    = require('./middleware/ErrorHandlingMiddleware
 const civicProblemReportRoutes   = require('./routes/CivicProblemReportRoutes'); // Phase 3
 const locationRoutes             = require('./routes/LocationRoutes');           // Phase 4
 const adminDashboardRoutes       = require('./routes/AdminDashboardRoutes');      // Phase 8
+const aiCivicProblemRoutes       = require('./routes/AICivicProblemRoutes');      // Phase 10 — AI-Powered Civic Problem Recognition
 
 // ==========================================
 // Express app create kora hocche
@@ -86,9 +87,9 @@ app.use('/api/auth',   userAuthenticationRoutes); // Phase 2 — User Authentica
 app.use('/api/reports',       civicProblemReportRoutes);         // Phase 3
 app.use('/api/location',      locationRoutes);                   // Phase 4 — Location & Civic Map
 app.use('/api/admin',         adminDashboardRoutes);             // Phase 8 — Admin Dashboard & Monitoring
+app.use('/api/ai',            aiCivicProblemRoutes);             // Phase 10 — AI Problem Recognition & Smart Suggestions
 // app.use('/api/search',        searchRoutes);         // Phase 9
 // app.use('/api/analytics',     analyticsRoutes);      // Phase 9
-// app.use('/api/ai',            aiRoutes);             // Phase 10
 // app.use('/api/notifications', notificationRoutes);   // Phase 7/8
 
 // ==========================================
