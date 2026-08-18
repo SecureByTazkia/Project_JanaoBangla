@@ -1,10 +1,20 @@
+// ==========================================
+// JanaoBangla — Civic Problem Report Controller
+// BRANCH: feature-civic-problem-reporting-visibility-and-management
+// Civic problem reporting endpoints er request receive kore ebong response pathay
+// ==========================================
+
 const CivicProblemReportManagementService = require('../services/CivicProblemReportManagementService');
 
 class CivicProblemReportController {
-  // Ei function incoming report submission request handle korbe
+
+  // ==========================================
+  // submitReport — Incoming report submission request handle korbe
+  // ==========================================
   static async submitReport(req, res) {
+    // Authenticated user token theke userId nibe ebong isAnonymous support korbe
     try {
-      const userId = req.user.id; // user authenticate howar por token theke asbe
+      const userId = req.user.id;
       const reportData = req.body;
       const files = req.files; // multer diye asbe
 
@@ -19,7 +29,6 @@ class CivicProblemReportController {
         reportId: reportId
       });
     } catch (error) {
-      // Actual error ta log ar response e pathano hocche debug er jonno
       console.error('Error submitting report:', error.message, error.stack);
       return res.status(500).json({
         error: 'Failed to submit report. Please try again.',
@@ -28,8 +37,11 @@ class CivicProblemReportController {
     }
   }
 
-  // Ei function logged in user er nijer report gulo dekhanor jonno return korbe
+  // ==========================================
+  // getMyReports — Logged in user er nijer shob report (with anonymous tag) return korbe
+  // ==========================================
   static async getMyReports(req, res) {
+    // User nijer shob submitted reports dekhte parbe
     try {
       const userId = req.user.id;
       const reports = await CivicProblemReportManagementService.getUserReports(userId);
@@ -40,8 +52,11 @@ class CivicProblemReportController {
     }
   }
 
-  // Ei function shob public report gulo return korbe
+  // ==========================================
+  // getPublicReports — Shob public reports return korbe, anonymous reports er identity mask korbe
+  // ==========================================
   static async getPublicReports(req, res) {
+    // Public feed er jonno shob public reports return korbe
     try {
       const reports = await CivicProblemReportManagementService.getPublicReports();
       return res.status(200).json({ reports });
@@ -51,19 +66,26 @@ class CivicProblemReportController {
     }
   }
 
-  // Ei function specific ekta report er data dibe
+  // ==========================================
+  // getReportDetails — Single report er data dibe, anonymous & private access control enforce kore
+  // ==========================================
   static async getReportDetails(req, res) {
+    // Specific report details return korbe ebong identity mask korbe jodi requester owner/admin na hoy
     try {
       const reportId = req.params.id;
-      const report = await CivicProblemReportManagementService.getReportDetails(reportId);
+      const requestingUser = req.user || null;
+      const report = await CivicProblemReportManagementService.getReportDetails(reportId, requestingUser);
       
       if (!report) {
         return res.status(404).json({ error: 'Report not found' });
       }
       
-      // Jodi report private hoy ebong requester owner na hoy ba admin na hoy (for later), tahole block korbe
-      if (report.visibility === 'private' && (!req.user || report.user_id !== req.user.id)) {
-          return res.status(403).json({ error: 'Access denied. This is a private report.' });
+      // Jodi report private hoy ebong requester owner na hoy ebong admin na hoy, tahole block korbe
+      const isOwner = requestingUser && report.user_id && report.user_id === requestingUser.id;
+      const isAdmin = requestingUser && requestingUser.role === 'admin';
+
+      if (report.visibility === 'private' && !isOwner && !isAdmin) {
+        return res.status(403).json({ error: 'Access denied. This is a private report.' });
       }
 
       return res.status(200).json({ report });

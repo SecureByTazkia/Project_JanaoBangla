@@ -1,3 +1,9 @@
+// ==========================================
+// JanaoBangla — Civic Problem Report Card Component
+// BRANCH: feature-civic-problem-reporting-visibility-and-management
+// Report summary card with category, status, visibility, and anonymous badge
+// ==========================================
+
 import React from 'react';
 import CivicProblemReportStatus from './CivicProblemReportStatus';
 import { Link } from 'react-router-dom';
@@ -34,13 +40,18 @@ const CivicProblemReportCard = ({ report }) => {
           {report.description}
         </p>
 
-        <div className="d-flex justify-content-between align-items-center mt-auto">
+        <div className="d-flex justify-content-between align-items-center mt-auto flex-wrap gap-1">
           <small className="text-muted">
             <i className="bi bi-clock me-1"></i> {formatDate(report.created_at)}
           </small>
-          {report.visibility === 'private' && (
-            <span className="badge bg-dark" title="This report is private">Private</span>
-          )}
+          <div className="d-flex gap-1">
+            {Boolean(report.is_anonymous) && (
+              <span className="badge bg-secondary" title="Reported Anonymously">🕵️ Anonymous</span>
+            )}
+            {report.visibility === 'private' && (
+              <span className="badge bg-dark" title="This report is private">Private</span>
+            )}
+          </div>
         </div>
       </div>
       <div className="card-footer bg-white border-0 pb-3 pt-0">

@@ -1,3 +1,9 @@
+// ==========================================
+// JanaoBangla — Civic Problem Report Details Page
+// BRANCH: feature-civic-problem-reporting-visibility-and-management
+// Report full view with evidence, location, visibility, and reporter identity
+// ==========================================
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import CivicProblemReportService from '../services/CivicProblemReportService';
@@ -119,7 +125,16 @@ const CivicProblemReportDetailsPage = () => {
               
               <div className="mb-3">
                 <small className="text-muted d-block">Reported By</small>
-                <span className="fw-medium text-dark">{report.reporter_name || 'Citizen'}</span>
+                <span className="fw-medium text-dark">
+                  {report.is_anonymous ? 'Anonymous Citizen' : (report.reporter_name || 'Citizen')}
+                </span>
+              </div>
+
+              <div className="mb-3">
+                <small className="text-muted d-block">Reporter Identity</small>
+                <span className={`badge ${report.is_anonymous ? 'bg-secondary' : 'bg-info text-dark'}`}>
+                  {report.is_anonymous ? '🕵️ Anonymous' : 'Public Identity'}
+                </span>
               </div>
               
               <div className="mb-3">

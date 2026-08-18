@@ -128,6 +128,7 @@ CREATE TABLE IF NOT EXISTS reports (
                        'solved'
                      ) NOT NULL DEFAULT 'submitted',
   visibility         ENUM('public', 'private') NOT NULL DEFAULT 'public',
+  is_anonymous       TINYINT(1) NOT NULL DEFAULT 0,
   priority           ENUM('low', 'medium', 'high', 'critical') NOT NULL DEFAULT 'medium',
   is_duplicate       TINYINT(1) NOT NULL DEFAULT 0,
   duplicate_of_id    INT UNSIGNED,

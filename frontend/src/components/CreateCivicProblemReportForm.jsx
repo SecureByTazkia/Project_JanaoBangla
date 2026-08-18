@@ -1,3 +1,9 @@
+// ==========================================
+// JanaoBangla — Create Civic Problem Report Form
+// BRANCH: feature-civic-problem-reporting-visibility-and-management
+// Civic problem reporting form with Report Visibility and Anonymous Reporter Identity support
+// ==========================================
+
 import React, { useState } from 'react';
 import CivicProblemReportService from '../services/CivicProblemReportService';
 import ErrorMessage from './ErrorMessage';
@@ -6,11 +12,13 @@ import LoadingSpinner from './LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
 
 const CreateCivicProblemReportForm = () => {
+  // isAnonymous boolean field state e rakha hoyeche (default: false - Show my identity)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'road_damage',
     visibility: 'public',
+    isAnonymous: false,
     latitude: '',
     longitude: '',
     address: ''
@@ -23,19 +31,26 @@ const CreateCivicProblemReportForm = () => {
   
   const navigate = useNavigate();
 
-  // Ei function input field er change handle korbe
+  // ==========================================
+  // handleChange — Input field er text/select change handle kore
+  // ==========================================
   const handleChange = (e) => {
+    // Ei function form inputs update korbe
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Ei function user jokhon file select korbe tokhon state update korbe
+  // ==========================================
+  // handleFileChange — Evidence file selection handle kore
+  // ==========================================
   const handleFileChange = (e) => {
     // Convert FileList to Array
     setFiles(Array.from(e.target.files));
   };
 
-  // Ei function browser er GPS API theke location collect korbe
+  // ==========================================
+  // getLocation — Browser GPS API theke location collect kore
+  // ==========================================
   const getLocation = () => {
     setLocationLoading(true);
     if (!navigator.geolocation) {
@@ -60,8 +75,11 @@ const CreateCivicProblemReportForm = () => {
     );
   };
 
-  // Ei function form submit korle backend e data send korbe
+  // ==========================================
+  // handleSubmit — Form data backend e multipart FormData hishabe pathay
+  // ==========================================
   const handleSubmit = async (e) => {
+    // User anonymous choose korle isAnonymous backend e pathabe
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -73,6 +91,7 @@ const CreateCivicProblemReportForm = () => {
       data.append('description', formData.description);
       data.append('category', formData.category);
       data.append('visibility', formData.visibility);
+      data.append('isAnonymous', formData.isAnonymous);
       if (formData.latitude) data.append('latitude', formData.latitude);
       if (formData.longitude) data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
@@ -157,6 +176,42 @@ const CreateCivicProblemReportForm = () => {
             </select>
             <small className="text-muted">Private reports won't appear on the public map.</small>
           </div>
+        </div>
+
+        {/* Reporter Identity Option (Anonymous Reporting) */}
+        <div className="mb-3 p-3 border rounded bg-light">
+          <label className="form-label fw-bold d-block mb-2">Reporter Identity</label>
+          <div className="form-check form-check-inline me-4">
+            <input
+              className="form-check-input"
+              type="radio"
+              name="isAnonymous"
+              id="identityPublic"
+              value="false"
+              checked={formData.isAnonymous === false}
+              onChange={() => setFormData(prev => ({ ...prev, isAnonymous: false }))}
+            />
+            <label className="form-check-label" htmlFor="identityPublic">
+              Show my identity
+            </label>
+          </div>
+          <div className="form-check form-check-inline">
+            <input
+              className="form-check-input"
+              type="radio"
+              name="isAnonymous"
+              id="identityAnonymous"
+              value="true"
+              checked={formData.isAnonymous === true}
+              onChange={() => setFormData(prev => ({ ...prev, isAnonymous: true }))}
+            />
+            <label className="form-check-label" htmlFor="identityAnonymous">
+              Report anonymously
+            </label>
+          </div>
+          <small className="form-text text-muted d-block mt-2">
+            Your identity will be hidden from other citizens, but authorized administrators can still identify the reporter when necessary.
+          </small>
         </div>
 
         <div className="mb-3">
