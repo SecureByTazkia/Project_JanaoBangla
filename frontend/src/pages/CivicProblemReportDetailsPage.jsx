@@ -119,7 +119,10 @@ const CivicProblemReportDetailsPage = () => {
               
               <div className="mb-3">
                 <small className="text-muted d-block">Reported By</small>
-                <span className="fw-medium text-dark">{report.reporter_name || 'Citizen'}</span>
+                {/* is_anonymous hole 'Anonymous Citizen' dekhabe, noile real name */}
+                <span className="fw-medium text-dark">
+                  {report.is_anonymous === 1 ? '🕵️ Anonymous Citizen' : (report.reporter_name || 'Citizen')}
+                </span>
               </div>
               
               <div className="mb-3">
@@ -132,6 +135,15 @@ const CivicProblemReportDetailsPage = () => {
                 <span className={`badge ${report.visibility === 'public' ? 'bg-success' : 'bg-dark'}`}>
                   {report.visibility.toUpperCase()}
                 </span>
+              </div>
+
+              <div className="mb-3">
+                <small className="text-muted d-block">Reporter Identity</small>
+                {report.is_anonymous === 1 ? (
+                  <span className="badge bg-secondary">🕵️ Anonymous</span>
+                ) : (
+                  <span className="badge bg-light text-dark border">👤 Public Identity</span>
+                )}
               </div>
 
               {report.address && (

@@ -24,6 +24,7 @@ const CreateCivicProblemReportForm = () => {
     description: '',
     category: 'road_damage',
     visibility: 'public',
+    isAnonymous: false,
     latitude: '',
     longitude: '',
     address: ''
@@ -175,6 +176,8 @@ const CreateCivicProblemReportForm = () => {
       data.append('description', formData.description);
       data.append('category', formData.category);
       data.append('visibility', formData.visibility);
+      // Anonymous setting backend e pathano hocche
+      data.append('isAnonymous', formData.isAnonymous ? 'true' : 'false');
       if (formData.latitude) data.append('latitude', formData.latitude);
       if (formData.longitude) data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
@@ -321,6 +324,49 @@ const CreateCivicProblemReportForm = () => {
             </select>
             <small className="text-muted">Private reports won't appear on the public map.</small>
           </div>
+        </div>
+
+        {/* Reporter Identity — Anonymous option */}
+        <div className="mb-3 p-3 border rounded" style={{ backgroundColor: '#F8FAFC', borderColor: '#CBD5E1' }}>
+          <label className="form-label fw-bold d-block mb-2">🔒 Reporter Identity</label>
+          <div className="d-flex gap-4">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="radio"
+                name="isAnonymous"
+                id="identityShow"
+                value="false"
+                checked={!formData.isAnonymous}
+                onChange={() => setFormData(prev => ({ ...prev, isAnonymous: false }))}
+              />
+              <label className="form-check-label" htmlFor="identityShow">
+                👤 Show my identity
+              </label>
+            </div>
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="radio"
+                name="isAnonymous"
+                id="identityAnonymous"
+                value="true"
+                checked={formData.isAnonymous}
+                onChange={() => setFormData(prev => ({ ...prev, isAnonymous: true }))}
+              />
+              <label className="form-check-label" htmlFor="identityAnonymous">
+                🕵️ Report anonymously
+              </label>
+            </div>
+          </div>
+          <small className="text-muted mt-1 d-block">
+            Your identity will be hidden from other citizens, but authorized administrators can still identify the reporter when necessary.
+          </small>
+          {formData.isAnonymous && (
+            <div className="alert alert-info py-1 px-2 mt-2 mb-0" style={{ fontSize: '0.85rem' }}>
+              🕵️ This report will appear as submitted by <strong>Anonymous Citizen</strong> to other users.
+            </div>
+          )}
         </div>
 
         {/* 3. AI Smart Suggestions & Duplicate Warning Widget */}

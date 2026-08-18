@@ -38,9 +38,15 @@ const CivicProblemReportCard = ({ report }) => {
           <small className="text-muted">
             <i className="bi bi-clock me-1"></i> {formatDate(report.created_at)}
           </small>
-          {report.visibility === 'private' && (
-            <span className="badge bg-dark" title="This report is private">Private</span>
-          )}
+          <div className="d-flex gap-1">
+            {report.visibility === 'private' && (
+              <span className="badge bg-dark" title="This report is private">Private</span>
+            )}
+            {/* is_anonymous true hole owner er My Reports e badge dekhabe */}
+            {report.is_anonymous === 1 && (
+              <span className="badge bg-secondary" title="You submitted this anonymously">🕵️ Anonymous</span>
+            )}
+          </div>
         </div>
       </div>
       <div className="card-footer bg-white border-0 pb-3 pt-0">

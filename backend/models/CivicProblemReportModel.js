@@ -1,32 +1,34 @@
 // ==========================================
 // JanaoBangla — Civic Problem Report Model
-// BRANCH: civic-problem-reporting-visibility-and-management
-// Actual database schema onujayi sob query likha hoyeche
-// reports table e location_id nei — locations table directly report_id use kore
+// BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
+// is_anonymous support add kora hoyeche — public feed e identity mask korbe
 // ==========================================
 
 const db = require('../services/DatabaseService');
 
 class CivicProblemReportModel {
 
-  // Ei function natun civic report create kore reports table e insert korbe
-  // reports table: id, user_id, title, description, category, status, visibility, priority, is_duplicate, duplicate_of, confirmation_count, created_at, updated_at
+  // ==========================================
+  // createReport — Natun civic report create kore DB te insert kore
+  // is_anonymous true hole public te 'Anonymous Citizen' dekhabe
+  // ==========================================
   static async createReport(reportData) {
-    const { user_id, title, description, category, visibility } = reportData;
-    // reports table e noya row insert kora hocche — actual columns onujayi
+    const { user_id, title, description, category, visibility, is_anonymous } = reportData;
+    // User anonymous choose korle 1 hobe, noile default 0
+    const anonymousValue = is_anonymous ? 1 : 0;
     const reportId = await db.insert(
-      `INSERT INTO reports (user_id, title, description, category, visibility, status, priority)
-       VALUES (?, ?, ?, ?, ?, 'submitted', 'medium')`,
-      [user_id, title, description, category, visibility || 'public']
+      `INSERT INTO reports (user_id, title, description, category, visibility, is_anonymous, status, priority)
+       VALUES (?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
+      [user_id, title, description, category, visibility || 'public', anonymousValue]
     );
     return reportId;
   }
 
-  // Ei function GPS location data locations table e save korbe
-  // locations table: id, report_id, latitude, longitude, address, area, city, created_at
+  // ==========================================
+  // saveLocation — GPS coordinates locations table e save kore
+  // ==========================================
   static async saveLocation(reportId, locationData) {
     const { latitude, longitude, address } = locationData;
-    // locations table e report_id diye location insert kora hocche
     const locationId = await db.insert(
       `INSERT INTO locations (report_id, latitude, longitude, address) VALUES (?, ?, ?, ?)`,
       [reportId, latitude, longitude, address || null]
@@ -34,11 +36,11 @@ class CivicProblemReportModel {
     return locationId;
   }
 
-  // Ei function uploaded file er metadata report_evidence table e save korbe
-  // report_evidence table: id, report_id, file_type, file_path, original_name, file_size, created_at
+  // ==========================================
+  // addEvidence — Uploaded image/video metadata DB te save kore
+  // ==========================================
   static async addEvidence(evidenceData) {
     const { report_id, file_type, file_path, original_name, file_size } = evidenceData;
-    // report_evidence table e actual column names onujayi insert hobe
     const evidenceId = await db.insert(
       `INSERT INTO report_evidence (report_id, file_type, file_path, original_name, file_size)
        VALUES (?, ?, ?, ?, ?)`,
@@ -47,9 +49,11 @@ class CivicProblemReportModel {
     return evidenceId;
   }
 
-  // Ei function specific user er shob report gulo return korbe (My Reports page er jonno)
+  // ==========================================
+  // getReportsByUserId — User er nijer shob report return kore (My Reports)
+  // Owner nijer anonymous report-o dekhte parbe is_anonymous flag sahit
+  // ==========================================
   static async getReportsByUserId(userId) {
-    // user_id diye filter, location LEFT JOIN kora hocche
     const reports = await db.query(
       `SELECT r.*, l.latitude, l.longitude, l.address
        FROM reports r
@@ -61,9 +65,10 @@ class CivicProblemReportModel {
     return reports;
   }
 
-  // Ei function id diye ekta specific report er full details return korbe
+  // ==========================================
+  // getReportById — Single report er full details return kore (real reporter_name shoho)
+  // ==========================================
   static async getReportById(reportId) {
-    // report er sathe location ar reporter name JOIN kora hocche
     const report = await db.queryOne(
       `SELECT r.*, l.latitude, l.longitude, l.address, u.name as reporter_name
        FROM reports r
@@ -75,9 +80,10 @@ class CivicProblemReportModel {
     return report;
   }
 
-  // Ei function ekta report er shob evidence files return korbe
+  // ==========================================
+  // getEvidenceByReportId — Report er shob evidence files return kore
+  // ==========================================
   static async getEvidenceByReportId(reportId) {
-    // report_id diye filter kore evidence list return hobe
     const evidence = await db.query(
       `SELECT * FROM report_evidence WHERE report_id = ?`,
       [reportId]
@@ -85,11 +91,29 @@ class CivicProblemReportModel {
     return evidence;
   }
 
-  // Ei function shob public report return korbe (community feed er jonno)
+  // ==========================================
+  // getPublicReports — Shob public report return kore
+  // Anonymous report e reporter_name = 'Anonymous Citizen', user_id = NULL dekhabe
+  // ==========================================
   static async getPublicReports() {
-    // visibility = 'public' filter, location ar user name shoho asbe
+    // CASE statement diye anonymous reports er identity mask kora hocche
     const reports = await db.query(
-      `SELECT r.*, l.latitude, l.longitude, l.address, u.name as reporter_name
+      `SELECT
+         r.id,
+         CASE WHEN r.is_anonymous = 1 THEN NULL ELSE r.user_id END as user_id,
+         r.title,
+         r.description,
+         r.category,
+         r.status,
+         r.visibility,
+         r.is_anonymous,
+         r.priority,
+         r.created_at,
+         r.updated_at,
+         l.latitude,
+         l.longitude,
+         l.address,
+         CASE WHEN r.is_anonymous = 1 THEN 'Anonymous Citizen' ELSE u.name END as reporter_name
        FROM reports r
        LEFT JOIN locations l ON l.report_id = r.id
        JOIN users u ON r.user_id = u.id
