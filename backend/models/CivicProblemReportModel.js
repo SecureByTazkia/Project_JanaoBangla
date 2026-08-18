@@ -10,16 +10,20 @@ class CivicProblemReportModel {
 
   // ==========================================
   // createReport — Natun civic report create kore DB te insert kore
-  // is_anonymous true hole public te 'Anonymous Citizen' dekhabe
+  // is_anonymous, is_duplicate ebong duplicate_of_id support kora hoyeche
   // ==========================================
   static async createReport(reportData) {
-    const { user_id, title, description, category, visibility, is_anonymous } = reportData;
+    // Ei function form data theke notun civic report MySQL reports table e insert kore
+    const { user_id, title, description, category, visibility, is_anonymous, is_duplicate, duplicate_of_id } = reportData;
     // User anonymous choose korle 1 hobe, noile default 0
     const anonymousValue = is_anonymous ? 1 : 0;
+    const isDuplicateValue = (is_duplicate || duplicate_of_id) ? 1 : 0;
+    const duplicateOfValue = duplicate_of_id ? parseInt(duplicate_of_id) : null;
+
     const reportId = await db.insert(
-      `INSERT INTO reports (user_id, title, description, category, visibility, is_anonymous, status, priority)
-       VALUES (?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
-      [user_id, title, description, category, visibility || 'public', anonymousValue]
+      `INSERT INTO reports (user_id, title, description, category, visibility, is_anonymous, is_duplicate, duplicate_of_id, status, priority)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
+      [user_id, title, description, category, visibility || 'public', anonymousValue, isDuplicateValue, duplicateOfValue]
     );
     return reportId;
   }

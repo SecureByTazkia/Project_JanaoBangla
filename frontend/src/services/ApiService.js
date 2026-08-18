@@ -139,8 +139,19 @@ export const communityApi = {
   deleteComment: (commentId) => apiClient.delete(`/community/comments/${commentId}`)
 };
 
-// Phase 6 — Duplicates
-export const duplicateApi = {};
+// Phase 6 — Duplicates API
+export const duplicateApi = {
+  // Similar reports check korar jonno
+  checkDuplicates: (data) => apiClient.post('/duplicates/check', data),
+  // Duita report link korar jonno
+  linkReport: (data) => apiClient.post('/duplicates/link', data),
+  // Linked reports fetch korar jonno
+  getLinkedReports: (reportId) => apiClient.get(`/duplicates/linked/${reportId}`),
+  // Duplicate link remove korar jonno
+  unlinkReport: (reportId) => apiClient.delete(`/duplicates/link/${reportId}`),
+  // All clusters list
+  getClusters: () => apiClient.get('/duplicates/clusters')
+};
 
 // Phase 7 — SOS Emergency
 export const sosApi = {};

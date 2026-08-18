@@ -5,9 +5,12 @@ import CivicProblemReportStatus from '../components/CivicProblemReportStatus';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import CommunityDiscussionSection from '../components/CommunityDiscussionSection';
+import LinkedDuplicateReports from '../components/LinkedDuplicateReports';
+import { useAuth } from '../context/AuthContext';
 
 const CivicProblemReportDetailsPage = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -78,6 +81,12 @@ const CivicProblemReportDetailsPage = () => {
                 <h5 className="text-secondary fw-bold">Description</h5>
                 <p className="text-dark" style={{ whiteSpace: 'pre-wrap' }}>{report.description}</p>
               </div>
+
+              {/* Phase 6 — Linked Duplicate Reports Section */}
+              <LinkedDuplicateReports
+                reportId={report.id}
+                isOwnerOrAdmin={Boolean((user && user.id === report.user_id) || (user && user.role === 'admin'))}
+              />
 
               <div className="mb-4">
                 <h5 className="text-secondary fw-bold mb-3">Evidence</h5>
