@@ -1,0 +1,446 @@
+/* ==========================================
+   JanaoBangla — Global CSS Design System
+   BRANCH: main
+   Sob component er jonno base styles ekhane define kora hobe
+   CSS custom properties (variables) use kora hocche consistency er jonno
+   ========================================== */
+
+/* ==========================================
+   GOOGLE FONTS IMPORT
+   Inter font load kora hocche typography er jonno
+   ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ==========================================
+   CSS CUSTOM PROPERTIES (Design Tokens)
+   Sob color, spacing, typography ekhane define hobe
+   Purer component e var(--color-primary) diye use kora jabe
+   ========================================== */
+:root {
+  /* Primary Brand Colors */
+  --color-primary:        #006A4E;   /* Bangladesh green — main brand color */
+  --color-primary-dark:   #004D3A;   /* Darker green for hover states */
+  --color-primary-light:  #E8F5F0;   /* Light green background for cards */
+  --color-primary-50:     #f0fdf9;   /* Very light green tint */
+
+  /* Emergency / SOS Colors */
+  --color-sos:            #FF1744;   /* Emergency red — always this color */
+  --color-sos-dark:       #D50032;   /* Darker red for hover */
+  --color-sos-light:      #FFEBEE;   /* Light red for backgrounds */
+
+  /* Location Color */
+  --color-location:       #2962FF;   /* Royal blue for map markers */
+
+  /* Status Colors */
+  --color-success:        #2E7D32;   /* Green for success messages */
+  --color-success-light:  #E8F5E9;
+  --color-warning:        #FFB300;   /* Amber for warnings */
+  --color-warning-light:  #FFF8E1;
+  --color-error:          #C62828;   /* Red for error messages */
+  --color-error-light:    #FFEBEE;
+  --color-info:           #0277BD;   /* Blue for info messages */
+  --color-info-light:     #E1F5FE;
+
+  /* Background Colors */
+  --color-bg:             #FFFFFF;   /* Main white background */
+  --color-bg-soft:        #F4F5F9;   /* Soft grey for page backgrounds */
+  --color-bg-card:        #FFFFFF;   /* Card background */
+
+  /* Text Colors */
+  --color-text-primary:   #1F2937;   /* Dark grey for main text */
+  --color-text-secondary: #64748B;   /* Medium grey for secondary text */
+  --color-text-muted:     #94A3B8;   /* Light grey for placeholders */
+  --color-text-inverse:   #FFFFFF;   /* White text on dark backgrounds */
+
+  /* Border Colors */
+  --color-border:         #E2E8F0;   /* Light grey borders */
+  --color-border-focus:   #006A4E;   /* Green border on focus */
+
+  /* Typography */
+  --font-family:          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs:         0.75rem;    /* 12px */
+  --font-size-sm:         0.875rem;   /* 14px */
+  --font-size-base:       1rem;       /* 16px */
+  --font-size-lg:         1.125rem;   /* 18px */
+  --font-size-xl:         1.25rem;    /* 20px */
+  --font-size-2xl:        1.5rem;     /* 24px */
+  --font-size-3xl:        1.875rem;   /* 30px */
+  --font-size-4xl:        2.25rem;    /* 36px */
+  --font-size-5xl:        3rem;       /* 48px */
+
+  /* Font Weights */
+  --font-weight-light:    300;
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+  --font-weight-extrabold:800;
+
+  /* Border Radius */
+  --radius-sm:            6px;
+  --radius-md:            10px;
+  --radius-lg:            14px;
+  --radius-xl:            20px;
+  --radius-full:          9999px;
+
+  /* Shadows */
+  --shadow-sm:            0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:            0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-lg:            0 10px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.05);
+  --shadow-xl:            0 20px 40px rgba(0, 0, 0, 0.10);
+  --shadow-primary:       0 4px 15px rgba(0, 106, 78, 0.25);
+  --shadow-sos:           0 4px 20px rgba(255, 23, 68, 0.35);
+
+  /* Spacing */
+  --spacing-1:  0.25rem;   /* 4px */
+  --spacing-2:  0.5rem;    /* 8px */
+  --spacing-3:  0.75rem;   /* 12px */
+  --spacing-4:  1rem;      /* 16px */
+  --spacing-5:  1.25rem;   /* 20px */
+  --spacing-6:  1.5rem;    /* 24px */
+  --spacing-8:  2rem;      /* 32px */
+  --spacing-10: 2.5rem;    /* 40px */
+  --spacing-12: 3rem;      /* 48px */
+  --spacing-16: 4rem;      /* 64px */
+  --spacing-20: 5rem;      /* 80px */
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
+
+  /* Z-index layers */
+  --z-dropdown:  1000;
+  --z-sticky:    1020;
+  --z-fixed:     1030;
+  --z-modal:     1050;
+  --z-popover:   1070;
+  --z-tooltip:   1080;
+}
+
+/* ==========================================
+   CSS RESET + BASE STYLES
+   Browser er default styles reset kora hocche
+   ========================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family:      var(--font-family);
+  font-size:        var(--font-size-base);
+  font-weight:      var(--font-weight-regular);
+  color:            var(--color-text-primary);
+  background-color: var(--color-bg-soft);
+  line-height:      1.6;
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links reset */
+a {
+  color:           inherit;
+  text-decoration: none;
+  transition:      color var(--transition-fast);
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height:    auto;
+  display:   block;
+}
+
+/* Lists reset */
+ul, ol {
+  list-style: none;
+}
+
+/* Inputs reset */
+input, textarea, select, button {
+  font-family: inherit;
+  font-size:   inherit;
+}
+
+/* ==========================================
+   PAGE WRAPPER — Navbar ar Footer er moddhe content
+   ========================================== */
+.page-wrapper {
+  min-height:     100vh;
+  display:        flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex: 1;
+}
+
+/* ==========================================
+   CONTAINER UTILITY
+   Bootstrap container override + custom
+   ========================================== */
+.jb-container {
+  width:     100%;
+  max-width: 1200px;
+  margin:    0 auto;
+  padding:   0 var(--spacing-4);
+}
+
+/* ==========================================
+   BUTTON STYLES — Reusable button classes
+   ========================================== */
+.btn-primary-jb {
+  display:         inline-flex;
+  align-items:     center;
+  gap:             var(--spacing-2);
+  padding:         0.625rem 1.5rem;
+  background:      var(--color-primary);
+  color:           var(--color-text-inverse);
+  border:          none;
+  border-radius:   var(--radius-md);
+  font-size:       var(--font-size-sm);
+  font-weight:     var(--font-weight-semibold);
+  cursor:          pointer;
+  transition:      background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  text-decoration: none;
+  white-space:     nowrap;
+}
+
+.btn-primary-jb:hover {
+  background:  var(--color-primary-dark);
+  transform:   translateY(-1px);
+  box-shadow:  var(--shadow-primary);
+  color:       var(--color-text-inverse);
+}
+
+.btn-primary-jb:active {
+  transform: translateY(0);
+}
+
+.btn-outline-jb {
+  display:         inline-flex;
+  align-items:     center;
+  gap:             var(--spacing-2);
+  padding:         0.625rem 1.5rem;
+  background:      transparent;
+  color:           var(--color-primary);
+  border:          1.5px solid var(--color-primary);
+  border-radius:   var(--radius-md);
+  font-size:       var(--font-size-sm);
+  font-weight:     var(--font-weight-semibold);
+  cursor:          pointer;
+  transition:      all var(--transition-fast);
+  text-decoration: none;
+  white-space:     nowrap;
+}
+
+.btn-outline-jb:hover {
+  background: var(--color-primary);
+  color:      var(--color-text-inverse);
+  transform:  translateY(-1px);
+}
+
+.btn-sos {
+  display:     inline-flex;
+  align-items: center;
+  gap:         var(--spacing-2);
+  padding:     0.625rem 1.25rem;
+  background:  var(--color-sos);
+  color:       white;
+  border:      none;
+  border-radius: var(--radius-md);
+  font-size:   var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  cursor:      pointer;
+  transition:  all var(--transition-fast);
+  text-decoration: none;
+  letter-spacing:  0.5px;
+}
+
+.btn-sos:hover {
+  background: var(--color-sos-dark);
+  transform:  translateY(-1px);
+  box-shadow: var(--shadow-sos);
+  color:      white;
+}
+
+/* ==========================================
+   CARD STYLES — Consistent card look
+   ========================================== */
+.jb-card {
+  background:    var(--color-bg-card);
+  border:        1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding:       var(--spacing-6);
+  box-shadow:    var(--shadow-sm);
+  transition:    box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.jb-card:hover {
+  box-shadow: var(--shadow-md);
+  transform:  translateY(-2px);
+}
+
+/* ==========================================
+   BADGE STYLES — Status ar category badges
+   ========================================== */
+.badge-status {
+  display:       inline-block;
+  padding:       3px 10px;
+  border-radius: var(--radius-full);
+  font-size:     var(--font-size-xs);
+  font-weight:   var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-submitted    { background: #E3F2FD; color: #1565C0; }
+.badge-under_review { background: #FFF8E1; color: #E65100; }
+.badge-processing   { background: #E8F5E9; color: #2E7D32; }
+.badge-solved       { background: var(--color-primary-light); color: var(--color-primary-dark); }
+
+/* ==========================================
+   FORM STYLES — Input, select, textarea
+   ========================================== */
+.jb-input {
+  width:         100%;
+  padding:       0.625rem 1rem;
+  border:        1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size:     var(--font-size-sm);
+  color:         var(--color-text-primary);
+  background:    var(--color-bg);
+  transition:    border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline:       none;
+}
+
+.jb-input:focus {
+  border-color: var(--color-border-focus);
+  box-shadow:   0 0 0 3px rgba(0, 106, 78, 0.12);
+}
+
+.jb-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.jb-label {
+  display:      block;
+  font-size:    var(--font-size-sm);
+  font-weight:  var(--font-weight-medium);
+  color:        var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+/* ==========================================
+   SECTION STYLES — Page sections
+   ========================================== */
+.jb-section {
+  padding: var(--spacing-16) 0;
+}
+
+.jb-section-title {
+  font-size:   var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color:       var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.jb-section-subtitle {
+  font-size:   var(--font-size-lg);
+  color:       var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+/* ==========================================
+   ALERT / NOTIFICATION STYLES
+   ========================================== */
+.jb-alert {
+  display:       flex;
+  align-items:   flex-start;
+  gap:           var(--spacing-3);
+  padding:       var(--spacing-4);
+  border-radius: var(--radius-md);
+  border-left:   4px solid;
+  margin-bottom: var(--spacing-4);
+}
+
+.jb-alert-success { background: var(--color-success-light); border-color: var(--color-success); }
+.jb-alert-error   { background: var(--color-error-light);   border-color: var(--color-error);   }
+.jb-alert-warning { background: var(--color-warning-light); border-color: var(--color-warning); }
+.jb-alert-info    { background: var(--color-info-light);    border-color: var(--color-info);    }
+
+/* ==========================================
+   LOADING SPINNER
+   ========================================== */
+@keyframes spin {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+.jb-spinner {
+  display: inline-block;
+  width:   40px;
+  height:  40px;
+  border:  3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+.text-primary-jb  { color: var(--color-primary); }
+.text-sos         { color: var(--color-sos); }
+.text-muted-jb    { color: var(--color-text-secondary); }
+.text-center      { text-align: center; }
+
+.bg-primary-jb    { background-color: var(--color-primary); }
+.bg-soft          { background-color: var(--color-bg-soft); }
+.bg-primary-light { background-color: var(--color-primary-light); }
+
+.mt-1 { margin-top: var(--spacing-1); }
+.mt-2 { margin-top: var(--spacing-2); }
+.mt-4 { margin-top: var(--spacing-4); }
+.mt-6 { margin-top: var(--spacing-6); }
+.mt-8 { margin-top: var(--spacing-8); }
+
+.mb-2 { margin-bottom: var(--spacing-2); }
+.mb-4 { margin-bottom: var(--spacing-4); }
+.mb-6 { margin-bottom: var(--spacing-6); }
+.mb-8 { margin-bottom: var(--spacing-8); }
+
+.d-flex      { display: flex; }
+.align-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: var(--spacing-2); }
+.gap-4 { gap: var(--spacing-4); }
+
+.fw-medium   { font-weight: var(--font-weight-medium); }
+.fw-semibold { font-weight: var(--font-weight-semibold); }
+.fw-bold     { font-weight: var(--font-weight-bold); }
+
+.rounded-jb  { border-radius: var(--radius-md); }
+
+/* ==========================================
+   DIVIDER
+   ========================================== */
+.jb-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--spacing-6) 0;
+}
+
+/* Bootstrap overrides — Amader design system ke priority dewa hocche */
+.container {
+  max-width: 1200px;
+}

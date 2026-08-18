@@ -1,0 +1,233 @@
+/* ==========================================
+   JanaoBangla — Navbar Styles
+   BRANCH: main
+   Navigation bar er jonno specific styles
+   Sticky header, logo, links, SOS button
+   ========================================== */
+
+/* ==========================================
+   MAIN NAVBAR CONTAINER
+   Sticky top navigation bar
+   ========================================== */
+.jb-navbar {
+  position:         sticky;
+  top:              0;
+  z-index:          var(--z-fixed);
+  background:       #FFFFFF;
+  border-bottom:    1px solid var(--color-border);
+  box-shadow:       0 1px 8px rgba(0, 0, 0, 0.06);
+  transition:       box-shadow var(--transition-normal);
+}
+
+.jb-navbar.scrolled {
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.10);
+}
+
+/* ==========================================
+   NAVBAR INNER LAYOUT
+   Logo left | Links center | Actions right
+   ========================================== */
+.jb-navbar-inner {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  height:          64px;
+  padding:         0 var(--spacing-4);
+  max-width:       1200px;
+  margin:          0 auto;
+  gap:             var(--spacing-4);
+}
+
+/* ==========================================
+   LOGO SECTION — Left side
+   ========================================== */
+.jb-navbar-logo {
+  display:         flex;
+  align-items:     center;
+  gap:             var(--spacing-2);
+  text-decoration: none;
+  flex-shrink:     0;
+}
+
+.jb-navbar-logo-icon {
+  width:           36px;
+  height:          36px;
+  background:      var(--color-primary);
+  border-radius:   var(--radius-md);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  color:           white;
+  font-weight:     var(--font-weight-bold);
+  font-size:       var(--font-size-lg);
+}
+
+.jb-navbar-logo-text {
+  font-size:   var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color:       var(--color-primary);
+  letter-spacing: -0.3px;
+}
+
+.jb-navbar-logo-text span {
+  color: var(--color-text-primary);
+}
+
+/* ==========================================
+   NAVIGATION LINKS — Center
+   ========================================== */
+.jb-navbar-links {
+  display:   flex;
+  align-items: center;
+  gap:       var(--spacing-1);
+  list-style: none;
+  margin:     0;
+  padding:    0;
+}
+
+.jb-navbar-link {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--spacing-1);
+  padding:       0.4rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size:     var(--font-size-sm);
+  font-weight:   var(--font-weight-medium);
+  color:         var(--color-text-secondary);
+  text-decoration: none;
+  transition:    all var(--transition-fast);
+  white-space:   nowrap;
+}
+
+.jb-navbar-link:hover {
+  color:      var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.jb-navbar-link.active {
+  color:      var(--color-primary);
+  background: var(--color-primary-light);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ==========================================
+   NAVBAR ACTIONS — Right side
+   ========================================== */
+.jb-navbar-actions {
+  display:     flex;
+  align-items: center;
+  gap:         var(--spacing-2);
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   SOS BUTTON — Always visible, always red
+   ========================================== */
+.jb-sos-button {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--spacing-1);
+  padding:       0.4rem 1rem;
+  background:    var(--color-sos);
+  color:         white;
+  border:        none;
+  border-radius: var(--radius-md);
+  font-size:     var(--font-size-sm);
+  font-weight:   var(--font-weight-bold);
+  cursor:        pointer;
+  transition:    all var(--transition-fast);
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  animation:     sos-pulse 2s ease-in-out infinite;
+}
+
+/* SOS button subtle pulsing animation */
+@keyframes sos-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(255, 23, 68, 0); }
+}
+
+.jb-sos-button:hover {
+  background: var(--color-sos-dark);
+  color:      white;
+  transform:  translateY(-1px);
+  box-shadow: var(--shadow-sos);
+  animation:  none;
+}
+
+/* ==========================================
+   HAMBURGER MENU — Mobile only
+   ========================================== */
+.jb-hamburger {
+  display:         none;
+  flex-direction:  column;
+  gap:             5px;
+  padding:         8px;
+  background:      transparent;
+  border:          none;
+  cursor:          pointer;
+  border-radius:   var(--radius-sm);
+  transition:      background var(--transition-fast);
+}
+
+.jb-hamburger:hover {
+  background: var(--color-bg-soft);
+}
+
+.jb-hamburger-line {
+  display:      block;
+  width:        22px;
+  height:       2px;
+  background:   var(--color-text-primary);
+  border-radius: 2px;
+  transition:   all var(--transition-normal);
+}
+
+/* ==========================================
+   MOBILE MENU OVERLAY
+   ========================================== */
+.jb-mobile-menu {
+  display:         none;
+  position:        fixed;
+  top:             64px;
+  left:            0;
+  right:           0;
+  bottom:          0;
+  background:      white;
+  z-index:         var(--z-fixed);
+  padding:         var(--spacing-4);
+  border-top:      1px solid var(--color-border);
+  overflow-y:      auto;
+  transform:       translateX(-100%);
+  transition:      transform var(--transition-normal);
+}
+
+.jb-mobile-menu.open {
+  transform: translateX(0);
+}
+
+.jb-mobile-links {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-1);
+  margin-bottom:  var(--spacing-6);
+}
+
+.jb-mobile-link {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--spacing-2);
+  padding:       0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size:     var(--font-size-base);
+  font-weight:   var(--font-weight-medium);
+  color:         var(--color-text-primary);
+  text-decoration: none;
+  transition:    all var(--transition-fast);
+}
+
+.jb-mobile-link:hover,
+.jb-mobile-link.active {
+  color:      var(--color-primary);
+  background: var(--color-primary-light);
+}
