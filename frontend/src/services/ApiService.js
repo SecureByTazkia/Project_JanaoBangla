@@ -127,8 +127,17 @@ export const reportApi = {};
 // Phase 4 — Location/Map
 export const locationApi = {};
 
-// Phase 5 — Community
-export const communityApi = {};
+// Phase 5 — Community API
+export const communityApi = {
+  getFeed: (params) => apiClient.get('/community/feed', { params }),
+  getDiscussion: (reportId) => apiClient.get(`/community/reports/${reportId}/discussion`),
+  getComments: (reportId) => apiClient.get(`/community/reports/${reportId}/comments`),
+  postComment: (reportId, data) => apiClient.post(`/community/reports/${reportId}/comments`, data),
+  toggleVerify: (reportId) => apiClient.post(`/community/reports/${reportId}/verify`),
+  getVerifyStatus: (reportId) => apiClient.get(`/community/reports/${reportId}/verification-status`),
+  flagComment: (commentId) => apiClient.post(`/community/comments/${commentId}/flag`),
+  deleteComment: (commentId) => apiClient.delete(`/community/comments/${commentId}`)
+};
 
 // Phase 6 — Duplicates
 export const duplicateApi = {};

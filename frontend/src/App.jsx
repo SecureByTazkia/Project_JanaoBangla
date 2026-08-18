@@ -30,6 +30,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminReportManagementPage from './pages/AdminReportManagementPage';
 import AdminUserManagementPage from './pages/AdminUserManagementPage';
+import CommunityFeedPage from './pages/CommunityFeedPage';
 
 // ==========================================
 // ComingSoonPage — Future phase placeholders
@@ -108,8 +109,8 @@ function App() {
           {/* Phase 4 — Location & Civic Problem Map */}
           <Route path="/map" element={<CivicProblemMapPage />} />
 
-          {/* Phase 5 — Community (Future) */}
-          <Route path="/community" element={<ComingSoonPage title="Community Feed" />} />
+          {/* Phase 5 — Community Feed & Discussion */}
+          <Route path="/community" element={<CommunityFeedPage />} />
 
           {/* Phase 7 — SOS (Future) */}
           <Route path="/sos" element={<ComingSoonPage title="SOS Emergency" />} />

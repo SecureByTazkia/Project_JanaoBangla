@@ -4,6 +4,7 @@ import CivicProblemReportService from '../services/CivicProblemReportService';
 import CivicProblemReportStatus from '../components/CivicProblemReportStatus';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import CommunityDiscussionSection from '../components/CommunityDiscussionSection';
 
 const CivicProblemReportDetailsPage = () => {
   const { id } = useParams();
@@ -108,6 +109,16 @@ const CivicProblemReportDetailsPage = () => {
                   <p className="text-muted fst-italic">No evidence attached.</p>
                 )}
               </div>
+
+              {/* Phase 5 — Community Discussion & Problem Verification */}
+              {report.visibility === 'public' && (
+                <div className="mt-4 pt-3 border-top">
+                  <CommunityDiscussionSection
+                    reportId={report.id}
+                    initialVerificationCount={report.verification_count || 0}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
