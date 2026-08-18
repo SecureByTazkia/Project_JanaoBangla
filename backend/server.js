@@ -29,6 +29,8 @@ const duplicateReportDetectionRoutes = require('./routes/DuplicateReportDetectio
 const womenSafetySOSRoutes          = require('./routes/WomenSafetySOSRoutes');          // Phase 7 — Women Safety SOS & Emergency Notifications
 const emergencyContactRoutes        = require('./routes/EmergencyContactRoutes');        // Phase 7 — Emergency Contacts CRUD
 const notificationRoutes            = require('./routes/NotificationRoutes');            // Phase 7 — User Notifications
+const civicReportSearchRoutes       = require('./routes/CivicReportSearchRoutes');       // Phase 9 — Search & Filter
+const civicReportAnalyticsRoutes    = require('./routes/CivicReportAnalyticsRoutes');    // Phase 9 — Analytics & Statistics
 
 // ==========================================
 // Express app create kora hocche
@@ -98,8 +100,8 @@ app.use('/api/ai',            aiCivicProblemRoutes);             // Phase 10 —
 app.use('/api/sos',                womenSafetySOSRoutes);       // Phase 7 — Women Safety SOS
 app.use('/api/emergency-contacts', emergencyContactRoutes);  // Phase 7 — Emergency Contacts
 app.use('/api/notifications',      notificationRoutes);      // Phase 7 — Notifications
-// app.use('/api/search',        searchRoutes);         // Phase 9
-// app.use('/api/analytics',     analyticsRoutes);      // Phase 9
+app.use('/api/search',        civicReportSearchRoutes);          // Phase 9 — Search & Filter
+app.use('/api/analytics',     civicReportAnalyticsRoutes);       // Phase 9 — Analytics & Statistics
 
 // ==========================================
 // 404 MIDDLEWARE — Kono route match na korle

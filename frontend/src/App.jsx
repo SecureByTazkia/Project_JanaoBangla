@@ -32,6 +32,8 @@ import AdminReportManagementPage from './pages/AdminReportManagementPage';
 import AdminUserManagementPage from './pages/AdminUserManagementPage';
 import CommunityFeedPage from './pages/CommunityFeedPage';
 import WomenSafetyEmergencyPage from './pages/WomenSafetyEmergencyPage';
+import CivicReportSearchPage from './pages/CivicReportSearchPage';
+import CivicReportAnalyticsPage from './pages/CivicReportAnalyticsPage';
 
 // ==========================================
 // ComingSoonPage — Future phase placeholders
@@ -152,9 +154,9 @@ function App() {
             }
           />
 
-          {/* Phase 9 — Search & Analytics (Future) */}
-          <Route path="/search" element={<ComingSoonPage title="Search" />} />
-          <Route path="/analytics" element={<ComingSoonPage title="Analytics" />} />
+          {/* Phase 9 — Search & Analytics */}
+          <Route path="/search" element={<CivicReportSearchPage />} />
+          <Route path="/analytics" element={<CivicReportAnalyticsPage />} />
 
           {/* Static Pages */}
           <Route path="/about" element={<ComingSoonPage title="About" />} />

@@ -232,8 +232,25 @@ export const adminApi = {
 };
 
 // Phase 9 — Search & Analytics
-export const searchApi = {};
-export const analyticsApi = {};
+export const searchApi = {
+  // Advanced search with filters and sorting
+  search: (params) => apiClient.get('/search', { params }),
+  // Filter options and counts
+  getMetadata: () => apiClient.get('/search/metadata')
+};
+
+export const analyticsApi = {
+  // High-level statistics
+  getOverview: () => apiClient.get('/analytics/overview'),
+  // Category breakdown & resolution
+  getCategories: () => apiClient.get('/analytics/categories'),
+  // Timeline monthly/daily trends
+  getTrends: () => apiClient.get('/analytics/trends'),
+  // Area problem distribution and hotspots
+  getAreas: () => apiClient.get('/analytics/areas'),
+  // Priority and status breakdowns
+  getPriorityAndStatus: () => apiClient.get('/analytics/priority-status')
+};
 
 // Phase 10 — AI
 export const aiApi = {
