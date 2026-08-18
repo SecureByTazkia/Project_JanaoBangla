@@ -136,8 +136,29 @@ export const duplicateApi = {};
 // Phase 7 — SOS Emergency
 export const sosApi = {};
 
-// Phase 8 — Admin
-export const adminApi = {};
+// Phase 8 — Admin Dashboard API
+export const adminApi = {
+  // System overview stats fetch
+  getStats: () => apiClient.get('/admin/stats'),
+  // Users list pagination ar search সহ
+  getUsers: (params) => apiClient.get('/admin/users', { params }),
+  // User role update
+  updateUserRole: (userId, role) => apiClient.patch(`/admin/users/${userId}/role`, { role }),
+  // User status toggle
+  updateUserStatus: (userId, isActive) => apiClient.patch(`/admin/users/${userId}/status`, { isActive }),
+  // Reports list with filters
+  getReports: (params) => apiClient.get('/admin/reports', { params }),
+  // Report status update
+  updateReportStatus: (id, status) => apiClient.patch(`/admin/reports/${id}/status`, { status }),
+  // Report delete
+  deleteReport: (id) => apiClient.delete(`/admin/reports/${id}`),
+  // Flagged comments fetch
+  getFlaggedComments: () => apiClient.get('/admin/comments'),
+  // Comment moderation
+  moderateComment: (id, isHidden) => apiClient.patch(`/admin/comments/${id}/moderate`, { isHidden }),
+  // System logs
+  getSystemLogs: () => apiClient.get('/admin/system-logs')
+};
 
 // Phase 9 — Search & Analytics
 export const searchApi = {};

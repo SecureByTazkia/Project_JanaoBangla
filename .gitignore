@@ -48,3 +48,6 @@ coverage/
 # Cache
 .cache/
 .parcel-cache/
+
+# Nested stray clones
+Project_JanaoBangla/

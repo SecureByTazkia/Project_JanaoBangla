@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/navbar.css';
 
 function Navbar() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled,   setScrolled]   = useState(false);
@@ -93,13 +93,32 @@ function Navbar() {
             <div className="d-none d-lg-flex align-items-center gap-2">
               {isAuthenticated ? (
                 <>
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      id="navbar-admin-btn"
+                      className="btn-primary-jb"
+                      style={{
+                        padding: '6px 14px',
+                        fontSize: '0.85rem',
+                        textDecoration: 'none',
+                        backgroundColor: '#004D3A',
+                        borderColor: '#004D3A',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      🛡️ Admin Panel
+                    </Link>
+                  )}
                   <Link
                     to="/profile"
                     id="navbar-profile-btn"
                     className="btn-outline-jb"
                     style={{ padding: '6px 14px', fontSize: '0.85rem', textDecoration: 'none' }}
                   >
-                    👤 {user?.fullName?.split(' ')[0] || 'Profile'}
+                    👤 {user?.fullName?.split(' ')[0] || user?.name?.split(' ')[0] || 'Profile'}
                   </Link>
                   <button
                     type="button"
@@ -114,6 +133,19 @@ function Navbar() {
                 </>
               ) : (
                 <>
+                  <Link
+                    to="/admin/login"
+                    id="navbar-admin-login-btn"
+                    style={{
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      padding: '6px 8px'
+                    }}
+                    title="Admin Portal"
+                  >
+                    🛡️ Admin
+                  </Link>
                   <Link
                     to="/login"
                     id="navbar-login-btn"
@@ -179,13 +211,24 @@ function Navbar() {
           <div style={{ padding: '12px 0', borderTop: '1px solid #E2E8F0', marginTop: '12px' }}>
             {isAuthenticated ? (
               <>
+                {isAdmin && (
+                  <NavLink
+                    to="/admin"
+                    className="jb-mobile-link"
+                    onClick={closeMobileMenu}
+                    style={{ color: 'var(--color-primary)', fontWeight: 700 }}
+                  >
+                    <span aria-hidden="true">🛡️</span>
+                    Admin Panel
+                  </NavLink>
+                )}
                 <NavLink
                   to="/profile"
                   className="jb-mobile-link"
                   onClick={closeMobileMenu}
                 >
                   <span aria-hidden="true">👤</span>
-                  My Profile ({user?.fullName})
+                  My Profile ({user?.fullName || user?.name})
                 </NavLink>
                 <button
                   type="button"
@@ -215,6 +258,15 @@ function Navbar() {
                 >
                   <span aria-hidden="true">📝</span>
                   Create Free Account
+                </NavLink>
+                <NavLink
+                  to="/admin/login"
+                  className="jb-mobile-link"
+                  onClick={closeMobileMenu}
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
+                  <span aria-hidden="true">🛡️</span>
+                  Admin Portal Login
                 </NavLink>
               </>
             )}
