@@ -39,7 +39,7 @@ function AdminLoginPage() {
     try {
       const response = await authApi.login(formData);
       if (response.data.success) {
-        const { user, token } = response.data;
+        const { user, accessToken } = response.data;
 
         // Strictly check if the user is an admin
         if (user.role !== 'admin') {
@@ -49,7 +49,7 @@ function AdminLoginPage() {
         }
 
         // Login context e update kora hocche
-        login(token, user);
+        login(accessToken, user);
 
         // Direct navigate to /admin dashboard
         navigate('/admin', { replace: true });
@@ -88,7 +88,7 @@ function AdminLoginPage() {
               type="email"
               name="email"
               className="form-control"
-              placeholder="admin@janaobangla.gov.bd"
+              placeholder="admin@janaobangla.com"
               value={formData.email}
               onChange={handleChange}
               disabled={isLoading}
