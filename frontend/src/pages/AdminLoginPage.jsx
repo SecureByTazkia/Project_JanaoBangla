@@ -39,7 +39,9 @@ function AdminLoginPage() {
     try {
       const response = await authApi.login(formData);
       if (response.data.success) {
-        const { user, token } = response.data;
+        // Backend theke user ebong accessToken extract kora hocche
+        const user = response.data.user;
+        const token = response.data.accessToken || response.data.token;
 
         // Strictly check if the user is an admin
         if (user.role !== 'admin') {
@@ -48,7 +50,7 @@ function AdminLoginPage() {
           return;
         }
 
-        // Login context e update kora hocche
+        // Login context e valid token ebong admin user save kora hocche
         login(token, user);
 
         // Direct navigate to /admin dashboard
