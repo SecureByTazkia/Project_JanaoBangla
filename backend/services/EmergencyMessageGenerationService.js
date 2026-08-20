@@ -22,11 +22,12 @@ function generateAlertMessage({ userName, latitude, longitude, locationAddress, 
     hour12: true
   }).format(now);
 
-  // Google Maps link tৈri kora hocche location theke
+  // Google Maps link toiri kora hocche location theke
   let locationText = locationAddress || 'Location not available';
   let googleMapsLink = '';
 
   if (latitude && longitude) {
+    // maps.google.com/?q= format Gmail ar mobile e click korle correctly khule
     googleMapsLink = `https://maps.google.com/?q=${latitude},${longitude}`;
   }
 
@@ -45,7 +46,7 @@ function generateAlertMessage({ userName, latitude, longitude, locationAddress, 
     `- JanaoBangla Safety System`
   ].filter(line => line !== null).join('\n');
 
-  // HTML message (Email er jonno)
+  // HTML message (Email er jonno) — Gmail compatibility jonno sob inline CSS use kora hocche
   const emailHtml = `
 <!DOCTYPE html>
 <html>
@@ -53,84 +54,75 @@ function generateAlertMessage({ userName, latitude, longitude, locationAddress, 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Emergency Alert - JanaoBangla</title>
-  <style>
-    body { font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f5f9; }
-    .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
-    .header { background: #FF1744; padding: 32px 24px; text-align: center; }
-    .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; }
-    .header p { color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 16px; }
-    .pulse-icon { font-size: 48px; display: block; margin-bottom: 12px; }
-    .body { padding: 32px 24px; }
-    .alert-box { background: #FFF3F3; border: 2px solid #FF1744; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-    .alert-box h2 { color: #D50032; margin: 0 0 8px; font-size: 20px; }
-    .alert-box p { color: #1F2937; margin: 0; font-size: 16px; }
-    .info-row { display: flex; align-items: flex-start; margin-bottom: 16px; padding: 16px; background: #F4F5F9; border-radius: 8px; }
-    .info-icon { font-size: 24px; margin-right: 12px; flex-shrink: 0; }
-    .info-label { font-size: 12px; color: #64748B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px; }
-    .info-value { font-size: 16px; color: #1F2937; font-weight: 500; margin: 0; }
-    .map-btn { display: block; background: #2962FF; color: #ffffff; text-decoration: none; padding: 14px 24px; border-radius: 8px; text-align: center; font-size: 16px; font-weight: 600; margin: 24px 0; }
-    .emergency-note { background: #FFF8E1; border-left: 4px solid #FFB300; padding: 16px; border-radius: 0 8px 8px 0; margin-top: 24px; }
-    .emergency-note p { color: #1F2937; margin: 0; font-size: 14px; }
-    .footer { background: #1F2937; padding: 20px 24px; text-align: center; }
-    .footer p { color: #64748B; margin: 0; font-size: 12px; }
-    .footer strong { color: #ffffff; }
-  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <span class="pulse-icon">🚨</span>
-      <h1>EMERGENCY ALERT</h1>
-      <p>JanaoBangla Women Safety System</p>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f5f9; color: #1F2937;">
+  <div style="max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0;">
+    
+    <!-- Header -->
+    <div style="background-color: #FF1744; padding: 24px; text-align: center; color: #ffffff;">
+      <div style="font-size: 40px; line-height: 1; margin-bottom: 8px;">🚨</div>
+      <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 0.5px;">EMERGENCY ALERT</h1>
+      <p style="color: rgba(255,255,255,0.9); margin: 6px 0 0; font-size: 14px;">JanaoBangla Women Safety System</p>
     </div>
 
-    <div class="body">
-      <div class="alert-box">
-        <h2>${userName} needs immediate help!</h2>
-        <p>This person has activated the SOS emergency button on JanaoBangla. Please respond immediately.</p>
+    <!-- Body Content -->
+    <div style="padding: 24px;">
+      
+      <!-- Alert Box -->
+      <div style="background-color: #FFF3F3; border: 2px solid #FF1744; border-radius: 8px; padding: 16px; margin-bottom: 20px; text-align: center;">
+        <h2 style="color: #D50032; margin: 0 0 6px; font-size: 18px; font-weight: bold;">${userName} needs immediate assistance!</h2>
+        <p style="color: #1F2937; margin: 0; font-size: 14px;">This person has activated the emergency SOS button. Please contact them or emergency services.</p>
       </div>
 
-      <div class="info-row">
-        <span class="info-icon">🕐</span>
+      <!-- Info Details -->
+      <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+        <div style="margin-bottom: 12px;">
+          <strong style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">Time of Alert</strong>
+          <span style="color: #0F172A; font-size: 15px; font-weight: 600;">${bdTime}</span>
+        </div>
+
+        ${locationAddress ? `
+        <div style="margin-bottom: 12px;">
+          <strong style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">Captured Location</strong>
+          <span style="color: #0F172A; font-size: 15px; font-weight: 500;">${locationAddress}</span>
+        </div>
+        ` : ''}
+
         <div>
-          <p class="info-label">Time of Alert</p>
-          <p class="info-value">${bdTime}</p>
+          <strong style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">Emergency Alert ID</strong>
+          <span style="color: #0F172A; font-size: 14px; font-weight: 600;">#SOS-${requestId}</span>
         </div>
       </div>
 
-      ${locationAddress ? `
-      <div class="info-row">
-        <span class="info-icon">📍</span>
-        <div>
-          <p class="info-label">Last Known Location</p>
-          <p class="info-value">${locationAddress}</p>
-        </div>
-      </div>
-      ` : ''}
-
+      <!-- Google Maps Button (Inline styled for Gmail) -->
       ${googleMapsLink ? `
-      <a href="${googleMapsLink}" class="map-btn">
-        📌 View Live Location on Google Maps
-      </a>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer"
+           style="display: inline-block; background-color: #16A34A; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: bold; letter-spacing: 0.3px;">
+          &#128205; Open Location in Google Maps
+        </a>
+        <p style="margin: 12px 0 0; font-size: 12px; color: #64748B;">
+          GPS: <strong style="color: #0F172A;">${latitude}, ${longitude}</strong><br>
+          Direct link: <a href="${googleMapsLink}" style="color: #2563EB; word-break: break-all; font-size: 11px;">${googleMapsLink}</a>
+        </p>
+      </div>
       ` : ''}
 
-      <div class="info-row">
-        <span class="info-icon">🆔</span>
-        <div>
-          <p class="info-label">Emergency Reference ID</p>
-          <p class="info-value">#SOS-${requestId}</p>
-        </div>
+      <!-- Emergency Helpline Notice -->
+      <div style="background-color: #FFFBEB; border-left: 4px solid #F59E0B; padding: 12px 16px; border-radius: 0 6px 6px 0; margin-top: 20px;">
+        <p style="color: #92400E; margin: 0; font-size: 13px; line-height: 1.4;">
+          <strong>⚠️ Emergency Notice:</strong> If you are unable to reach ${userName}, call Bangladesh National Emergency Services at <strong>999</strong> or Women &amp; Child Helpline at <strong>109</strong> immediately.
+        </p>
       </div>
 
-      <div class="emergency-note">
-        <p><strong>⚠️ This is an automated emergency alert.</strong> If you cannot reach this person, please contact Bangladesh Emergency Services at <strong>999</strong> immediately.</p>
-      </div>
     </div>
 
-    <div class="footer">
-      <p><strong>JanaoBangla</strong> — Women Safety Emergency System</p>
-      <p>This email was automatically sent because you are listed as an emergency contact.</p>
+    <!-- Footer -->
+    <div style="background-color: #0F172A; padding: 16px 24px; text-align: center; color: #94A3B8; font-size: 12px;">
+      <p style="margin: 0 0 4px; color: #FFFFFF; font-weight: bold;">JanaoBangla — Civic &amp; Women Safety Network</p>
+      <p style="margin: 0;">Automated emergency alert sent to designated emergency contacts.</p>
     </div>
+
   </div>
 </body>
 </html>

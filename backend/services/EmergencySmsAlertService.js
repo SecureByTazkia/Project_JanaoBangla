@@ -141,6 +141,80 @@ async function sendMimSms({ toPhone, message, requestId }) {
 }
 
 // ==========================================
+// sendBulkSmsBd — BulkSMSBD Bangladesh Free SMS Gateway
+// Sign up at https://bulksmsbd.net to get API key (free tier available)
+// ==========================================
+async function sendBulkSmsBd({ toPhone, message, requestId }) {
+  const apiKey   = process.env.BULKSMSBD_API_KEY;
+  const senderId = process.env.BULKSMSBD_SENDER_ID || '8809617611011';
+
+  // API key placeholder thakle console fallback
+  if (!apiKey || apiKey === 'your_bulksmsbd_api_key') {
+    console.log(`\n📱 [BULKSMSBD SIMULATION] (No API key in .env)`);
+    console.log(`   ➡  Sign up FREE at https://bulksmsbd.net`);
+    console.log(`   ➡  Get your API key from "API" section in dashboard`);
+    console.log(`   ➡  Add BULKSMSBD_API_KEY=<your_key> in backend/.env`);
+    console.log(`   To: ${toPhone} | SOS: #SOS-${requestId}\n`);
+    return sendConsoleSms({ toPhone, message, requestId });
+  }
+
+  try {
+    const axios = require('axios');
+    // Phone number Bangladesh format e convert kora hocche
+    let phone = toPhone.trim().replace(/[^0-9]/g, '');
+    if (phone.startsWith('880')) {
+      // already 880XXXXXXXXXXX
+    } else if (phone.startsWith('0')) {
+      phone = '880' + phone.substring(1); // 01XXXXXXXXX → 8801XXXXXXXXX
+    } else {
+      phone = '880' + phone;
+    }
+
+    // BulkSMSBD API call kora hocche
+    const response = await axios.post(
+      'https://bulksmsbd.net/api/smsapi',
+      null,
+      {
+        params: {
+          api_key:   apiKey,
+          type:      'text',
+          number:    phone,
+          senderid:  senderId,
+          message:   message
+        },
+        timeout: 12000
+      }
+    );
+
+    // BulkSMSBD response code 202 = success
+    const responseCode = response.data?.response_code || response.data?.code;
+    if (responseCode === 202 || responseCode === '202') {
+      console.log(`✅ BulkSMSBD SMS sent to ${phone}. Response:`, response.data);
+      return {
+        success:   true,
+        simulated: false,
+        provider:  'bulksmsbd',
+        messageId: `bulksmsbd-${Date.now()}`
+      };
+    } else {
+      console.error(`❌ BulkSMSBD returned error code ${responseCode} for ${phone}:`, response.data);
+      return {
+        success:  false,
+        provider: 'bulksmsbd',
+        error:    `BulkSMSBD error code: ${responseCode}`
+      };
+    }
+  } catch (error) {
+    console.error(`❌ BulkSMSBD SMS failed to ${toPhone}:`, error.message);
+    return {
+      success:  false,
+      provider: 'bulksmsbd',
+      error:    error.message
+    };
+  }
+}
+
+// ==========================================
 // sendEmergencySms — Main SMS dispatch function
 // Provider config dekhe appropriate sender choose korbe
 // ==========================================
@@ -150,6 +224,11 @@ async function sendEmergencySms({ toPhone, message, requestId }) {
 
   // Provider anujayee SMS function call kora hocche
   switch (provider) {
+    case 'bulksmsbd':
+    case 'bulk':
+      // BulkSMSBD Bangladesh free SMS gateway
+      return sendBulkSmsBd({ toPhone, message, requestId });
+
     case 'mimsms':
     case 'mim':
       return sendMimSms({ toPhone, message, requestId });

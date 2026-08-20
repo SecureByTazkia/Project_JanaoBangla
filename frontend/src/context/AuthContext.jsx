@@ -41,9 +41,17 @@ export function AuthProvider({ children }) {
             setUser(freshUser);
             localStorage.setItem(USER_KEY, JSON.stringify(freshUser));
           }
-        } catch {
-          // Token expired ba invalid hoile logout korbe
-          clearAuthData();
+        } catch (profileErr) {
+          // IMPORTANT: Shudhu 401 (token expired/invalid) hole logout korbo
+          // Network error, 500 ba backend restart e logout KORBO NA
+          // Cached session ke valid rekhe user ke logged-in rakhbo
+          const statusCode = profileErr?.response?.status;
+          if (statusCode === 401) {
+            console.warn('Token expired (401). Clearing auth session.');
+            clearAuthData();
+          } else {
+            console.warn('Profile refresh failed (non-auth error). Keeping cached session.', profileErr?.message);
+          }
         }
       }
     } catch (error) {

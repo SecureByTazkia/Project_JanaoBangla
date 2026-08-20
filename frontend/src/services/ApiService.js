@@ -53,14 +53,18 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     // 401 Unauthorized — token invalid/expired hoile logout korbe
+    // Kintu shudhu real auth failure e redirect korbo, SOS/feature API e na
     if (error.response && error.response.status === 401) {
-      // Token clear kora hocche LocalStorage theke
-      localStorage.removeItem('jb_access_token');
-      localStorage.removeItem('jb_user');
-
-      // Login page e redirect kora hocche (window.location use kora hocche React context er baire theke)
-      // Phase 2 e proper redirect add hobe
-      if (window.location.pathname !== '/login') {
+      const requestUrl = error.config?.url || '';
+      // Feature-level 401 e (SOS, emergency-contacts) redirect korbo na —
+      // token timeout hole shudhu /auth/ route fail korle redirect korbo
+      const isAuthRoute = requestUrl.includes('/auth/profile') ||
+                          requestUrl.includes('/auth/login') ||
+                          requestUrl.includes('/auth/change-password');
+      if (isAuthRoute && window.location.pathname !== '/login') {
+        // Token clear kora hocche LocalStorage theke
+        localStorage.removeItem('jb_access_token');
+        localStorage.removeItem('jb_user');
         window.location.href = '/login';
       }
     }
@@ -232,8 +236,25 @@ export const adminApi = {
 };
 
 // Phase 9 — Search & Analytics
-export const searchApi = {};
-export const analyticsApi = {};
+export const searchApi = {
+  // Advanced search with filters and sorting
+  search: (params) => apiClient.get('/search', { params }),
+  // Filter options and counts
+  getMetadata: () => apiClient.get('/search/metadata')
+};
+
+export const analyticsApi = {
+  // High-level statistics
+  getOverview: () => apiClient.get('/analytics/overview'),
+  // Category breakdown & resolution
+  getCategories: () => apiClient.get('/analytics/categories'),
+  // Timeline monthly/daily trends
+  getTrends: () => apiClient.get('/analytics/trends'),
+  // Area problem distribution and hotspots
+  getAreas: () => apiClient.get('/analytics/areas'),
+  // Priority and status breakdowns
+  getPriorityAndStatus: () => apiClient.get('/analytics/priority-status')
+};
 
 // Phase 10 — AI
 export const aiApi = {

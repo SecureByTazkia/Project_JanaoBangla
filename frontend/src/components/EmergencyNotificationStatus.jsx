@@ -197,7 +197,7 @@ function EmergencyNotificationStatus({ lastSOSResult = null, refreshTrigger = 0 
                           rel="noopener noreferrer"
                           className="text-decoration-none text-primary fw-semibold d-inline-flex align-items-center gap-1"
                         >
-                          <span>📍</span> {req.latitude.toFixed(4)}, {req.longitude.toFixed(4)}
+                          <span>📍</span> {parseFloat(req.latitude).toFixed(4)}, {parseFloat(req.longitude).toFixed(4)}
                         </a>
                       ) : (
                         <span className="text-muted">No GPS coordinates</span>
