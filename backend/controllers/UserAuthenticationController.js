@@ -187,12 +187,14 @@ async function loginUser(req, res, next) {
     }
 
     // JWT token generation
+    // Token create kore response e accessToken ebong token duto property hisebe return kora hocche
     const accessToken = generateAccessToken(buildTokenPayload(user));
 
     res.status(200).json({
       success: true,
       message: 'Login successful. Welcome back!',
       accessToken,
+      token: accessToken, // Frontend backward compatibility er jonno token alias
       user: {
         id:         user.id,
         fullName:   user.name,
