@@ -38,13 +38,13 @@ async function searchReports(req, res) {
     const whereConditions = ["r.visibility = 'public'"];
     const queryParams = [];
 
-    // 1. Keyword search (Title, description, address, label, district, division)
+    // 1. Keyword search (Title, description, address, city, area)
     if (q && q.trim()) {
       const searchTerm = `%${q.trim()}%`;
       whereConditions.push(
-        `(r.title LIKE ? OR r.description LIKE ? OR l.address LIKE ? OR l.label LIKE ? OR l.district LIKE ? OR l.division LIKE ?)`
+        `(r.title LIKE ? OR r.description LIKE ? OR l.address LIKE ? OR l.city LIKE ? OR l.area LIKE ?)`
       );
-      queryParams.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
+      queryParams.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
     }
 
     // 2. Category filter
@@ -65,15 +65,15 @@ async function searchReports(req, res) {
       queryParams.push(priority);
     }
 
-    // 5. Division filter
+    // 5. Division / City filter
     if (division && division !== 'all') {
-      whereConditions.push('(l.division = ? OR l.address LIKE ?)');
+      whereConditions.push('(l.city = ? OR l.address LIKE ?)');
       queryParams.push(division, `%${division}%`);
     }
 
-    // 6. District filter
+    // 6. District / Area filter
     if (district && district !== 'all') {
-      whereConditions.push('(l.district = ? OR l.address LIKE ?)');
+      whereConditions.push('(l.area = ? OR l.address LIKE ?)');
       queryParams.push(district, `%${district}%`);
     }
 
@@ -87,15 +87,16 @@ async function searchReports(req, res) {
       queryParams.push(`${endDate} 23:59:59`);
     }
 
-    // 8. Minimum confirmations / verifications
+    // 8. Minimum confirmations / verifications (DB confirmation_count column)
     if (minVerifications && !isNaN(parseInt(minVerifications, 10))) {
-      whereConditions.push('r.verification_count >= ?');
+      whereConditions.push('COALESCE(r.confirmation_count, 0) >= ?');
       queryParams.push(parseInt(minVerifications, 10));
     }
 
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
     // Count total matching records for pagination
+    // Filtered reports er total count ber kora hocche
     const countQuery = `
       SELECT COUNT(DISTINCT r.id) AS total
       FROM reports r
@@ -123,10 +124,10 @@ async function searchReports(req, res) {
         orderByClause = 'ORDER BY r.created_at ASC';
         break;
       case 'most_confirmed':
-        orderByClause = 'ORDER BY r.verification_count DESC, r.created_at DESC';
+        orderByClause = 'ORDER BY COALESCE(r.confirmation_count, 0) DESC, r.created_at DESC';
         break;
       case 'highest_priority':
-        orderByClause = `ORDER BY FIELD(r.priority, 'critical', 'high', 'medium', 'low'), r.created_at DESC`;
+        orderByClause = `ORDER BY FIELD(r.priority, 'critical', 'urgent', 'high', 'medium', 'low'), r.created_at DESC`;
         break;
       case 'nearest':
         if (hasValidCoords) {
@@ -142,6 +143,7 @@ async function searchReports(req, res) {
     }
 
     // Fetch reports with location and evidence
+    // MySQL table columns schema onujayi safe SELECT query
     const fetchQuery = `
       SELECT 
         r.id,
@@ -153,17 +155,16 @@ async function searchReports(req, res) {
         r.visibility,
         r.is_anonymous,
         r.priority,
-        r.verification_count,
+        COALESCE(r.confirmation_count, 0) AS verification_count,
         r.is_duplicate,
-        r.duplicate_of_id,
+        r.duplicate_of AS duplicate_of_id,
         r.created_at,
         r.updated_at,
         l.id AS location_id,
-        l.label AS location_label,
         l.address AS location_address,
-        l.division AS location_division,
-        l.district AS location_district,
-        l.upazila AS location_upazila,
+        COALESCE(l.city, 'Bangladesh') AS location_division,
+        COALESCE(l.area, l.city, 'General Area') AS location_district,
+        COALESCE(l.area, 'Area') AS location_upazila,
         l.latitude,
         l.longitude,
         CASE WHEN r.is_anonymous = 1 THEN 'Anonymous Citizen' ELSE u.name END AS reporter_name
@@ -180,12 +181,13 @@ async function searchReports(req, res) {
     const [reports] = await db.pool.query(fetchQuery, fetchParams);
 
     // Collect report IDs to fetch evidence attachments
+    // MySQL report_evidence table theke image/video metadata load kora hocche
     const reportIds = reports.map((rep) => rep.id);
     let evidenceMap = {};
 
     if (reportIds.length > 0) {
       const [evidenceRows] = await db.pool.query(
-        `SELECT id, report_id, file_type, file_name, file_path, mime_type
+        `SELECT id, report_id, file_type, original_name AS file_name, file_path, file_size
          FROM report_evidence
          WHERE report_id IN (?)`,
         [reportIds]
@@ -253,13 +255,13 @@ async function getSearchFilterMetadata(req, res) {
        GROUP BY category`
     );
 
-    // 2. Distinct divisions with counts
+    // 2. Distinct cities/divisions with counts
     const [divisionCounts] = await db.pool.query(
-      `SELECT l.division, COUNT(r.id) AS count
+      `SELECT COALESCE(NULLIF(l.city, ''), 'General Area') AS division, COUNT(r.id) AS count
        FROM reports r
        JOIN locations l ON l.report_id = r.id
-       WHERE r.visibility = 'public' AND l.division IS NOT NULL AND l.division != ''
-       GROUP BY l.division
+       WHERE r.visibility = 'public'
+       GROUP BY COALESCE(NULLIF(l.city, ''), 'General Area')
        ORDER BY count DESC`
     );
 

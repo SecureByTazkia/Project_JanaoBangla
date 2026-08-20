@@ -15,6 +15,7 @@ const AreaBasedCivicIssueAnalysisService = require('../services/AreaBasedCivicIs
 async function getOverviewStatistics(req, res) {
   try {
     // 1. Reports counts and resolution stats
+    // confirmation_count column safely aggregate kora hocche
     const [reportStats] = await db.pool.query(
       `SELECT 
          COUNT(*) AS total_reports,
@@ -23,8 +24,8 @@ async function getOverviewStatistics(req, res) {
          SUM(CASE WHEN status = 'under_review' THEN 1 ELSE 0 END) AS under_review_reports,
          SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) AS submitted_reports,
          SUM(CASE WHEN is_duplicate = 1 THEN 1 ELSE 0 END) AS duplicate_reports,
-         SUM(verification_count) AS total_verifications,
-         AVG(verification_count) AS avg_verifications_per_report
+         SUM(COALESCE(confirmation_count, 0)) AS total_verifications,
+         AVG(COALESCE(confirmation_count, 0)) AS avg_verifications_per_report
        FROM reports`
     );
 
@@ -80,8 +81,8 @@ async function getCategoryAnalytics(req, res) {
          COUNT(id) AS total,
          SUM(CASE WHEN status = 'solved' THEN 1 ELSE 0 END) AS solved,
          SUM(CASE WHEN status != 'solved' THEN 1 ELSE 0 END) AS pending,
-         SUM(CASE WHEN priority IN ('critical', 'high') THEN 1 ELSE 0 END) AS high_priority_count,
-         AVG(verification_count) AS avg_verifications
+         SUM(CASE WHEN priority IN ('critical', 'urgent', 'high') THEN 1 ELSE 0 END) AS high_priority_count,
+         AVG(COALESCE(confirmation_count, 0)) AS avg_verifications
        FROM reports
        GROUP BY category
        ORDER BY total DESC`

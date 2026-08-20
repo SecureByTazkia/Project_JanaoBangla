@@ -12,9 +12,10 @@ const db = require('../config/DatabaseConnection');
 // ==========================================
 async function getAreaProblemDistribution() {
   // Area/Division wise civic problem count and breakdown fetch kora hocche
+  // Database er l.city ba l.area theke elaka identify kora hocche
   const [rows] = await db.pool.query(
     `SELECT 
-       COALESCE(NULLIF(l.division, ''), 'Unspecified Area') AS area_name,
+       COALESCE(NULLIF(l.city, ''), NULLIF(l.area, ''), 'General Area') AS area_name,
        r.category,
        COUNT(r.id) AS report_count,
        SUM(CASE WHEN r.status = 'solved' THEN 1 ELSE 0 END) AS solved_count,
@@ -22,7 +23,7 @@ async function getAreaProblemDistribution() {
      FROM reports r
      LEFT JOIN locations l ON l.report_id = r.id
      WHERE r.visibility = 'public'
-     GROUP BY COALESCE(NULLIF(l.division, ''), 'Unspecified Area'), r.category
+     GROUP BY COALESCE(NULLIF(l.city, ''), NULLIF(l.area, ''), 'General Area'), r.category
      ORDER BY report_count DESC`
   );
 
@@ -67,18 +68,18 @@ async function getAreaProblemDistribution() {
 // Hotspot ranking calculate kore
 // ==========================================
 async function getTopProblematicAreas(limit = 6) {
-  // Top affected districts/divisions query kora hocche
+  // Top affected districts/cities query kora hocche
   const [rows] = await db.pool.query(
     `SELECT 
-       COALESCE(NULLIF(l.district, ''), NULLIF(l.division, ''), 'General Area') AS district_name,
-       COALESCE(NULLIF(l.division, ''), 'Bangladesh') AS division_name,
+       COALESCE(NULLIF(l.area, ''), NULLIF(l.city, ''), 'General Area') AS district_name,
+       COALESCE(NULLIF(l.city, ''), 'Bangladesh') AS division_name,
        COUNT(r.id) AS total_issues,
        SUM(CASE WHEN r.status = 'solved' THEN 1 ELSE 0 END) AS solved_issues,
-       SUM(CASE WHEN r.priority = 'high' OR r.priority = 'critical' THEN 1 ELSE 0 END) AS critical_issues
+       SUM(CASE WHEN r.priority = 'high' OR r.priority = 'critical' OR r.priority = 'urgent' THEN 1 ELSE 0 END) AS critical_issues
      FROM reports r
      LEFT JOIN locations l ON l.report_id = r.id
      WHERE r.visibility = 'public'
-     GROUP BY COALESCE(NULLIF(l.district, ''), NULLIF(l.division, ''), 'General Area'), COALESCE(NULLIF(l.division, ''), 'Bangladesh')
+     GROUP BY COALESCE(NULLIF(l.area, ''), NULLIF(l.city, ''), 'General Area'), COALESCE(NULLIF(l.city, ''), 'Bangladesh')
      ORDER BY total_issues DESC
      LIMIT ?`,
     [limit]
@@ -97,22 +98,22 @@ async function getTopProblematicAreas(limit = 6) {
 }
 
 // ==========================================
-// getDivisionComparison — Bangladesh er 8 division comparative stats
+// getDivisionComparison — Bangladesh er division comparative stats
 // ==========================================
 async function getDivisionComparison() {
-  // Division comparison aggregate query
+  // Division comparison aggregate query — confirmation_count use kora hocche
   const [rows] = await db.pool.query(
     `SELECT 
-       COALESCE(NULLIF(l.division, ''), 'Dhaka') AS division,
+       COALESCE(NULLIF(l.city, ''), 'Dhaka') AS division,
        COUNT(r.id) AS total_reports,
        SUM(CASE WHEN r.status = 'solved' THEN 1 ELSE 0 END) AS solved,
        SUM(CASE WHEN r.status = 'submitted' THEN 1 ELSE 0 END) AS submitted,
        SUM(CASE WHEN r.status = 'under_review' OR r.status = 'processing' THEN 1 ELSE 0 END) AS in_progress,
-       AVG(r.verification_count) AS avg_verifications
+       AVG(COALESCE(r.confirmation_count, 0)) AS avg_verifications
      FROM reports r
      LEFT JOIN locations l ON l.report_id = r.id
      WHERE r.visibility = 'public'
-     GROUP BY COALESCE(NULLIF(l.division, ''), 'Dhaka')
+     GROUP BY COALESCE(NULLIF(l.city, ''), 'Dhaka')
      ORDER BY total_reports DESC`
   );
 
