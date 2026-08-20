@@ -1,17 +1,13 @@
 // ==========================================
 // JanaoBangla — Create Civic Problem Report Form
 // BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
-// AI problem recognition, smart suggestions, category recommendations
-// ebong duplicate warning integrated civic report submission form
+// Civic problem reporting with integrated AI Content Safety & Nudity Moderation
 // ==========================================
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CivicProblemReportService from '../services/CivicProblemReportService';
 import AICivicProblemService from '../services/AICivicProblemService';
-import AIProblemRecognitionResult from './AIProblemRecognitionResult';
-import SmartProblemCategorySuggestion from './SmartProblemCategorySuggestion';
-import SmartReportSuggestion from './SmartReportSuggestion';
 import ErrorMessage from './ErrorMessage';
 import SuccessMessage from './SuccessMessage';
 import LoadingSpinner from './LoadingSpinner';
@@ -32,142 +28,60 @@ const CreateCivicProblemReportForm = () => {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [safetyWarning, setSafetyWarning] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [isScanningSafety, setIsScanningSafety] = useState(false);
 
-  // AI Assistive States
-  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
-  const [aiRecognition, setAiRecognition] = useState(null);
-  const [aiSuggestions, setAiSuggestions] = useState(null);
-  const [aiDuplicates, setAiDuplicates] = useState(null);
-  const [isAiEnhancing, setIsAiEnhancing] = useState(false);
-  
   const navigate = useNavigate();
 
   // ==========================================
-  // handleChange — Form input field er change handle kore
+  // handleChange — Form input field changes
   // ==========================================
   const handleChange = (e) => {
-    // Ei function user input korar sathe sathe formData state update korbe
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // ==========================================
-  // handleFileChange — User jokhon photo/video select korbe tokhon AI image analysis trigger korbe
+  // handleFileChange — Evidence photo/video selection with instant AI Safety Moderation scan
   // ==========================================
   const handleFileChange = async (e) => {
-    // Ei function evidence upload handle korbe ebong AI recognition API call korbe
     const selectedFiles = Array.from(e.target.files);
     setFiles(selectedFiles);
+    setError(null);
+    setSafetyWarning(null);
 
-    // Jodi image file thake, AI problem recognition trigger korbe
-    const firstImageFile = selectedFiles.find(f => f.type.startsWith('image/'));
-    if (firstImageFile) {
-      setIsAiAnalyzing(true);
-      setError(null);
+    // Instant scan for image files to catch nudity/adult content early
+    const imageFiles = selectedFiles.filter(f => f.type.startsWith('image/'));
+    if (imageFiles.length > 0) {
+      setIsScanningSafety(true);
       try {
-        const aiData = await AICivicProblemService.analyzeUploadedImage(firstImageFile, {
-          title: formData.title,
-          description: formData.description,
-          address: formData.address,
-          latitude: formData.latitude,
-          longitude: formData.longitude
-        });
-
-        if (aiData.success && aiData.recognition) {
-          setAiRecognition(aiData.recognition);
-          setAiSuggestions(aiData.suggestions);
-          setAiDuplicates(aiData.duplicates);
-
-          // Category auto-update korar sujog (jodi default road_damage thake)
-          if (aiData.recognition.suggestedCategory && formData.category === 'road_damage') {
-            setFormData(prev => ({
-              ...prev,
-              category: aiData.recognition.suggestedCategory
-            }));
+        for (const imgFile of imageFiles) {
+          const scanRes = await AICivicProblemService.moderateUploadedImage(imgFile);
+          if (scanRes && scanRes.isSafe === false) {
+            setSafetyWarning(scanRes.reason || scanRes.reasonBn || 'Inappropriate or adult content detected. Please remove the photo.');
+            setFiles([]);
+            e.target.value = '';
+            break;
           }
         }
-      } catch (aiErr) {
-        console.warn('AI analysis skipped or failed:', aiErr.message);
+      } catch (scanErr) {
+        // If pre-scan fails (e.g. network), backend will still enforce safety check on submission
+        console.warn('Safety pre-scan skipped or failed:', scanErr.message);
       } finally {
-        setIsAiAnalyzing(false);
+        setIsScanningSafety(false);
       }
     }
   };
 
   // ==========================================
-  // handleEnhanceWithAi — Description box er text AI diye professional civic format e convert kore
-  // ==========================================
-  const handleEnhanceWithAi = async () => {
-    // Ei function description enhance korar jonno AI suggestion service call kore
-    if (!formData.description && !formData.title) {
-      setError('Please type a brief note or problem summary first to enhance with AI.');
-      return;
-    }
-
-    setIsAiEnhancing(true);
-    setError(null);
-    try {
-      const response = await AICivicProblemService.getSmartSuggestions({
-        text: formData.description || formData.title,
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        address: formData.address
-      });
-
-      if (response.success && response.smartContent) {
-        setAiSuggestions(response.smartContent);
-        if (response.categorySuggestion?.categoryKey) {
-          setFormData(prev => ({
-            ...prev,
-            category: response.categorySuggestion.categoryKey
-          }));
-        }
-      }
-    } catch (err) {
-      setError('Failed to enhance description with AI. Please try again.');
-    } finally {
-      setIsAiEnhancing(false);
-    }
-  };
-
-  // ==========================================
-  // handleAcceptCategory — AI suggested category accept korle state update kore
-  // ==========================================
-  const handleAcceptCategory = (categoryKey) => {
-    // Ei function user AI category accept korle select dropdown update korbe
-    setFormData(prev => ({ ...prev, category: categoryKey }));
-  };
-
-  // ==========================================
-  // handleApplySmartContent — AI suggested Title ebong Structured Description form e auto-fill kore
-  // ==========================================
-  const handleApplySmartContent = ({ smartTitle, smartDescription }) => {
-    // Ei function AI suggested content form input fields e inject kore
-    setFormData(prev => ({
-      ...prev,
-      title: smartTitle || prev.title,
-      description: smartDescription || prev.description
-    }));
-  };
-
-  const handleApplyTitleOnly = (title) => {
-    setFormData(prev => ({ ...prev, title: title || prev.title }));
-  };
-
-  const handleApplyDescOnly = (description) => {
-    setFormData(prev => ({ ...prev, description: description || prev.description }));
-  };
-
-  // ==========================================
-  // handleSubmit — Complete form data submit kore
+  // handleSubmit — Complete form data submission
   // ==========================================
   const handleSubmit = async (e) => {
-    // Ei function report create korar jonno backend e multipart FormData pathay
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSafetyWarning(null);
     setSuccess(null);
 
     try {
@@ -176,24 +90,30 @@ const CreateCivicProblemReportForm = () => {
       data.append('description', formData.description);
       data.append('category', formData.category);
       data.append('visibility', formData.visibility);
-      // Anonymous setting backend e pathano hocche
       data.append('isAnonymous', formData.isAnonymous ? 'true' : 'false');
       if (formData.latitude) data.append('latitude', formData.latitude);
       if (formData.longitude) data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
 
-      // Add files
+      // Append evidence files
       files.forEach(file => {
         data.append('evidence', file);
       });
 
       await CivicProblemReportService.submitReport(data);
-      setSuccess('Civic problem reported successfully! AI analysis archived with report.');
+      setSuccess('Civic problem reported successfully! Your report has been published.');
       setTimeout(() => {
         navigate('/my-reports');
-      }, 2000);
+      }, 1800);
     } catch (err) {
-      setError(err.response?.data?.error || 'An error occurred while submitting the report.');
+      const serverData = err.response?.data;
+      if (serverData?.isUnsafe || serverData?.flagType === 'nudity' || serverData?.messageBn) {
+        setSafetyWarning(
+          serverData.error + (serverData.messageBn ? ` (${serverData.messageBn})` : '')
+        );
+      } else {
+        setError(serverData?.error || 'An error occurred while submitting the report.');
+      }
     } finally {
       setLoading(false);
     }
@@ -204,41 +124,35 @@ const CreateCivicProblemReportForm = () => {
       <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
         <div>
           <h3 className="text-primary-dark mb-0 fw-bold">Report a Civic Problem</h3>
-          <small className="text-muted">Fill in the details below or let AI scan your evidence photo.</small>
+          <small className="text-muted">Fill in the details below to report a civic issue in your community.</small>
         </div>
-        <span className="badge bg-light text-success border border-success p-2" style={{ fontSize: '0.82rem' }}>
-          ✨ AI Assisted Recognition Enabled
+        <span className="badge bg-light text-primary border border-primary p-2" style={{ fontSize: '0.8rem' }}>
+          🛡️ AI Content Safety Protected
         </span>
       </div>
 
       {error && <ErrorMessage message={error} />}
+      {safetyWarning && (
+        <div className="alert alert-danger d-flex align-items-start gap-2 shadow-sm mb-3" style={{ borderRadius: '8px', borderLeft: '4px solid #DC2626' }}>
+          <span style={{ fontSize: '1.4rem' }}>🚫</span>
+          <div>
+            <h6 className="alert-heading mb-1 fw-bold text-danger">Content Safety Violation</h6>
+            <p className="mb-0" style={{ fontSize: '0.9rem' }}>{safetyWarning}</p>
+          </div>
+        </div>
+      )}
       {success && <SuccessMessage message={success} />}
 
-      {/* 1. AI Image Analysis Result Widget (Shown upon uploading evidence photo) */}
-      {(isAiAnalyzing || aiRecognition) && (
-        <AIProblemRecognitionResult
-          recognition={aiRecognition}
-          isAnalyzing={isAiAnalyzing}
-        />
-      )}
-
-      {/* 2. AI Category Recommendation Widget */}
-      {aiRecognition && (
-        <SmartProblemCategorySuggestion
-          suggestedCategory={aiRecognition.suggestedCategory}
-          currentCategory={formData.category}
-          confidence={aiRecognition.confidence}
-          onAcceptCategory={handleAcceptCategory}
-          onDismiss={() => setAiRecognition(null)}
-        />
-      )}
-
       <form onSubmit={handleSubmit}>
-        {/* Evidence Upload Section (placed higher for intuitive AI-first workflow) */}
+        {/* Evidence Upload Section */}
         <div className="mb-3 p-3 border rounded bg-light" style={{ borderColor: '#CBD5E1' }}>
           <label className="form-label fw-bold d-flex justify-content-between align-items-center">
             <span>📷 Evidence Photo / Video</span>
-            <span className="badge bg-success" style={{ fontSize: '0.74rem' }}>Triggers Instant AI Scan</span>
+            {isScanningSafety && (
+              <span className="badge bg-warning text-dark" style={{ fontSize: '0.75rem' }}>
+                🔍 AI Safety Scanning...
+              </span>
+            )}
           </label>
           <input
             type="file"
@@ -246,12 +160,16 @@ const CreateCivicProblemReportForm = () => {
             multiple
             accept="image/*,video/*"
             onChange={handleFileChange}
+            disabled={isScanningSafety}
           />
           {files.length > 0 && (
             <small className="text-success mt-1 d-block fw-bold">
-              ✓ {files.length} file(s) selected for upload & AI analysis.
+              ✓ {files.length} file(s) selected and verified for upload.
             </small>
           )}
+          <small className="text-muted mt-2 d-block" style={{ fontSize: '0.78rem' }}>
+            🔒 <strong>Strict Content Safety:</strong> Adult materials, nudity, or inappropriate content are strictly prohibited and automatically scanned/blocked by AI moderation.
+          </small>
         </div>
 
         {/* Problem Title */}
@@ -264,24 +182,13 @@ const CreateCivicProblemReportForm = () => {
             value={formData.title}
             onChange={handleChange}
             required
-            placeholder="E.g., Severe Road Damage on Mirpur-10 Main Road"
+            placeholder="E.g., Severe Road Damage and Potholes on Mirpur-10 Main Road"
           />
         </div>
 
-        {/* Description & AI Enhancer */}
+        {/* Description */}
         <div className="mb-3">
-          <div className="d-flex justify-content-between align-items-center mb-1">
-            <label className="form-label fw-bold mb-0">Description *</label>
-            <button
-              type="button"
-              className="btn-ai-enhance"
-              onClick={handleEnhanceWithAi}
-              disabled={isAiEnhancing}
-              title="Convert informal notes into structured civic description"
-            >
-              {isAiEnhancing ? '✨ Enhancing...' : '✨ Enhance with AI'}
-            </button>
-          </div>
+          <label className="form-label fw-bold mb-1">Description *</label>
           <textarea
             className="form-control"
             name="description"
@@ -289,7 +196,7 @@ const CreateCivicProblemReportForm = () => {
             value={formData.description}
             onChange={handleChange}
             required
-            placeholder="Describe the problem in detail (or type short notes and click 'Enhance with AI')..."
+            placeholder="Describe the civic problem in detail (landmarks, hazard level, impact on citizens)..."
           ></textarea>
         </div>
 
@@ -369,18 +276,6 @@ const CreateCivicProblemReportForm = () => {
           )}
         </div>
 
-        {/* 3. AI Smart Suggestions & Duplicate Warning Widget */}
-        {(aiSuggestions || aiDuplicates) && (
-          <SmartReportSuggestion
-            suggestions={aiSuggestions}
-            duplicates={aiDuplicates}
-            onApplyAll={handleApplySmartContent}
-            onApplyTitle={handleApplyTitleOnly}
-            onApplyDescription={handleApplyDescOnly}
-            onViewExistingReport={(reportId) => window.open(`/reports/${reportId}`, '_blank')}
-          />
-        )}
-
         {/* Location Picker */}
         <div className="mb-4">
           <label className="form-label fw-bold">Report Location Data *</label>
@@ -408,8 +303,19 @@ const CreateCivicProblemReportForm = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn btn-primary w-100 py-2 fw-bold" disabled={loading} style={{ fontSize: '1rem' }}>
-          {loading ? <LoadingSpinner size="sm" /> : '🚀 Submit Verified Civic Report'}
+        <button
+          type="submit"
+          className="btn btn-primary w-100 py-2 fw-bold text-white shadow-sm"
+          disabled={loading || isScanningSafety}
+          style={{ borderRadius: '8px', fontSize: '1rem' }}
+        >
+          {loading ? (
+            <span className="d-flex align-items-center justify-content-center gap-2">
+              <LoadingSpinner size="sm" /> Submitting Report...
+            </span>
+          ) : (
+            '🚀 Submit Civic Report'
+          )}
         </button>
       </form>
     </div>

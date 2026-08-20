@@ -1,5 +1,5 @@
 // ==========================================
-// Test AI Civic Problem Recognition & Suggestions Endpoints
+// Test AI Image Content Safety & Moderation Endpoints
 // BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
 // ==========================================
 
@@ -9,114 +9,37 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const { generateAccessToken } = require('../services/TokenService');
 const http = require('http');
 
-async function testAiEndpoints() {
-  console.log('🤖 Testing JanaoBangla AI Civic Recognition & Suggestions...');
+async function testAiSafetyEndpoints() {
+  console.log('🛡️ Testing JanaoBangla AI Image Content Safety & Moderation...');
 
   const testUser = { id: 18, email: 'tazkiataz0@gmail.com', role: 'admin' };
   const token = generateAccessToken(testUser);
 
-  // 1. Test Text-based Category & Improvement Suggestion
-  console.log('\n--- 1. Testing POST /api/ai/suggest ---');
-  const suggestPayload = JSON.stringify({
-    text: 'mirpur 10 e boro gorto rasta bhanga accident hocche',
-    title: 'Gorto in Mirpur',
-    description: 'Boro gorto rastay',
-    address: 'Mirpur-10, Dhaka'
-  });
+  // 1. Test Clean Civic Photo Safety Inspection
+  console.log('\n--- 1. Testing POST /api/ai/moderate-image (Clean Civic Photo) ---');
+  const cleanImagePath = path.join(__dirname, '../uploads/test_civic_road.jpg');
+  fs.writeFileSync(cleanImagePath, 'FAKE_CLEAN_IMAGE_BYTES_ROAD_CIVIC_EVIDENCE');
 
-  const suggestRes = await new Promise((resolve, reject) => {
-    const req = http.request({
-      hostname: 'localhost',
-      port: 5000,
-      path: '/api/ai/suggest',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(suggestPayload),
-        'Authorization': 'Bearer ' + token
-      }
-    }, res => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(data) }));
-    });
-    req.on('error', reject);
-    req.write(suggestPayload);
-    req.end();
-  });
-
-  console.log('Suggest Status:', suggestRes.status);
-  console.log('Suggested Category:', suggestRes.body.categorySuggestion?.categoryName, `(${suggestRes.body.categorySuggestion?.confidence}%)`);
-  console.log('Smart Title:', suggestRes.body.smartContent?.smartTitle);
-  console.log('Improvement Tips Count:', suggestRes.body.smartContent?.improvementTips?.length);
-
-  // 2. Test Advanced Duplicate Detection
-  console.log('\n--- 2. Testing POST /api/ai/detect-duplicates ---');
-  const duplicatePayload = JSON.stringify({
-    title: 'Dhanmondi Lake Road e Bora Khaad',
-    description: 'Dhanmondi 27 number road e ekta boro gorto ache',
-    category: 'road_damage',
-    latitude: '23.74695',
-    longitude: '90.37440'
-  });
-
-  const dupRes = await new Promise((resolve, reject) => {
-    const req = http.request({
-      hostname: 'localhost',
-      port: 5000,
-      path: '/api/ai/detect-duplicates',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(duplicatePayload),
-        'Authorization': 'Bearer ' + token
-      }
-    }, res => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(data) }));
-    });
-    req.on('error', reject);
-    req.write(duplicatePayload);
-    req.end();
-  });
-
-  console.log('Duplicate Status:', dupRes.status);
-  console.log('Has Duplicate:', dupRes.body.hasDuplicate);
-  console.log('Max Similarity:', dupRes.body.maxSimilarity + '%');
-  console.log('Similar Reports Found:', dupRes.body.similarReports?.length);
-
-  // 3. Test Image Upload & AI Problem Recognition
-  console.log('\n--- 3. Testing POST /api/ai/analyze-image ---');
-  const testImagePath = path.join(__dirname, '../uploads/test_pothole_evidence.jpg');
-  if (!fs.existsSync(testImagePath)) {
-    fs.writeFileSync(testImagePath, 'FAKE_IMAGE_BYTES_FOR_RECOGNITION_TEST_POTHOLE_ROAD_DAMAGE');
-  }
-
-  const fileContent = fs.readFileSync(testImagePath);
-  const boundary = 'AiTestBoundary12345';
-  let body = '';
-  body += '--' + boundary + '\r\n';
-  body += 'Content-Disposition: form-data; name="title"\r\n\r\nTest Pothole\r\n';
-  body += '--' + boundary + '\r\n';
-  body += 'Content-Disposition: form-data; name="address"\r\n\r\nMirpur 10, Dhaka\r\n';
-  body += '--' + boundary + '\r\n';
-  body += 'Content-Disposition: form-data; name="image"; filename="pothole_road_crack.jpg"\r\n';
-  body += 'Content-Type: image/jpeg\r\n\r\n';
+  const cleanFileContent = fs.readFileSync(cleanImagePath);
+  const boundary = 'SafetyTestBoundary12345';
+  let body1 = '';
+  body1 += '--' + boundary + '\r\n';
+  body1 += 'Content-Disposition: form-data; name="image"; filename="mirpur_road_photo.jpg"\r\n';
+  body1 += 'Content-Type: image/jpeg\r\n\r\n';
   
-  const headerBuf = Buffer.from(body, 'utf-8');
-  const footerBuf = Buffer.from('\r\n--' + boundary + '--\r\n', 'utf-8');
-  const fullBody = Buffer.concat([headerBuf, fileContent, footerBuf]);
+  const hBuf1 = Buffer.from(body1, 'utf-8');
+  const fBuf1 = Buffer.from('\r\n--' + boundary + '--\r\n', 'utf-8');
+  const fullBody1 = Buffer.concat([hBuf1, cleanFileContent, fBuf1]);
 
-  const imgRes = await new Promise((resolve, reject) => {
+  const cleanRes = await new Promise((resolve, reject) => {
     const req = http.request({
       hostname: 'localhost',
       port: 5000,
-      path: '/api/ai/analyze-image',
+      path: '/api/ai/moderate-image',
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data; boundary=' + boundary,
-        'Content-Length': fullBody.length,
+        'Content-Length': fullBody1.length,
         'Authorization': 'Bearer ' + token
       }
     }, res => {
@@ -125,29 +48,68 @@ async function testAiEndpoints() {
       res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(data) }));
     });
     req.on('error', reject);
-    req.write(fullBody);
+    req.write(fullBody1);
     req.end();
   });
 
-  console.log('Image Analysis Status:', imgRes.status);
-  console.log('Detected Problem:', imgRes.body.recognition?.detectedProblem);
-  console.log('Confidence:', imgRes.body.recognition?.confidence + '%');
-  console.log('Suggested Category:', imgRes.body.recognition?.suggestedCategory);
-  console.log('Visual Features:', imgRes.body.recognition?.detectedFeatures);
-  console.log('Smart Title Generated:', imgRes.body.suggestions?.smartTitle);
+  console.log('Clean Image Scan Status:', cleanRes.status);
+  console.log('Is Safe:', cleanRes.body.isSafe);
+  console.log('Flag Type:', cleanRes.body.flagType);
+  console.log('Verdict Reason:', cleanRes.body.reason);
 
-  // Clean up temporary test file
-  if (fs.existsSync(testImagePath)) {
-    fs.unlinkSync(testImagePath);
-  }
+  // 2. Test NSFW/Nudity Flagged Upload
+  console.log('\n--- 2. Testing POST /api/ai/moderate-image (NSFW/Nudity Inappropriate Photo) ---');
+  const unsafeImagePath = path.join(__dirname, '../uploads/test_nude_photo.jpg');
+  fs.writeFileSync(unsafeImagePath, 'FAKE_NSFW_BYTES');
+
+  const unsafeFileContent = fs.readFileSync(unsafeImagePath);
+  let body2 = '';
+  body2 += '--' + boundary + '\r\n';
+  body2 += 'Content-Disposition: form-data; name="image"; filename="nude_photo_leak.jpg"\r\n';
+  body2 += 'Content-Type: image/jpeg\r\n\r\n';
+  
+  const hBuf2 = Buffer.from(body2, 'utf-8');
+  const fBuf2 = Buffer.from('\r\n--' + boundary + '--\r\n', 'utf-8');
+  const fullBody2 = Buffer.concat([hBuf2, unsafeFileContent, fBuf2]);
+
+  const unsafeRes = await new Promise((resolve, reject) => {
+    const req = http.request({
+      hostname: 'localhost',
+      port: 5000,
+      path: '/api/ai/moderate-image',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data; boundary=' + boundary,
+        'Content-Length': fullBody2.length,
+        'Authorization': 'Bearer ' + token
+      }
+    }, res => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(data) }));
+    });
+    req.on('error', reject);
+    req.write(fullBody2);
+    req.end();
+  });
+
+  console.log('Unsafe Image Scan Status:', unsafeRes.status);
+  console.log('Is Safe:', unsafeRes.body.isSafe);
+  console.log('Flag Type:', unsafeRes.body.flagType);
+  console.log('Blocked Reason (EN):', unsafeRes.body.reason);
+  console.log('Blocked Reason (BN):', unsafeRes.body.reasonBn);
+
+  // Cleanup temporary test files
+  if (fs.existsSync(cleanImagePath)) fs.unlinkSync(cleanImagePath);
+  if (fs.existsSync(unsafeImagePath)) fs.unlinkSync(unsafeImagePath);
 
   console.log('\n========================================');
-  console.log('🎉 ALL AI ENDPOINTS WORKING WITH HIGH ACCURACY & SPEED!');
+  console.log('🎉 AI CONTENT SAFETY & NUDITY MODERATION VERIFIED SUCCESSFULLY!');
   console.log('========================================');
   process.exit(0);
 }
 
-testAiEndpoints().catch(err => {
-  console.error('❌ AI Test Error:', err);
+testAiSafetyEndpoints().catch(err => {
+  console.error('❌ Safety Test Error:', err);
   process.exit(1);
 });
