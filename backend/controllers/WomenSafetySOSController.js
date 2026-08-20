@@ -114,9 +114,23 @@ async function triggerSOS(req, res) {
 
     console.log(`🚨 SOS triggered by user ${userId} (${userName}). Request ID: ${emergencyRequest.id}`);
 
+    let statusMessage = 'SOS emergency alert registered successfully.';
+    if (smsSent && emailSent) {
+      statusMessage = 'SOS alert, SMS, and Email notifications sent successfully to your emergency contacts.';
+    } else if (smsSent) {
+      statusMessage = 'SOS alert and SMS notifications sent successfully via MiMSMS.';
+    } else if (emailSent) {
+      statusMessage = 'SOS alert sent via Email (SMS delivery failed — check MiMSMS configuration).';
+    } else if (contacts.length === 0) {
+      statusMessage = 'SOS emergency alert registered, but you have no emergency contacts added.';
+    } else {
+      const firstError = smsResult?.results?.find(r => !r.success)?.error;
+      statusMessage = `SOS alert registered, but SMS sending failed${firstError ? `: ${firstError}` : '.'}`;
+    }
+
     res.status(201).json({
       success: true,
-      message: 'SOS alert sent successfully',
+      message: statusMessage,
       data: {
         request:          updatedRequest,
         contactsNotified: contacts.length,
@@ -124,6 +138,7 @@ async function triggerSOS(req, res) {
         emailSent,
         smsStatus,
         emailStatus,
+        smsResults:       smsResult ? smsResult.results : [],
         location:         locationData
       }
     });

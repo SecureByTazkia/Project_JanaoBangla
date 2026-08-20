@@ -1,269 +1,194 @@
 // ==========================================
-// JanaoBangla — Emergency SMS Alert Service
+// JanaoBangla — Emergency SMS Alert Service (MiMSMS V2)
 // BRANCH: feature-women-safety-sos-and-emergency-notifications
-// Ei service ta emergency contacts ke SMS pathabe
-// ABSTRACTION LAYER — Provider swap korte shudhu ei file change korte hobe
-// Dev mode e console e log kore, real provider plug in korte parbe
+// Ei service ta Bangladesh er MiMSMS SMS Gateway API V2 use kore emergency contacts ke SOS SMS pathabe
+// Uses native Node.js fetch (Node 18+) with zero external dependencies
 // ==========================================
 
-// ==========================================
-// SMS_PROVIDER configuration
-// .env e SMS_PROVIDER set kore provider change korte parbe:
-//   console  → Just log to terminal (default dev mode)
-//   twilio   → Twilio SMS API use korbe
-//   sslcommerz → SSL Commerz BD SMS (future)
-// ==========================================
-
-// ==========================================
-// sendConsoleSms — Development mode SMS simulation
-// Real SMS pathabe na, console e message dekhabe
-// ==========================================
-async function sendConsoleSms({ toPhone, message, requestId }) {
-  // Console e SMS content print kora hocche (dev simulation)
-  console.log('\n📱 [SMS SIMULATION - Console Provider]');
-  console.log(`   To: ${toPhone}`);
-  console.log(`   Emergency ID: #SOS-${requestId}`);
-  console.log(`   Message:\n${message.split('\n').map(l => `   ${l}`).join('\n')}`);
-  console.log('   💡 Set SMS_PROVIDER=twilio and credentials in .env for real SMS\n');
-
-  return {
-    success: true,
-    simulated: true,
-    provider: 'console',
-    messageId: `console-${Date.now()}`
-  };
+/**
+ * normalizeBdPhoneNumber — Phone number normalise kora Bangladesh format e
+ * @param {string} phone
+ * @returns {string}
+ */
+function normalizeBdPhoneNumber(phone) {
+  if (!phone) return '';
+  let cleaned = phone.trim().replace(/[^0-9]/g, '');
+  if (cleaned.startsWith('880')) {
+    return cleaned;
+  } else if (cleaned.startsWith('0')) {
+    return '88' + cleaned;
+  } else if (cleaned.length === 10 && cleaned.startsWith('1')) {
+    return '880' + cleaned;
+  }
+  return cleaned;
 }
 
-// ==========================================
-// sendTwilioSms — Twilio diye real SMS pathanor logic
-// Twilio credentials .env e set thakle activate hobe
-// ==========================================
-async function sendTwilioSms({ toPhone, message, requestId }) {
-  // Twilio credentials check kora hocche
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken  = process.env.TWILIO_AUTH_TOKEN;
-  const fromPhone  = process.env.TWILIO_PHONE_NUMBER;
+/**
+ * sendMimSms — MiMSMS Official API V2 দিয়ে real SMS পাঠানো
+ * Endpoint: POST https://api.mimsms.com/api/V2/SMS
+ *
+ * @param {Object} params
+ * @param {string} params.toPhone
+ * @param {string} params.message
+ * @param {number|string} params.requestId
+ * @returns {Promise<Object>}
+ */
+async function sendMimSms({ toPhone, message, requestId }) {
+  const apiKey     = process.env.MIMSMS_API_KEY || process.env.MIM_SMS_API_KEY;
+  const userName   = process.env.MIMSMS_USERNAME || process.env.MIMSMS_USER || process.env.EMAIL_USER;
+  const senderName = process.env.MIMSMS_SENDER_NAME || process.env.MIMSMS_SENDER_ID || process.env.MIM_SMS_SENDER_ID || 'JanaoBangla';
+  const smsType    = process.env.MIMSMS_SMS_TYPE || 'T'; // 'T' = Transactional (for emergency alerts, bypasses DND)
 
-  // Credentials na thakle console fallback
-  if (!accountSid || !authToken || !fromPhone) {
-    console.warn('⚠️  Twilio credentials missing. Falling back to console simulation.');
-    return sendConsoleSms({ toPhone, message, requestId });
-  }
-
-  try {
-    // Twilio dynamically import kora hocche (optional dependency)
-    // eslint-disable-next-line import/no-extraneous-dependencies
-    const twilio = require('twilio');
-    const client = twilio(accountSid, authToken);
-
-    // Phone number Bangladesh format check ar fix kora hocche
-    let formattedPhone = toPhone.trim();
-    if (formattedPhone.startsWith('0')) {
-      formattedPhone = '+88' + formattedPhone; // 01XXXXXXXXX → +8801XXXXXXXXX
-    } else if (!formattedPhone.startsWith('+')) {
-      formattedPhone = '+' + formattedPhone;
-    }
-
-    // Twilio diye SMS pathano hocche
-    const smsResult = await client.messages.create({
-      body: message,
-      from: fromPhone,
-      to: formattedPhone
-    });
-
-    console.log(`✅ Twilio SMS sent to ${formattedPhone}. SID: ${smsResult.sid}`);
-
-    return {
-      success: true,
-      simulated: false,
-      provider: 'twilio',
-      messageId: smsResult.sid
-    };
-
-  } catch (error) {
-    // Twilio error hole graceful fallback
-    console.error(`❌ Twilio SMS failed to ${toPhone}:`, error.message);
+  // API Key check — missing hole clear error return korbe
+  if (!apiKey || apiKey === 'your_mimsms_api_key' || apiKey === 'your_mim_sms_api_key') {
+    const errorMsg = 'MIMSMS_API_KEY is not configured in backend/.env. Please configure your MiMSMS API key.';
+    console.error(`❌ MiMSMS Error: ${errorMsg}`);
     return {
       success: false,
-      provider: 'twilio',
-      error: error.message
+      provider: 'mimsms',
+      error: errorMsg
     };
   }
-}
 
-// ==========================================
-// sendMimSms — MIM SMS Gateway Bangladesh
-// MIM SMS API credentials .env e thakle use korbe
-// ==========================================
-async function sendMimSms({ toPhone, message, requestId }) {
-  const apiKey = process.env.MIM_SMS_API_KEY || process.env.SMS_API_KEY;
-  const senderId = process.env.MIM_SMS_SENDER_ID || process.env.SMS_SENDER_ID || 'JanaoBangla';
-
-  // API key na thakle console fallback
-  if (!apiKey || apiKey === 'your_sms_key') {
-    console.log(`\n📱 [MIM SMS SIMULATION] (No API key in .env)`);
-    console.log(`   To: ${toPhone} | SOS: #SOS-${requestId}`);
-    console.log(`   Message: ${message.slice(0, 80)}...\n`);
-    return sendConsoleSms({ toPhone, message, requestId });
+  const phone = normalizeBdPhoneNumber(toPhone);
+  if (!phone || phone.length < 11) {
+    const errorMsg = `Invalid recipient phone number: ${toPhone}`;
+    console.error(`❌ MiMSMS Error: ${errorMsg}`);
+    return {
+      success: false,
+      provider: 'mimsms',
+      error: errorMsg
+    };
   }
 
   try {
-    const axios = require('axios');
-    let phone = toPhone.trim().replace(/[^0-9]/g, '');
-    if (phone.startsWith('880')) phone = '880' + phone.substring(3);
-    else if (phone.startsWith('01')) phone = '88' + phone;
+    const payload = {
+      userName: userName || '',
+      apiKey: apiKey,
+      senderName: senderName,
+      message: message,
+      to: phone,
+      type: smsType
+    };
 
-    const response = await axios.post('https://api.mimsms.com/smsapi', null, {
-      params: {
+    console.log(`📱 [MiMSMS V2] Dispatching SOS SMS to ${phone} (Req #SOS-${requestId})...`);
+
+    // Primary: POST to MiMSMS V2 API
+    let response;
+    let resData;
+
+    try {
+      response = await fetch('https://api.mimsms.com/api/V2/SMS', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000)
+      });
+
+      const text = await response.text();
+      try {
+        resData = JSON.parse(text);
+      } catch {
+        resData = text;
+      }
+    } catch (v2PostErr) {
+      // Fallback: If V2 JSON POST fails, try standard query-params endpoint
+      console.warn(`⚠️ MiMSMS V2 JSON endpoint error (${v2PostErr.message}), attempting query-params endpoint...`);
+      
+      const queryParams = new URLSearchParams({
         api_key: apiKey,
         type: 'text',
         contacts: phone,
-        senderid: senderId,
+        senderid: senderName,
         msg: message
-      },
-      timeout: 10000
-    });
+      });
 
-    console.log(`✅ MIM SMS sent to ${phone}:`, response.data);
-    return {
-      success: true,
-      provider: 'mimsms',
-      messageId: `mim-${Date.now()}`
-    };
+      response = await fetch(`https://api.mimsms.com/smsapi?${queryParams.toString()}`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(15000)
+      });
+
+      const text = await response.text();
+      try {
+        resData = JSON.parse(text);
+      } catch {
+        resData = text;
+      }
+    }
+
+    console.log(`📱 [MiMSMS] Response for ${phone}:`, resData);
+
+    // Validate response from MiMSMS
+    const isSuccess = 
+      response && response.ok && (
+        resData?.statusCode === 200 ||
+        resData?.status === 'success' ||
+        resData?.status === 'Success' ||
+        resData?.code === '200' ||
+        resData?.response_code === 200 ||
+        (typeof resData === 'string' && (resData.toLowerCase().includes('success') || resData.toLowerCase().includes('submitted') || resData.includes('1001') || resData.includes('1000')))
+      );
+
+    if (isSuccess) {
+      const messageId = resData?.messageId || resData?.id || resData?.trxid || `mim-${Date.now()}`;
+      console.log(`✅ [MiMSMS] SOS SMS successfully sent to ${phone}. Message ID: ${messageId}`);
+      return {
+        success: true,
+        provider: 'mimsms',
+        messageId: messageId,
+        data: resData
+      };
+    } else {
+      const errorDetail = resData?.message || resData?.error || resData?.description || (typeof resData === 'object' ? JSON.stringify(resData) : String(resData));
+      console.error(`❌ [MiMSMS] SMS rejected for ${phone}: ${errorDetail}`);
+      return {
+        success: false,
+        provider: 'mimsms',
+        error: `MiMSMS provider rejected SMS: ${errorDetail}`
+      };
+    }
+
   } catch (error) {
-    console.error(`❌ MIM SMS error for ${toPhone}:`, error.message);
+    const errorDetail = error.message || 'Unknown network error';
+    console.error(`❌ [MiMSMS] SMS request failed for ${phone}: ${errorDetail}`);
     return {
       success: false,
       provider: 'mimsms',
-      error: error.message
+      error: `MiMSMS API error: ${errorDetail}`
     };
   }
 }
 
-// ==========================================
-// sendBulkSmsBd — BulkSMSBD Bangladesh Free SMS Gateway
-// Sign up at https://bulksmsbd.net to get API key (free tier available)
-// ==========================================
-async function sendBulkSmsBd({ toPhone, message, requestId }) {
-  const apiKey   = process.env.BULKSMSBD_API_KEY;
-  const senderId = process.env.BULKSMSBD_SENDER_ID || '8809617611011';
-
-  // API key placeholder thakle console fallback
-  if (!apiKey || apiKey === 'your_bulksmsbd_api_key') {
-    console.log(`\n📱 [BULKSMSBD SIMULATION] (No API key in .env)`);
-    console.log(`   ➡  Sign up FREE at https://bulksmsbd.net`);
-    console.log(`   ➡  Get your API key from "API" section in dashboard`);
-    console.log(`   ➡  Add BULKSMSBD_API_KEY=<your_key> in backend/.env`);
-    console.log(`   To: ${toPhone} | SOS: #SOS-${requestId}\n`);
-    return sendConsoleSms({ toPhone, message, requestId });
-  }
-
-  try {
-    const axios = require('axios');
-    // Phone number Bangladesh format e convert kora hocche
-    let phone = toPhone.trim().replace(/[^0-9]/g, '');
-    if (phone.startsWith('880')) {
-      // already 880XXXXXXXXXXX
-    } else if (phone.startsWith('0')) {
-      phone = '880' + phone.substring(1); // 01XXXXXXXXX → 8801XXXXXXXXX
-    } else {
-      phone = '880' + phone;
-    }
-
-    // BulkSMSBD API call kora hocche
-    const response = await axios.post(
-      'https://bulksmsbd.net/api/smsapi',
-      null,
-      {
-        params: {
-          api_key:   apiKey,
-          type:      'text',
-          number:    phone,
-          senderid:  senderId,
-          message:   message
-        },
-        timeout: 12000
-      }
-    );
-
-    // BulkSMSBD response code 202 = success
-    const responseCode = response.data?.response_code || response.data?.code;
-    if (responseCode === 202 || responseCode === '202') {
-      console.log(`✅ BulkSMSBD SMS sent to ${phone}. Response:`, response.data);
-      return {
-        success:   true,
-        simulated: false,
-        provider:  'bulksmsbd',
-        messageId: `bulksmsbd-${Date.now()}`
-      };
-    } else {
-      console.error(`❌ BulkSMSBD returned error code ${responseCode} for ${phone}:`, response.data);
-      return {
-        success:  false,
-        provider: 'bulksmsbd',
-        error:    `BulkSMSBD error code: ${responseCode}`
-      };
-    }
-  } catch (error) {
-    console.error(`❌ BulkSMSBD SMS failed to ${toPhone}:`, error.message);
-    return {
-      success:  false,
-      provider: 'bulksmsbd',
-      error:    error.message
-    };
-  }
-}
-
-// ==========================================
-// sendEmergencySms — Main SMS dispatch function
-// Provider config dekhe appropriate sender choose korbe
-// ==========================================
+/**
+ * sendEmergencySms — Single emergency SMS dispatch
+ */
 async function sendEmergencySms({ toPhone, message, requestId }) {
-  // Provider .env theke determine kora hocche
-  const provider = (process.env.SMS_PROVIDER || 'console').toLowerCase();
-
-  // Provider anujayee SMS function call kora hocche
-  switch (provider) {
-    case 'bulksmsbd':
-    case 'bulk':
-      // BulkSMSBD Bangladesh free SMS gateway
-      return sendBulkSmsBd({ toPhone, message, requestId });
-
-    case 'mimsms':
-    case 'mim':
-      return sendMimSms({ toPhone, message, requestId });
-
-    case 'twilio':
-      return sendTwilioSms({ toPhone, message, requestId });
-
-    case 'console':
-    case 'mock':
-    default:
-      // Default: console simulation
-      return sendConsoleSms({ toPhone, message, requestId });
-  }
+  return sendMimSms({ toPhone, message, requestId });
 }
 
-// ==========================================
-// sendBulkEmergencySms — Multiple contacts ke SMS pathano
-// SOS trigger hoile sob contacts ke loop kore SMS jabe
-// ==========================================
+/**
+ * sendBulkEmergencySms — Multiple contacts ke SMS pathano
+ * @param {Object} params
+ * @param {Array} params.contacts
+ * @param {string} params.message
+ * @param {number|string} params.requestId
+ * @returns {Promise<Object>}
+ */
 async function sendBulkEmergencySms({ contacts, message, requestId }) {
-  // Sob contacts ke SMS pathano hocche
   const results = [];
 
   for (const contact of contacts) {
-    // Phone number na thakle skip kora hocche
     if (!contact.phone) {
       results.push({
         contact: contact.name,
         skipped: true,
-        reason: 'No phone number'
+        reason: 'No phone number provided'
       });
       continue;
     }
 
-    // SMS pathano hocche ar result collect kora hocche
     const result = await sendEmergencySms({
       toPhone: contact.phone,
       message,
@@ -277,11 +202,10 @@ async function sendBulkEmergencySms({ contacts, message, requestId }) {
     });
   }
 
-  // SMS summary log kora hocche
   const successCount = results.filter(r => r.success).length;
   const failCount    = results.filter(r => !r.success && !r.skipped).length;
 
-  console.log(`📱 SMS summary: ${successCount} sent, ${failCount} failed, ${results.filter(r => r.skipped).length} skipped`);
+  console.log(`📱 SMS Dispatch Summary: ${successCount} succeeded, ${failCount} failed, ${results.filter(r => r.skipped).length} skipped`);
 
   return {
     results,
@@ -292,5 +216,6 @@ async function sendBulkEmergencySms({ contacts, message, requestId }) {
 
 module.exports = {
   sendEmergencySms,
-  sendBulkEmergencySms
+  sendBulkEmergencySms,
+  normalizeBdPhoneNumber
 };

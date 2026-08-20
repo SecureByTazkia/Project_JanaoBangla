@@ -31,20 +31,13 @@ function generateAlertMessage({ userName, latitude, longitude, locationAddress, 
     googleMapsLink = `https://maps.google.com/?q=${latitude},${longitude}`;
   }
 
-  // Plain text message (SMS er jonno)
-  const smsMessage = [
-    `🚨 EMERGENCY ALERT - JanaoBangla`,
-    ``,
-    `${userName} needs IMMEDIATE emergency assistance!`,
-    ``,
-    `Time: ${bdTime}`,
-    locationAddress ? `Location: ${locationAddress}` : '',
-    googleMapsLink ? `Map: ${googleMapsLink}` : '',
-    ``,
-    `Please respond immediately or contact emergency services (999).`,
-    ``,
-    `- JanaoBangla Safety System`
-  ].filter(line => line !== null).join('\n');
+  // Location info string for SMS
+  const locationInfo = googleMapsLink
+    ? googleMapsLink
+    : (locationAddress || 'Location not available');
+
+  // Plain text message (SMS er jonno — clear and within single SMS segment where possible)
+  const smsMessage = `JanaoBangla SOS ALERT: ${userName} needs emergency assistance. Location: ${locationInfo}. Please contact immediately or call 999.`;
 
   // HTML message (Email er jonno) — Gmail compatibility jonno sob inline CSS use kora hocche
   const emailHtml = `

@@ -86,12 +86,12 @@ function EmergencyNotificationStatus({ lastSOSResult = null, refreshTrigger = 0 
                   <div className="fs-4 mb-1">📱</div>
                   <div className="fw-bold text-dark">
                     {lastSOSResult.smsSent ? (
-                      <span className="text-success">Delivered / Queued</span>
+                      <span className="text-success fw-bold">✅ Sent via MiMSMS</span>
                     ) : (
-                      <span className="text-warning">Provider Logged (Simulated)</span>
+                      <span className="text-danger fw-bold">❌ SMS Failed</span>
                     )}
                   </div>
-                  <small className="text-secondary">SMS Alert Service</small>
+                  <small className="text-secondary">MiMSMS Gateway</small>
                 </div>
               </div>
 
@@ -101,15 +101,22 @@ function EmergencyNotificationStatus({ lastSOSResult = null, refreshTrigger = 0 
                   <div className="fs-4 mb-1">📧</div>
                   <div className="fw-bold text-dark">
                     {lastSOSResult.emailSent ? (
-                      <span className="text-success">Sent to Contacts</span>
+                      <span className="text-success fw-bold">✅ Sent to Contacts</span>
                     ) : (
-                      <span className="text-muted">SMTP Abstracted (Dev)</span>
+                      <span className="text-muted">SMTP Email</span>
                     )}
                   </div>
                   <small className="text-secondary">Email Alert Service</small>
                 </div>
               </div>
             </div>
+
+            {/* If SMS failed, show clear note */}
+            {!lastSOSResult.smsSent && (
+              <div className="mt-3 p-2 bg-danger-subtle text-danger rounded border border-danger-subtle small">
+                ⚠️ <strong>SMS Delivery Notice:</strong> SMS alert could not be delivered. Please verify your MiMSMS API configuration (<code>MIMSMS_API_KEY</code>, <code>MIMSMS_USERNAME</code>, <code>MIMSMS_SENDER_NAME</code>) in <code>backend/.env</code>.
+              </div>
+            )}
 
             {/* GPS Location details if present */}
             {lastSOSResult.location && (
