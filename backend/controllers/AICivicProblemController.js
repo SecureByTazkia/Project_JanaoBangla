@@ -45,12 +45,13 @@ class AICivicProblemController {
       // 1. Run AI Image Recognition
       const recognitionResult = await AIImageBasedProblemRecognitionService.analyzeEvidenceImage(filePath, originalName);
 
-      // 2. Generate Smart Content Suggestions based on recognition
+      // 2. Generate Smart Content Suggestions based on recognition & user input
       const smartContent = await AIProblemCategorySuggestionService.generateSmartReportContent({
         category: recognitionResult.suggestedCategory,
         rawTitle: req.body.title || '',
         rawDescription: req.body.description || '',
-        address: req.body.address || ''
+        address: req.body.address || '',
+        recognition: recognitionResult
       });
 
       // 3. Run Duplicate check if coordinates/title present

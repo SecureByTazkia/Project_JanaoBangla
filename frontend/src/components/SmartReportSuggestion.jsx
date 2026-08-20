@@ -1,8 +1,7 @@
 // ==========================================
 // JanaoBangla — Smart Report Suggestion Component
 // BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
-// Report aro shundor, structured ebong actionable korar jonno
-// AI suggested title, description ebong duplicate warning dekhay
+// Evidence-based title, enhanced description, recommended action, and AI disclaimer
 // ==========================================
 
 import React, { useState } from 'react';
@@ -16,7 +15,6 @@ function SmartReportSuggestion({
   onApplyAll,
   onViewExistingReport
 }) {
-  // Ei component AI improvement suggestions ar duplicate detection alert show korbe
   const [appliedBadge, setAppliedBadge] = useState(null);
 
   if (!suggestions && !duplicates) return null;
@@ -24,7 +22,8 @@ function SmartReportSuggestion({
   const {
     smartTitle,
     smartDescription,
-    improvementTips = []
+    recommendedAction,
+    disclaimer = 'AI-generated suggestions are based on the provided evidence and information. Please review and verify the suggestions before submitting your report.'
   } = suggestions || {};
 
   const {
@@ -35,32 +34,32 @@ function SmartReportSuggestion({
 
   const handleApplyAllClick = () => {
     if (onApplyAll) onApplyAll({ smartTitle, smartDescription });
-    setAppliedBadge('All AI recommendations applied to your report! ✨');
-    setTimeout(() => setAppliedBadge(null), 3500);
+    setAppliedBadge('All AI suggestions applied! ✨');
+    setTimeout(() => setAppliedBadge(null), 3000);
   };
 
   const handleApplyTitleClick = () => {
     if (onApplyTitle) onApplyTitle(smartTitle);
-    setAppliedBadge('Smart Title applied! 🎯');
-    setTimeout(() => setAppliedBadge(null), 3500);
+    setAppliedBadge('Title applied! 🎯');
+    setTimeout(() => setAppliedBadge(null), 3000);
   };
 
   const handleApplyDescClick = () => {
     if (onApplyDescription) onApplyDescription(smartDescription);
-    setAppliedBadge('Structured Description applied! 📝');
-    setTimeout(() => setAppliedBadge(null), 3500);
+    setAppliedBadge('Description applied! 📝');
+    setTimeout(() => setAppliedBadge(null), 3000);
   };
 
   return (
-    <div className="mt-3">
+    <div className="mt-3 mb-3">
       {/* 1. Duplicate Warning Banner if high similarity detected */}
       {hasDuplicate && similarReports.length > 0 && (
-        <div className="ai-duplicate-warning">
+        <div className="ai-duplicate-warning mb-3">
           <div className="ai-duplicate-header">
             <span>⚠️ Similar Civic Problem Found in this Area ({maxSimilarity}% Match)</span>
           </div>
           <p style={{ fontSize: '0.85rem', color: '#92400E', marginBottom: '8px' }}>
-            A similar issue has already been reported near this location. You can view the existing report to support/confirm it, or proceed if this is a separate incident.
+            A similar issue has already been reported near this location. You can view the existing report to support it, or proceed if this is a separate issue.
           </p>
 
           <ul className="ai-duplicate-list">
@@ -69,7 +68,7 @@ function SmartReportSuggestion({
                 <div>
                   <strong>{report.title}</strong>
                   <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                    📍 {report.address} {report.distanceKm ? `(~${report.distanceKm} km away)` : ''} • Status: <span className="badge bg-secondary">{report.status}</span>
+                    📍 {report.address || 'Reported location'} • Status: <span className="badge bg-secondary">{report.status}</span>
                   </div>
                 </div>
                 <div className="d-flex align-items-center gap-2">
@@ -92,97 +91,101 @@ function SmartReportSuggestion({
         </div>
       )}
 
-      {/* 2. Smart Report Enhancements & Tips */}
+      {/* 2. Evidence-Based Smart Report Enhancements */}
       {suggestions && (
-        <div className="ai-widget-card" style={{ borderLeftColor: '#2563EB', background: 'linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%)' }}>
-          <div className="ai-widget-header">
-            <div className="ai-badge" style={{ backgroundColor: '#DBEAFE', color: '#1E40AF' }}>
+        <div className="ai-widget-card" style={{ borderLeftColor: '#2563EB', background: '#FFFFFF' }}>
+          <div className="ai-widget-header pb-2 border-bottom d-flex justify-content-between align-items-center">
+            <div className="ai-badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8', fontWeight: 700 }}>
               ✨ AI Report Quality Assistant
             </div>
-            {appliedBadge && (
-              <span className="badge bg-success text-white animate__animated animate__fadeIn" style={{ fontSize: '0.82rem' }}>
-                {appliedBadge}
-              </span>
-            )}
+            <div className="d-flex align-items-center gap-2">
+              {appliedBadge && (
+                <span className="badge bg-success text-white" style={{ fontSize: '0.8rem' }}>
+                  {appliedBadge}
+                </span>
+              )}
+              <button
+                type="button"
+                className="btn btn-sm btn-primary"
+                onClick={handleApplyAllClick}
+                style={{ fontSize: '0.8rem', padding: '4px 10px' }}
+              >
+                ✨ Apply All Suggestions
+              </button>
+            </div>
           </div>
 
-          {/* Actionable Tips Box */}
-          {improvementTips.length > 0 && (
-            <div className="ai-suggestion-box" style={{ borderLeftColor: '#2563EB', backgroundColor: '#FFFFFF', border: '1px solid #BFDBFE' }}>
-              <div className="ai-suggestion-title" style={{ color: '#1E40AF' }}>
-                💡 Actionable Recommendations for Faster Action:
-              </div>
-              <ul style={{ paddingLeft: '1.2rem', margin: '4px 0 0 0', fontSize: '0.82rem', color: '#334155' }}>
-                {improvementTips.map((tip, idx) => (
-                  <li key={idx} className="mb-1">{tip}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Structured Preview */}
-          <div className="p-3 bg-white rounded border mb-3" style={{ borderColor: '#E2E8F0' }}>
+          <div className="p-3 bg-light rounded border my-2" style={{ borderColor: '#E2E8F0' }}>
+            {/* Suggested Title */}
             {smartTitle && (
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-1">
                   <span style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
-                    Suggested Professional Title:
+                    ✨ Suggested Title
                   </span>
                   <button
                     type="button"
                     className="btn btn-sm btn-outline-primary"
                     onClick={handleApplyTitleClick}
-                    style={{ fontSize: '0.76rem', padding: '2px 8px' }}
+                    style={{ fontSize: '0.74rem', padding: '1px 8px' }}
                   >
-                    🎯 Use Title
+                    Use Title
                   </button>
                 </div>
-                <div className="p-2 rounded bg-light fw-bold text-dark" style={{ fontSize: '0.9rem', border: '1px solid #E2E8F0' }}>
+                <div className="p-2 rounded bg-white fw-bold text-dark border" style={{ fontSize: '0.9rem', borderColor: '#CBD5E1' }}>
                   {smartTitle}
                 </div>
               </div>
             )}
 
+            {/* Suggested Description */}
             {smartDescription && (
-              <div>
+              <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-1">
                   <span style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
-                    Structured 4-Part Description:
+                    ✨ Suggested Description
                   </span>
                   <button
                     type="button"
                     className="btn btn-sm btn-outline-primary"
                     onClick={handleApplyDescClick}
-                    style={{ fontSize: '0.76rem', padding: '2px 8px' }}
+                    style={{ fontSize: '0.74rem', padding: '1px 8px' }}
                   >
-                    📝 Use Description
+                    Use Description
                   </button>
                 </div>
                 <div
-                  className="p-2 rounded bg-light"
+                  className="p-2 rounded bg-white text-dark border"
                   style={{
-                    fontSize: '0.82rem',
-                    color: '#334155',
+                    fontSize: '0.85rem',
+                    lineHeight: '1.5',
                     whiteSpace: 'pre-line',
-                    maxHeight: '110px',
-                    overflowY: 'auto',
-                    border: '1px solid #E2E8F0'
+                    borderColor: '#CBD5E1'
                   }}
                 >
                   {smartDescription}
                 </div>
               </div>
             )}
+
+            {/* Recommended Action */}
+            {recommendedAction && (
+              <div className="p-2 rounded bg-white border" style={{ borderColor: '#CBD5E1', borderLeft: '4px solid #10B981' }}>
+                <span className="text-muted d-block" style={{ fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  💡 Recommended Action
+                </span>
+                <p className="mb-0 text-dark mt-1" style={{ fontSize: '0.84rem' }}>
+                  {recommendedAction}
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="ai-actions-row">
-            <button
-              type="button"
-              className="btn-ai-apply"
-              onClick={handleApplyAllClick}
-            >
-              ✨ Apply All AI Suggestions (Title & Structured Description)
-            </button>
+          {/* AI Disclaimer */}
+          <div className="px-2 pt-1">
+            <small className="text-muted d-block" style={{ fontSize: '0.76rem', lineHeight: '1.4' }}>
+              ⚠️ <strong>AI Disclaimer:</strong> {disclaimer}
+            </small>
           </div>
         </div>
       )}

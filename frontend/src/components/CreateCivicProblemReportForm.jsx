@@ -125,14 +125,6 @@ const CreateCivicProblemReportForm = () => {
           setAiSuggestions(aiData.suggestions);
           setAiDuplicates(aiData.duplicates);
 
-          // Category auto-update korar sujog (jodi default road_damage thake)
-          if (aiData.recognition.suggestedCategory && formData.category === 'road_damage') {
-            setFormData(prev => ({
-              ...prev,
-              category: aiData.recognition.suggestedCategory
-            }));
-          }
-
           // Duplicate data sync kora
           if (aiData.duplicates && aiData.duplicates.similarReports?.length > 0) {
             setDuplicateData(aiData.duplicates);
@@ -185,10 +177,13 @@ const CreateCivicProblemReportForm = () => {
 
       if (response.success && response.smartContent) {
         setAiSuggestions(response.smartContent);
-        if (response.categorySuggestion?.categoryKey) {
-          setFormData(prev => ({
-            ...prev,
-            category: response.categorySuggestion.categoryKey
+        if (response.categorySuggestion?.categoryKey && response.categorySuggestion.categoryKey !== formData.category) {
+          // Show category recommendation without overwriting
+          setAiRecognition(prev => ({
+            ...(prev || {}),
+            suggestedCategory: response.categorySuggestion.categoryKey,
+            confidence: response.categorySuggestion.confidence,
+            detectedProblem: response.categorySuggestion.categoryName
           }));
         }
       }
@@ -208,7 +203,7 @@ const CreateCivicProblemReportForm = () => {
   };
 
   // ==========================================
-  // handleApplySmartContent — AI suggested Title ebong Structured Description form e auto-fill kore
+  // handleApplySmartContent — AI suggested Title ebong Description form e fill kore
   // ==========================================
   const handleApplySmartContent = ({ smartTitle, smartDescription }) => {
     // Ei function AI suggested content form input fields e inject kore
