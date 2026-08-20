@@ -105,12 +105,12 @@ const CreateCivicProblemReportForm = () => {
     // Ei function evidence upload handle korbe ebong AI recognition API call korbe
     const selectedFiles = Array.from(e.target.files);
     setFiles(selectedFiles);
+    setError(null);
 
     // Jodi image file thake, AI problem recognition trigger korbe
     const firstImageFile = selectedFiles.find(f => f.type.startsWith('image/'));
     if (firstImageFile) {
       setIsAiAnalyzing(true);
-      setError(null);
       try {
         const aiData = await AICivicProblemService.analyzeUploadedImage(firstImageFile, {
           title: formData.title,
@@ -140,7 +140,22 @@ const CreateCivicProblemReportForm = () => {
           }
         }
       } catch (aiErr) {
-        console.warn('AI analysis skipped or failed:', aiErr.message);
+        console.warn('AI analysis error / content moderation flag:', aiErr);
+        const errorData = aiErr.response?.data;
+        if (errorData?.isUnsafe || errorData?.flagType || aiErr.response?.status === 400) {
+          // Clear files and show safety error
+          setFiles([]);
+          if (e.target) e.target.value = '';
+          setAiRecognition(null);
+          setAiSuggestions(null);
+          setError(
+            errorData?.messageBn
+              ? `🚫 ${errorData.messageBn} (${errorData.error || errorData.message})`
+              : (errorData?.error || errorData?.message || 'Inappropriate or adult image detected. Please upload an appropriate civic issue photo.')
+          );
+        } else {
+          console.warn('AI analysis skipped or failed:', aiErr.message);
+        }
       } finally {
         setIsAiAnalyzing(false);
       }
@@ -290,7 +305,17 @@ const CreateCivicProblemReportForm = () => {
         navigate('/my-reports');
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.error || 'An error occurred while submitting the report.');
+      const errData = err.response?.data;
+      if (errData?.isUnsafe || errData?.flagType) {
+        setFiles([]);
+        setError(
+          errData.messageBn
+            ? `🚫 ${errData.messageBn} (${errData.error || errData.message})`
+            : (errData.error || errData.message || 'Inappropriate or adult image detected. Submission rejected.')
+        );
+      } else {
+        setError(err.response?.data?.error || 'An error occurred while submitting the report.');
+      }
     } finally {
       setLoading(false);
     }
@@ -379,6 +404,9 @@ const CreateCivicProblemReportForm = () => {
               ✓ {files.length} file(s) selected for upload & AI analysis.
             </small>
           )}
+          <small className="text-muted mt-2 d-block" style={{ fontSize: '0.78rem' }}>
+            🔒 <strong>Strict Content Safety:</strong> Nudity, adult content, or inappropriate materials are strictly forbidden and automatically filtered by AI.
+          </small>
         </div>
 
         {/* Problem Title */}

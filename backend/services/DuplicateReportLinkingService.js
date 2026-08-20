@@ -24,7 +24,7 @@ class DuplicateReportLinkingService {
 
     // 1. Check if original and duplicate reports exist in DB
     const originalReport = await db.queryOne(
-      'SELECT id, title, duplicate_of_id FROM reports WHERE id = ?',
+      'SELECT id, title, duplicate_of AS duplicate_of_id FROM reports WHERE id = ?',
       [originalId]
     );
     const duplicateReport = await db.queryOne(
@@ -51,7 +51,7 @@ class DuplicateReportLinkingService {
     // 3. Update duplicate report flags in reports table
     await db.query(
       `UPDATE reports 
-       SET is_duplicate = 1, duplicate_of_id = ? 
+       SET is_duplicate = 1, duplicate_of = ? 
        WHERE id = ?`,
       [rootOriginalId, duplicateId]
     );
@@ -71,7 +71,7 @@ class DuplicateReportLinkingService {
   static async getLinkedReports(reportId) {
     // Ei function report ta parent hole tar shob children, ar child hole tar parent ebong siblings fetch kore
     const report = await db.queryOne(
-      `SELECT r.id, r.title, r.is_duplicate, r.duplicate_of_id 
+      `SELECT r.id, r.title, r.is_duplicate, r.duplicate_of AS duplicate_of_id 
        FROM reports r WHERE r.id = ?`,
       [reportId]
     );
@@ -91,7 +91,7 @@ class DuplicateReportLinkingService {
     const primaryReport = await db.queryOne(
       `SELECT 
          r.id, r.user_id, r.title, r.description, r.category, r.status,
-         r.visibility, r.is_anonymous, r.verification_count, r.created_at,
+         r.visibility, r.is_anonymous, COALESCE(r.confirmation_count, 0) AS verification_count, r.created_at,
          l.latitude, l.longitude, l.address,
          CASE WHEN r.is_anonymous = 1 THEN 'Anonymous Citizen' ELSE u.name END as reporter_name
        FROM reports r
@@ -105,7 +105,7 @@ class DuplicateReportLinkingService {
     const duplicates = await db.query(
       `SELECT 
          r.id, r.user_id, r.title, r.description, r.category, r.status,
-         r.visibility, r.is_anonymous, r.verification_count, r.created_at,
+         r.visibility, r.is_anonymous, COALESCE(r.confirmation_count, 0) AS verification_count, r.created_at,
          dl.similarity_score, dl.created_at as linked_at,
          l.latitude, l.longitude, l.address,
          CASE WHEN r.is_anonymous = 1 THEN 'Anonymous Citizen' ELSE u.name END as reporter_name
@@ -136,7 +136,7 @@ class DuplicateReportLinkingService {
   static async unlinkReport(duplicateId, requestingUser = null) {
     // Ei function duplicate_links theke record delete kore ebong reports table er duplicate flag clear kore
     const report = await db.queryOne(
-      'SELECT id, user_id, duplicate_of_id FROM reports WHERE id = ?',
+      'SELECT id, user_id, duplicate_of AS duplicate_of_id FROM reports WHERE id = ?',
       [duplicateId]
     );
 
@@ -170,7 +170,7 @@ class DuplicateReportLinkingService {
 
     // Reset report duplicate flags
     await db.query(
-      'UPDATE reports SET is_duplicate = 0, duplicate_of_id = NULL WHERE id = ?',
+      'UPDATE reports SET is_duplicate = 0, duplicate_of = NULL WHERE id = ?',
       [duplicateId]
     );
 

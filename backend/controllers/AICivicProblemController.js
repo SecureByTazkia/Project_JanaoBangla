@@ -7,6 +7,7 @@
 const AIImageBasedProblemRecognitionService = require('../services/AIImageBasedProblemRecognitionService');
 const AIProblemCategorySuggestionService = require('../services/AIProblemCategorySuggestionService');
 const AIAdvancedDuplicateDetectionService = require('../services/AIAdvancedDuplicateDetectionService');
+const ImageContentSafetyModerationService = require('../services/ImageContentSafetyModerationService');
 
 class AICivicProblemController {
 
@@ -25,6 +26,21 @@ class AICivicProblemController {
 
       const filePath = req.file.path;
       const originalName = req.file.originalname;
+
+      // 0. Strict Image Content Safety & Nudity Moderation Check
+      const safetyCheck = await ImageContentSafetyModerationService.inspectImage(filePath, originalName);
+      if (!safetyCheck.isSafe) {
+        // Delete unsafe image immediately from disk
+        ImageContentSafetyModerationService.safelyRemoveFile(filePath);
+        return res.status(400).json({
+          success: false,
+          isUnsafe: true,
+          flagType: safetyCheck.flagType,
+          error: safetyCheck.reason,
+          message: safetyCheck.reason,
+          messageBn: safetyCheck.reasonBn
+        });
+      }
 
       // 1. Run AI Image Recognition
       const recognitionResult = await AIImageBasedProblemRecognitionService.analyzeEvidenceImage(filePath, originalName);
