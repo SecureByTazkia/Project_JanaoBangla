@@ -92,6 +92,55 @@ async function sendTwilioSms({ toPhone, message, requestId }) {
 }
 
 // ==========================================
+// sendMimSms — MIM SMS Gateway Bangladesh
+// MIM SMS API credentials .env e thakle use korbe
+// ==========================================
+async function sendMimSms({ toPhone, message, requestId }) {
+  const apiKey = process.env.MIM_SMS_API_KEY || process.env.SMS_API_KEY;
+  const senderId = process.env.MIM_SMS_SENDER_ID || process.env.SMS_SENDER_ID || 'JanaoBangla';
+
+  // API key na thakle console fallback
+  if (!apiKey || apiKey === 'your_sms_key') {
+    console.log(`\n📱 [MIM SMS SIMULATION] (No API key in .env)`);
+    console.log(`   To: ${toPhone} | SOS: #SOS-${requestId}`);
+    console.log(`   Message: ${message.slice(0, 80)}...\n`);
+    return sendConsoleSms({ toPhone, message, requestId });
+  }
+
+  try {
+    const axios = require('axios');
+    let phone = toPhone.trim().replace(/[^0-9]/g, '');
+    if (phone.startsWith('880')) phone = '880' + phone.substring(3);
+    else if (phone.startsWith('01')) phone = '88' + phone;
+
+    const response = await axios.post('https://api.mimsms.com/smsapi', null, {
+      params: {
+        api_key: apiKey,
+        type: 'text',
+        contacts: phone,
+        senderid: senderId,
+        msg: message
+      },
+      timeout: 10000
+    });
+
+    console.log(`✅ MIM SMS sent to ${phone}:`, response.data);
+    return {
+      success: true,
+      provider: 'mimsms',
+      messageId: `mim-${Date.now()}`
+    };
+  } catch (error) {
+    console.error(`❌ MIM SMS error for ${toPhone}:`, error.message);
+    return {
+      success: false,
+      provider: 'mimsms',
+      error: error.message
+    };
+  }
+}
+
+// ==========================================
 // sendEmergencySms — Main SMS dispatch function
 // Provider config dekhe appropriate sender choose korbe
 // ==========================================
@@ -101,10 +150,15 @@ async function sendEmergencySms({ toPhone, message, requestId }) {
 
   // Provider anujayee SMS function call kora hocche
   switch (provider) {
+    case 'mimsms':
+    case 'mim':
+      return sendMimSms({ toPhone, message, requestId });
+
     case 'twilio':
       return sendTwilioSms({ toPhone, message, requestId });
 
     case 'console':
+    case 'mock':
     default:
       // Default: console simulation
       return sendConsoleSms({ toPhone, message, requestId });

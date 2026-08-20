@@ -12,11 +12,11 @@ const nodemailer = require('nodemailer');
 // .env theke SMTP config newa hocche
 // ==========================================
 function createTransporter() {
-  // SMTP config .env theke newa hocche
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-  const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const smtpPort = parseInt(process.env.SMTP_PORT) || 587;
+  // SMTP config .env theke newa hocche (EMAIL_USER / SMTP_USER fallback sahit)
+  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  const smtpHost = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const smtpPort = parseInt(process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587;
 
   // SMTP credentials na thakle null return korbe
   if (!smtpUser || !smtpPass) {
@@ -27,7 +27,7 @@ function createTransporter() {
   return nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
-    secure: smtpPort === 465, // 465 port e SSL, baki sব TLS
+    secure: smtpPort === 465, // 465 port e SSL, baki sob TLS
     auth: {
       user: smtpUser,
       pass: smtpPass
@@ -43,7 +43,7 @@ function createTransporter() {
 // Transporter na thakle console e log kore, crash korbe na
 // ==========================================
 async function sendEmergencyEmail({ toEmail, toName, subject, htmlBody, requestId }) {
-  // Result object tৈri kora hocche
+  // Result object toiri kora hocche
   const result = {
     success: false,
     provider: 'nodemailer',
@@ -63,7 +63,7 @@ async function sendEmergencyEmail({ toEmail, toName, subject, htmlBody, requestI
       console.log(`   To: ${toName} <${toEmail}>`);
       console.log(`   Subject: ${subject}`);
       console.log(`   Emergency ID: #SOS-${requestId}`);
-      console.log('   💡 Add SMTP_USER and SMTP_PASS to .env to send real emails\n');
+      console.log('   💡 Add SMTP_USER/EMAIL_USER and SMTP_PASS/EMAIL_PASSWORD to .env to send real emails\n');
 
       result.success = true;
       result.simulated = true;
@@ -72,7 +72,7 @@ async function sendEmergencyEmail({ toEmail, toName, subject, htmlBody, requestI
     }
 
     // Email pathano hocche
-    const fromEmail = process.env.EMAIL_FROM || `JanaoBangla Emergency <${process.env.SMTP_USER}>`;
+    const fromEmail = process.env.EMAIL_FROM || process.env.EMAIL_FROM_ADDRESS || `JanaoBangla Emergency <${process.env.SMTP_USER || process.env.EMAIL_USER}>`;
 
     const info = await transporter.sendMail({
       from: fromEmail,

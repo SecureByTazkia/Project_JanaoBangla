@@ -100,10 +100,10 @@ async function triggerSOS(req, res) {
       emailStatus
     });
 
-    // User er notification feed e SOS alert notification jog kora hocche
+    // User er notification feed e SOS alert notification jog kora hocche (type: emergency_alert)
     await NotificationModel.create({
       userId,
-      type:      'sos_triggered',
+      type:      'emergency_alert',
       title:     '🚨 SOS Alert Sent',
       message:   `Your emergency SOS alert #SOS-${emergencyRequest.id} has been sent to ${contacts.length} contact(s).`,
       relatedId: emergencyRequest.id
@@ -163,10 +163,10 @@ async function resolveSOS(req, res) {
     // Status 'resolved' e update kora hocche
     await EmergencyRequestModel.updateStatus(requestId, userId, 'resolved');
 
-    // User notification e resolved message jog kora hocche
+    // User notification e resolved message jog kora hocche (type: emergency_alert)
     await NotificationModel.create({
       userId,
-      type:      'sos_resolved',
+      type:      'emergency_alert',
       title:     '✅ SOS Alert Resolved',
       message:   `Your SOS alert #SOS-${requestId} has been marked as resolved. Stay safe!`,
       relatedId: requestId
@@ -214,10 +214,10 @@ async function cancelSOS(req, res) {
     // Status 'cancelled' e update kora hocche
     await EmergencyRequestModel.updateStatus(requestId, userId, 'cancelled');
 
-    // User notification e cancel message jog kora hocche
+    // User notification e cancel message jog kora hocche (type: emergency_alert)
     await NotificationModel.create({
       userId,
-      type:      'sos_cancelled',
+      type:      'emergency_alert',
       title:     '❌ SOS Alert Cancelled',
       message:   `Your SOS alert #SOS-${requestId} has been cancelled.`,
       relatedId: requestId

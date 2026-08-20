@@ -12,9 +12,9 @@ const db = require('../config/DatabaseConnection');
 // User SOS page e contact list dekhate ei function call hobe
 // ==========================================
 async function getAllByUserId(userId) {
-  // User er sob emergency contacts fetch kora hocche, primary contacts age ashbe
+  // User er sob emergency contacts fetch kora hocche, contact_name ar phone_number alias sahit
   const [rows] = await db.pool.query(
-    `SELECT id, user_id, name, phone, email, relationship, is_primary, created_at, updated_at
+    `SELECT id, user_id, contact_name AS name, phone_number AS phone, email, relationship, is_primary, created_at, updated_at
      FROM emergency_contacts
      WHERE user_id = ?
      ORDER BY is_primary DESC, created_at ASC`,
@@ -30,7 +30,7 @@ async function getAllByUserId(userId) {
 async function getByIdAndUserId(contactId, userId) {
   // Specific contact ta ei user er kina check kora hocche
   const [rows] = await db.pool.query(
-    `SELECT id, user_id, name, phone, email, relationship, is_primary, created_at, updated_at
+    `SELECT id, user_id, contact_name AS name, phone_number AS phone, email, relationship, is_primary, created_at, updated_at
      FROM emergency_contacts
      WHERE id = ? AND user_id = ?`,
     [contactId, userId]
@@ -51,9 +51,9 @@ async function create({ userId, name, phone, email, relationship, isPrimary }) {
     );
   }
 
-  // Notun contact insert kora hocche database e
+  // Notun contact insert kora hocche database e (contact_name, phone_number)
   const [result] = await db.pool.query(
-    `INSERT INTO emergency_contacts (user_id, name, phone, email, relationship, is_primary)
+    `INSERT INTO emergency_contacts (user_id, contact_name, phone_number, email, relationship, is_primary)
      VALUES (?, ?, ?, ?, ?, ?)`,
     [userId, name, phone, email || null, relationship || null, isPrimary ? 1 : 0]
   );
@@ -78,7 +78,7 @@ async function update(contactId, userId, { name, phone, email, relationship, isP
   // Contact er data update kora hocche
   await db.pool.query(
     `UPDATE emergency_contacts
-     SET name = ?, phone = ?, email = ?, relationship = ?, is_primary = ?, updated_at = NOW()
+     SET contact_name = ?, phone_number = ?, email = ?, relationship = ?, is_primary = ?, updated_at = NOW()
      WHERE id = ? AND user_id = ?`,
     [name, phone, email || null, relationship || null, isPrimary ? 1 : 0, contactId, userId]
   );

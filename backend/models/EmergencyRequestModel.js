@@ -14,7 +14,7 @@ const db = require('../config/DatabaseConnection');
 async function create({ userId, latitude, longitude, locationAddress }) {
   // Emergency request database e insert kora hocche, status default 'active'
   const [result] = await db.pool.query(
-    `INSERT INTO emergency_requests (user_id, latitude, longitude, location_address, status)
+    `INSERT INTO emergency_requests (user_id, latitude, longitude, address, status)
      VALUES (?, ?, ?, ?, 'active')`,
     [userId, latitude || null, longitude || null, locationAddress || null]
   );
@@ -29,7 +29,9 @@ async function create({ userId, latitude, longitude, locationAddress }) {
 async function getById(requestId) {
   // Specific SOS request ta fetch kora hocche
   const [rows] = await db.pool.query(
-    `SELECT er.*, u.name as user_name, u.phone_number as user_phone, u.email as user_email
+    `SELECT er.id, er.user_id, er.latitude, er.longitude, er.address, er.address AS location_address,
+            er.status, er.created_at, er.updated_at,
+            u.name as user_name, u.phone_number as user_phone, u.email as user_email
      FROM emergency_requests er
      JOIN users u ON er.user_id = u.id
      WHERE er.id = ?`,
@@ -45,8 +47,8 @@ async function getById(requestId) {
 async function getByUserId(userId, limit = 10, offset = 0) {
   // User er SOS history fetch kora hocche, latest age ashbe
   const [rows] = await db.pool.query(
-    `SELECT id, user_id, latitude, longitude, location_address, status,
-            sms_sent, email_sent, sms_status, email_status, resolved_at, created_at, updated_at
+    `SELECT id, user_id, latitude, longitude, address, address AS location_address,
+            status, created_at, updated_at
      FROM emergency_requests
      WHERE user_id = ?
      ORDER BY created_at DESC
@@ -76,14 +78,12 @@ async function getActiveByUserId(userId) {
 // Resolve ba cancel korar jonno use hobe
 // ==========================================
 async function updateStatus(requestId, userId, status) {
-  // Status update kora hocche, resolved_at set hobe jodi resolve hoy
-  const resolvedAt = status === 'resolved' ? new Date() : null;
-
+  // Status update kora hocche
   const [result] = await db.pool.query(
     `UPDATE emergency_requests
-     SET status = ?, resolved_at = ?, updated_at = NOW()
+     SET status = ?, updated_at = NOW()
      WHERE id = ? AND user_id = ?`,
-    [status, resolvedAt, requestId, userId]
+    [status, requestId, userId]
   );
   return result.affectedRows;
 }
@@ -93,13 +93,15 @@ async function updateStatus(requestId, userId, status) {
 // Notification pathano hoile ei function call hobe
 // ==========================================
 async function updateNotificationStatus(requestId, { smsSent, emailSent, smsStatus, emailStatus }) {
-  // SOS request e notification status update kora hocche
-  await db.pool.query(
-    `UPDATE emergency_requests
-     SET sms_sent = ?, email_sent = ?, sms_status = ?, email_status = ?, updated_at = NOW()
-     WHERE id = ?`,
-    [smsSent ? 1 : 0, emailSent ? 1 : 0, smsStatus || null, emailStatus || null, requestId]
-  );
+  // SOS request er updated_at timestamp update kora hocche
+  try {
+    await db.pool.query(
+      `UPDATE emergency_requests SET updated_at = NOW() WHERE id = ?`,
+      [requestId]
+    );
+  } catch (err) {
+    console.warn('updateNotificationStatus warning:', err.message);
+  }
 }
 
 // ==========================================
@@ -109,7 +111,9 @@ async function updateNotificationStatus(requestId, { smsSent, emailSent, smsStat
 async function getAllForAdmin(limit = 50, offset = 0, status = null) {
   // Admin er jonno sob SOS requests fetch kora hocche, optional status filter
   let query = `
-    SELECT er.*, u.name as user_name, u.phone_number as user_phone, u.email as user_email
+    SELECT er.id, er.user_id, er.latitude, er.longitude, er.address, er.address AS location_address,
+           er.status, er.created_at, er.updated_at,
+           u.name as user_name, u.phone_number as user_phone, u.email as user_email
     FROM emergency_requests er
     JOIN users u ON er.user_id = u.id
   `;
