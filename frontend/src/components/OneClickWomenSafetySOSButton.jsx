@@ -213,11 +213,26 @@ function OneClickWomenSafetySOSButton({ onSOSTriggered, onStatusChanged, emergen
 
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(3px)' }}>
-          <div className="modal-dialog modal-dialog-centered">
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{
+            display: 'block',
+            backgroundColor: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(4px)',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 99999,
+            overflowY: 'auto'
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered" style={{ zIndex: 100000, margin: '1.75rem auto' }}>
             <div className="modal-content border-danger border-2 shadow-lg">
               <div className="modal-header bg-danger text-white py-3">
-                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2 text-white">
                   <span>🚨</span> CONFIRM EMERGENCY SOS ALERT
                 </h5>
                 <button
