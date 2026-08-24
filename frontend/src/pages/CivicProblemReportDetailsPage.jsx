@@ -59,7 +59,7 @@ const CivicProblemReportDetailsPage = () => {
 
   const formatCategory = (cat) => {
     if (!cat) return '';
-    if (cat === 'extortion_chanda') return 'Extortion / Chanda Collection';
+    if (cat === 'extortion_chanda') return 'Extortion / Chanda Collection Report';
     if (cat === 'women_harassment') return 'Women Harassment';
     return cat.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
