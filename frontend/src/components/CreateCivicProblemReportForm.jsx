@@ -21,7 +21,9 @@ const CreateCivicProblemReportForm = () => {
     isAnonymous: false,
     latitude: '',
     longitude: '',
-    address: ''
+    address: '',
+    // Women Harassment er jonno harassment type (online/offline) — default empty
+    harassmentType: ''
   });
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -37,7 +39,14 @@ const CreateCivicProblemReportForm = () => {
   const handleChange = (e) => {
     // Ei function form inputs update korbe
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+      // Category change hole Women Harassment er harassment type reset hobe
+      if (name === 'category' && value !== 'women_harassment') {
+        updated.harassmentType = '';
+      }
+      return updated;
+    });
   };
 
   // ==========================================
@@ -92,6 +101,10 @@ const CreateCivicProblemReportForm = () => {
       data.append('category', formData.category);
       data.append('visibility', formData.visibility);
       data.append('isAnonymous', formData.isAnonymous);
+      // Women Harassment e harassment_type backend e pathano hocche
+      if (formData.category === 'women_harassment' && formData.harassmentType) {
+        data.append('harassment_type', formData.harassmentType);
+      }
       if (formData.latitude) data.append('latitude', formData.latitude);
       if (formData.longitude) data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
@@ -161,6 +174,8 @@ const CreateCivicProblemReportForm = () => {
               <option value="water_drainage">Water / Drainage</option>
               <option value="traffic_accident">Traffic / Accident</option>
               <option value="public_safety">Public Safety</option>
+              <option value="women_harassment">Women Harassment</option>
+              <option value="extortion_chanda">Extortion / Unauthorized Chanda Collection</option>
             </select>
           </div>
           <div className="col-md-6">
@@ -177,6 +192,29 @@ const CreateCivicProblemReportForm = () => {
             <small className="text-muted">Private reports won't appear on the public map.</small>
           </div>
         </div>
+
+        {/* Women Harassment e Harassment Type dropdown show hobe */}
+        {formData.category === 'women_harassment' && (
+          <div className="mb-3">
+            <label className="form-label fw-bold">
+              Harassment Type <span className="text-danger">*</span>
+            </label>
+            <select
+              className="form-select"
+              name="harassmentType"
+              value={formData.harassmentType}
+              onChange={handleChange}
+              required
+            >
+              <option value="">— Select Harassment Type —</option>
+              <option value="online">Online Harassment</option>
+              <option value="offline">Offline / Physical Harassment</option>
+            </select>
+            <small className="text-muted">
+              Select whether this is online or in-person / physical harassment.
+            </small>
+          </div>
+        )}
 
         {/* Reporter Identity Option (Anonymous Reporting) */}
         <div className="mb-3 p-3 border rounded bg-light">

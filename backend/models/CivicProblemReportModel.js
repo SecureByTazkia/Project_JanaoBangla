@@ -15,15 +15,17 @@ class CivicProblemReportModel {
   // ==========================================
   static async createReport(reportData) {
     // Ei function user-er problem report database e insert korbe
-    const { user_id, title, description, category, visibility, is_anonymous } = reportData;
+    const { user_id, title, description, category, visibility, is_anonymous, harassment_type } = reportData;
     
     // User anonymous choose korle 1 hobe, noile default 0
     const anonymousValue = is_anonymous ? 1 : 0;
+    // Harassment type শুধু women_harassment category-র জন্য store হবে, অন্য category-তে NULL
+    const harassmentTypeValue = (category === 'women_harassment' && harassment_type) ? harassment_type : null;
 
     const reportId = await db.insert(
-      `INSERT INTO reports (user_id, title, description, category, visibility, is_anonymous, status, priority)
-       VALUES (?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
-      [user_id, title, description, category, visibility || 'public', anonymousValue]
+      `INSERT INTO reports (user_id, title, description, category, harassment_type, visibility, is_anonymous, status, priority)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
+      [user_id, title, description, category, harassmentTypeValue, visibility || 'public', anonymousValue]
     );
     return reportId;
   }
@@ -111,6 +113,7 @@ class CivicProblemReportModel {
          r.title,
          r.description,
          r.category,
+         r.harassment_type,
          r.status,
          r.visibility,
          r.is_anonymous,

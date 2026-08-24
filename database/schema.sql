@@ -119,8 +119,11 @@ CREATE TABLE IF NOT EXISTS reports (
                        'street_light',
                        'water_drainage',
                        'traffic_accident',
-                       'public_safety'
+                       'public_safety',
+                       'women_harassment',
+                       'extortion_chanda'
                      ) NOT NULL,
+  harassment_type    ENUM('online', 'offline') NULL DEFAULT NULL,
   status             ENUM(
                        'submitted',
                        'under_review',

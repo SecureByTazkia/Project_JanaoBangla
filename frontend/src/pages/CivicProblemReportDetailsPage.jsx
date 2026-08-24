@@ -61,6 +61,12 @@ const CivicProblemReportDetailsPage = () => {
     return cat.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
+  // Women Harassment sub-type label display
+  const formatHarassmentType = (type) => {
+    if (!type) return null;
+    return type === 'online' ? 'Online Harassment' : 'Offline / Physical Harassment';
+  };
+
   return (
     <div className="container py-5">
       <div className="mb-4 d-flex justify-content-between align-items-center">
@@ -153,6 +159,16 @@ const CivicProblemReportDetailsPage = () => {
                 <div className="mb-3">
                   <small className="text-muted d-block">Address</small>
                   <span className="fw-medium text-dark">{report.address}</span>
+                </div>
+              )}
+
+              {/* Women Harassment e sub-type show hobe */}
+              {report.category === 'women_harassment' && report.harassment_type && (
+                <div className="mb-3">
+                  <small className="text-muted d-block">Harassment Type</small>
+                  <span className="badge bg-danger">
+                    {formatHarassmentType(report.harassment_type)}
+                  </span>
                 </div>
               )}
 

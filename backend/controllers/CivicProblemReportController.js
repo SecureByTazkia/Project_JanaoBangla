@@ -22,6 +22,22 @@ class CivicProblemReportController {
         return res.status(400).json({ error: 'Title, description and category are required' });
       }
 
+      // Valid categories validation (existing + 2 new ones)
+      const validCategories = [
+        'road_damage', 'garbage_waste', 'street_light', 'water_drainage',
+        'traffic_accident', 'public_safety', 'women_harassment', 'extortion_chanda'
+      ];
+      if (!validCategories.includes(reportData.category)) {
+        return res.status(400).json({ error: 'Invalid category selected' });
+      }
+
+      // Women harassment er jonno harassment_type validate kora hocche
+      if (reportData.category === 'women_harassment') {
+        if (!reportData.harassment_type || !['online', 'offline'].includes(reportData.harassment_type)) {
+          return res.status(400).json({ error: 'Harassment type (online or offline) is required for Women Harassment reports' });
+        }
+      }
+
       const reportId = await CivicProblemReportManagementService.createReport(userId, reportData, files);
 
       return res.status(201).json({

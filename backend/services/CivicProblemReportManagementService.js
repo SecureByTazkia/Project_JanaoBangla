@@ -27,6 +27,8 @@ class CivicProblemReportManagementService {
       title: data.title,
       description: data.description,
       category: data.category,
+      // Women Harassment er jonno harassment_type (online/offline) pass kora hocche
+      harassment_type: data.harassment_type || null,
       visibility: data.visibility || 'public',
       is_anonymous: isAnonymous ? 1 : 0
     });
