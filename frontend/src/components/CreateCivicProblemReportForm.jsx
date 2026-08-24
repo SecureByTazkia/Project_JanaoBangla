@@ -175,7 +175,7 @@ const CreateCivicProblemReportForm = () => {
               <option value="traffic_accident">Traffic / Accident</option>
               <option value="public_safety">Public Safety</option>
               <option value="women_harassment">Women Harassment</option>
-              <option value="extortion_chanda">Extortion / Chanda Collection Report</option>
+              <option value="extortion_chanda">Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
             </select>
           </div>
           <div className="col-md-6">
