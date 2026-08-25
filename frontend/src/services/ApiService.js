@@ -127,8 +127,17 @@ export const reportApi = {};
 // Phase 4 — Location/Map
 export const locationApi = {};
 
-// Phase 5 — Community
-export const communityApi = {};
+// Phase 5 — Community API
+export const communityApi = {
+  getFeed: (params) => apiClient.get('/community/feed', { params }),
+  getDiscussion: (reportId) => apiClient.get(`/community/reports/${reportId}/discussion`),
+  getComments: (reportId) => apiClient.get(`/community/reports/${reportId}/comments`),
+  postComment: (reportId, data) => apiClient.post(`/community/reports/${reportId}/comments`, data),
+  toggleVerify: (reportId) => apiClient.post(`/community/reports/${reportId}/verify`),
+  getVerifyStatus: (reportId) => apiClient.get(`/community/reports/${reportId}/verification-status`),
+  flagComment: (commentId) => apiClient.post(`/community/comments/${commentId}/flag`),
+  deleteComment: (commentId) => apiClient.delete(`/community/comments/${commentId}`)
+};
 
 // Phase 6 — Duplicates
 export const duplicateApi = {};
@@ -136,15 +145,42 @@ export const duplicateApi = {};
 // Phase 7 — SOS Emergency
 export const sosApi = {};
 
-// Phase 8 — Admin
-export const adminApi = {};
+// Phase 8 — Admin Dashboard API
+export const adminApi = {
+  // System overview stats fetch
+  getStats: () => apiClient.get('/admin/stats'),
+  // Users list pagination ar search সহ
+  getUsers: (params) => apiClient.get('/admin/users', { params }),
+  // User role update
+  updateUserRole: (userId, role) => apiClient.patch(`/admin/users/${userId}/role`, { role }),
+  // User status toggle
+  updateUserStatus: (userId, isActive) => apiClient.patch(`/admin/users/${userId}/status`, { isActive }),
+  // Reports list with filters
+  getReports: (params) => apiClient.get('/admin/reports', { params }),
+  // Report status update
+  updateReportStatus: (id, status) => apiClient.patch(`/admin/reports/${id}/status`, { status }),
+  // Report delete
+  deleteReport: (id) => apiClient.delete(`/admin/reports/${id}`),
+  // Flagged comments fetch
+  getFlaggedComments: () => apiClient.get('/admin/comments'),
+  // Comment moderation
+  moderateComment: (id, isHidden) => apiClient.patch(`/admin/comments/${id}/moderate`, { isHidden }),
+  // System logs
+  getSystemLogs: () => apiClient.get('/admin/system-logs')
+};
 
 // Phase 9 — Search & Analytics
 export const searchApi = {};
 export const analyticsApi = {};
 
 // Phase 10 — AI
-export const aiApi = {};
+export const aiApi = {
+  analyzeImage: (formData) => apiClient.post('/ai/analyze-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  getSuggestions: (data) => apiClient.post('/ai/suggest', data),
+  detectDuplicates: (data) => apiClient.post('/ai/detect-duplicates', data)
+};
 
 // Default export hisebe apiClient export kora hocche
 export default apiClient;

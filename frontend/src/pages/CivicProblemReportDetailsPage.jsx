@@ -1,15 +1,10 @@
-// ==========================================
-// JanaoBangla — Civic Problem Report Details Page
-// BRANCH: feature-civic-problem-reporting-visibility-and-management
-// Report full view with evidence, location, visibility, and reporter identity
-// ==========================================
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import CivicProblemReportService from '../services/CivicProblemReportService';
 import CivicProblemReportStatus from '../components/CivicProblemReportStatus';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import CommunityDiscussionSection from '../components/CommunityDiscussionSection';
 
 const CivicProblemReportDetailsPage = () => {
   const { id } = useParams();
@@ -58,16 +53,7 @@ const CivicProblemReportDetailsPage = () => {
   };
 
   const formatCategory = (cat) => {
-    if (!cat) return '';
-    if (cat === 'extortion_chanda') return 'Illegal Money Collection Report/চাঁদাবাজির অভিযোগ';
-    if (cat === 'women_harassment') return 'Women Harassment';
     return cat.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  };
-
-  // Women Harassment sub-type label display
-  const formatHarassmentType = (type) => {
-    if (!type) return null;
-    return type === 'online' ? 'Online Harassment' : 'Offline / Physical Harassment';
   };
 
   return (
@@ -123,6 +109,16 @@ const CivicProblemReportDetailsPage = () => {
                   <p className="text-muted fst-italic">No evidence attached.</p>
                 )}
               </div>
+
+              {/* Phase 5 — Community Discussion & Problem Verification */}
+              {report.visibility === 'public' && (
+                <div className="mt-4 pt-3 border-top">
+                  <CommunityDiscussionSection
+                    reportId={report.id}
+                    initialVerificationCount={report.verification_count || 0}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -134,15 +130,9 @@ const CivicProblemReportDetailsPage = () => {
               
               <div className="mb-3">
                 <small className="text-muted d-block">Reported By</small>
+                {/* is_anonymous hole 'Anonymous Citizen' dekhabe, noile real name */}
                 <span className="fw-medium text-dark">
-                  {report.is_anonymous ? 'Anonymous Citizen' : (report.reporter_name || 'Citizen')}
-                </span>
-              </div>
-
-              <div className="mb-3">
-                <small className="text-muted d-block">Reporter Identity</small>
-                <span className={`badge ${report.is_anonymous ? 'bg-secondary' : 'bg-info text-dark'}`}>
-                  {report.is_anonymous ? '🕵️ Anonymous' : 'Public Identity'}
+                  {report.is_anonymous === 1 ? '🕵️ Anonymous Citizen' : (report.reporter_name || 'Citizen')}
                 </span>
               </div>
               
@@ -158,20 +148,19 @@ const CivicProblemReportDetailsPage = () => {
                 </span>
               </div>
 
+              <div className="mb-3">
+                <small className="text-muted d-block">Reporter Identity</small>
+                {report.is_anonymous === 1 ? (
+                  <span className="badge bg-secondary">🕵️ Anonymous</span>
+                ) : (
+                  <span className="badge bg-light text-dark border">👤 Public Identity</span>
+                )}
+              </div>
+
               {report.address && (
                 <div className="mb-3">
                   <small className="text-muted d-block">Address</small>
                   <span className="fw-medium text-dark">{report.address}</span>
-                </div>
-              )}
-
-              {/* Women Harassment e sub-type show hobe */}
-              {report.category === 'women_harassment' && report.harassment_type && (
-                <div className="mb-3">
-                  <small className="text-muted d-block">Harassment Type</small>
-                  <span className="badge bg-danger">
-                    {formatHarassmentType(report.harassment_type)}
-                  </span>
                 </div>
               )}
 

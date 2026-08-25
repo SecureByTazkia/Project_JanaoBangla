@@ -1,8 +1,7 @@
 // ==========================================
 // JanaoBangla — Civic Problem Report Model
-// BRANCH: feature-civic-problem-reporting-visibility-and-management
-// Actual database schema onujayi sob query likha hoyeche
-// reports table: id, user_id, title, description, category, status, visibility, is_anonymous, priority, is_duplicate, duplicate_of, confirmation_count, created_at, updated_at
+// BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
+// is_anonymous support add kora hoyeche — public feed e identity mask korbe
 // ==========================================
 
 const db = require('../services/DatabaseService');
@@ -10,22 +9,17 @@ const db = require('../services/DatabaseService');
 class CivicProblemReportModel {
 
   // ==========================================
-  // createReport — Natun report create kore reports table e insert kore
-  // is_anonymous boolean/tinyint support kora hoyeche jate citizen identity hide korte pare
+  // createReport — Natun civic report create kore DB te insert kore
+  // is_anonymous true hole public te 'Anonymous Citizen' dekhabe
   // ==========================================
   static async createReport(reportData) {
-    // Ei function user-er problem report database e insert korbe
-    const { user_id, title, description, category, visibility, is_anonymous, harassment_type } = reportData;
-    
+    const { user_id, title, description, category, visibility, is_anonymous } = reportData;
     // User anonymous choose korle 1 hobe, noile default 0
     const anonymousValue = is_anonymous ? 1 : 0;
-    // Harassment type শুধু women_harassment category-র জন্য store হবে, অন্য category-তে NULL
-    const harassmentTypeValue = (category === 'women_harassment' && harassment_type) ? harassment_type : null;
-
     const reportId = await db.insert(
-      `INSERT INTO reports (user_id, title, description, category, harassment_type, visibility, is_anonymous, status, priority)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
-      [user_id, title, description, category, harassmentTypeValue, visibility || 'public', anonymousValue]
+      `INSERT INTO reports (user_id, title, description, category, visibility, is_anonymous, status, priority)
+       VALUES (?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
+      [user_id, title, description, category, visibility || 'public', anonymousValue]
     );
     return reportId;
   }
@@ -34,7 +28,6 @@ class CivicProblemReportModel {
   // saveLocation — GPS coordinates locations table e save kore
   // ==========================================
   static async saveLocation(reportId, locationData) {
-    // Ei function report er sathe attached latitude, longitude ebong address save kore
     const { latitude, longitude, address } = locationData;
     const locationId = await db.insert(
       `INSERT INTO locations (report_id, latitude, longitude, address) VALUES (?, ?, ?, ?)`,
@@ -44,10 +37,9 @@ class CivicProblemReportModel {
   }
 
   // ==========================================
-  // addEvidence — Upload kora image/video report_evidence table e store kore
+  // addEvidence — Uploaded image/video metadata DB te save kore
   // ==========================================
   static async addEvidence(evidenceData) {
-    // Ei function evidence image/video file path DB te save korbe
     const { report_id, file_type, file_path, original_name, file_size } = evidenceData;
     const evidenceId = await db.insert(
       `INSERT INTO report_evidence (report_id, file_type, file_path, original_name, file_size)
@@ -58,10 +50,10 @@ class CivicProblemReportModel {
   }
 
   // ==========================================
-  // getReportsByUserId — Specific user er nijer shob report list return kore (My Reports page)
+  // getReportsByUserId — User er nijer shob report return kore (My Reports)
+  // Owner nijer anonymous report-o dekhte parbe is_anonymous flag sahit
   // ==========================================
   static async getReportsByUserId(userId) {
-    // User nijer submitted shob reports dekhte parbe, chaile nijer anonymous status o dekhte parbe
     const reports = await db.query(
       `SELECT r.*, l.latitude, l.longitude, l.address
        FROM reports r
@@ -74,10 +66,9 @@ class CivicProblemReportModel {
   }
 
   // ==========================================
-  // getReportById — Single report er details ID diye return kore
+  // getReportById — Single report er full details return kore (real reporter_name shoho)
   // ==========================================
   static async getReportById(reportId) {
-    // Single report er information, location ar real user name fetch korbe
     const report = await db.queryOne(
       `SELECT r.*, l.latitude, l.longitude, l.address, u.name as reporter_name
        FROM reports r
@@ -90,10 +81,9 @@ class CivicProblemReportModel {
   }
 
   // ==========================================
-  // getEvidenceByReportId — Specific report er shob evidence files return kore
+  // getEvidenceByReportId — Report er shob evidence files return kore
   // ==========================================
   static async getEvidenceByReportId(reportId) {
-    // Report ID diye evidence list retrieve kore
     const evidence = await db.query(
       `SELECT * FROM report_evidence WHERE report_id = ?`,
       [reportId]
@@ -102,20 +92,18 @@ class CivicProblemReportModel {
   }
 
   // ==========================================
-  // getPublicReports — Shob public reports return kore, anonymous reports er user identity hide kore
-  // Shudhumatro admin accept kora reports (status != 'submitted') public feed e show korbe
+  // getPublicReports — Shob public report return kore
+  // Anonymous report e reporter_name = 'Anonymous Citizen', user_id = NULL dekhabe
   // ==========================================
   static async getPublicReports() {
-    // Public community feed er jonno: Jodi report anonymous hoy, tobe user_id null ebong reporter_name 'Anonymous Citizen' hobe
-    // Admin review accept korle (under_review, processing, solved) public feed e show korbe
+    // CASE statement diye anonymous reports er identity mask kora hocche
     const reports = await db.query(
-      `SELECT 
+      `SELECT
          r.id,
          CASE WHEN r.is_anonymous = 1 THEN NULL ELSE r.user_id END as user_id,
          r.title,
          r.description,
          r.category,
-         r.harassment_type,
          r.status,
          r.visibility,
          r.is_anonymous,
@@ -129,7 +117,7 @@ class CivicProblemReportModel {
        FROM reports r
        LEFT JOIN locations l ON l.report_id = r.id
        JOIN users u ON r.user_id = u.id
-       WHERE r.visibility = 'public' AND r.status != 'submitted'
+       WHERE r.visibility = 'public'
        ORDER BY r.created_at DESC`,
       []
     );

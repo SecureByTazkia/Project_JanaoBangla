@@ -1,19 +1,24 @@
 // ==========================================
 // JanaoBangla — Create Civic Problem Report Form
-// BRANCH: feature-civic-problem-reporting-visibility-and-management
-// Civic problem reporting form with Report Visibility and Anonymous Reporter Identity support
+// BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
+// AI problem recognition, smart suggestions, category recommendations
+// ebong duplicate warning integrated civic report submission form
 // ==========================================
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CivicProblemReportService from '../services/CivicProblemReportService';
+import AICivicProblemService from '../services/AICivicProblemService';
+import AIProblemRecognitionResult from './AIProblemRecognitionResult';
+import SmartProblemCategorySuggestion from './SmartProblemCategorySuggestion';
+import SmartReportSuggestion from './SmartReportSuggestion';
 import ErrorMessage from './ErrorMessage';
 import SuccessMessage from './SuccessMessage';
 import LoadingSpinner from './LoadingSpinner';
 import LocationMapPicker from './LocationMapPicker';
-import { useNavigate } from 'react-router-dom';
+import '../styles/ai.css';
 
 const CreateCivicProblemReportForm = () => {
-  // isAnonymous boolean field state e rakha hoyeche (default: false - Show my identity)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -22,74 +27,144 @@ const CreateCivicProblemReportForm = () => {
     isAnonymous: false,
     latitude: '',
     longitude: '',
-    address: '',
-    // Women Harassment er jonno harassment type (online/offline) — default empty
-    harassmentType: ''
+    address: ''
   });
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [locationLoading, setLocationLoading] = useState(false);
+
+  // AI Assistive States
+  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+  const [aiRecognition, setAiRecognition] = useState(null);
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+  const [aiDuplicates, setAiDuplicates] = useState(null);
+  const [isAiEnhancing, setIsAiEnhancing] = useState(false);
   
   const navigate = useNavigate();
 
   // ==========================================
-  // handleChange — Input field er text/select change handle kore
+  // handleChange — Form input field er change handle kore
   // ==========================================
   const handleChange = (e) => {
-    // Ei function form inputs update korbe
+    // Ei function user input korar sathe sathe formData state update korbe
     const { name, value } = e.target;
-    setFormData((prev) => {
-      const updated = { ...prev, [name]: value };
-      // Category change hole Women Harassment er harassment type reset hobe
-      if (name === 'category' && value !== 'women_harassment') {
-        updated.harassmentType = '';
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // ==========================================
+  // handleFileChange — User jokhon photo/video select korbe tokhon AI image analysis trigger korbe
+  // ==========================================
+  const handleFileChange = async (e) => {
+    // Ei function evidence upload handle korbe ebong AI recognition API call korbe
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(selectedFiles);
+
+    // Jodi image file thake, AI problem recognition trigger korbe
+    const firstImageFile = selectedFiles.find(f => f.type.startsWith('image/'));
+    if (firstImageFile) {
+      setIsAiAnalyzing(true);
+      setError(null);
+      try {
+        const aiData = await AICivicProblemService.analyzeUploadedImage(firstImageFile, {
+          title: formData.title,
+          description: formData.description,
+          address: formData.address,
+          latitude: formData.latitude,
+          longitude: formData.longitude
+        });
+
+        if (aiData.success && aiData.recognition) {
+          setAiRecognition(aiData.recognition);
+          setAiSuggestions(aiData.suggestions);
+          setAiDuplicates(aiData.duplicates);
+
+          // Category auto-update korar sujog (jodi default road_damage thake)
+          if (aiData.recognition.suggestedCategory && formData.category === 'road_damage') {
+            setFormData(prev => ({
+              ...prev,
+              category: aiData.recognition.suggestedCategory
+            }));
+          }
+        }
+      } catch (aiErr) {
+        console.warn('AI analysis skipped or failed:', aiErr.message);
+      } finally {
+        setIsAiAnalyzing(false);
       }
-      return updated;
-    });
+    }
   };
 
   // ==========================================
-  // handleFileChange — Evidence file selection handle kore
+  // handleEnhanceWithAi — Description box er text AI diye professional civic format e convert kore
   // ==========================================
-  const handleFileChange = (e) => {
-    // Convert FileList to Array
-    setFiles(Array.from(e.target.files));
-  };
-
-  // ==========================================
-  // getLocation — Browser GPS API theke location collect kore
-  // ==========================================
-  const getLocation = () => {
-    setLocationLoading(true);
-    if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser');
-      setLocationLoading(false);
+  const handleEnhanceWithAi = async () => {
+    // Ei function description enhance korar jonno AI suggestion service call kore
+    if (!formData.description && !formData.title) {
+      setError('Please type a brief note or problem summary first to enhance with AI.');
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setFormData(prev => ({
-          ...prev,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        }));
-        setLocationLoading(false);
-      },
-      (err) => {
-        setError('Unable to retrieve your location');
-        setLocationLoading(false);
+    setIsAiEnhancing(true);
+    setError(null);
+    try {
+      const response = await AICivicProblemService.getSmartSuggestions({
+        text: formData.description || formData.title,
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        address: formData.address
+      });
+
+      if (response.success && response.smartContent) {
+        setAiSuggestions(response.smartContent);
+        if (response.categorySuggestion?.categoryKey) {
+          setFormData(prev => ({
+            ...prev,
+            category: response.categorySuggestion.categoryKey
+          }));
+        }
       }
-    );
+    } catch (err) {
+      setError('Failed to enhance description with AI. Please try again.');
+    } finally {
+      setIsAiEnhancing(false);
+    }
   };
 
   // ==========================================
-  // handleSubmit — Form data backend e multipart FormData hishabe pathay
+  // handleAcceptCategory — AI suggested category accept korle state update kore
+  // ==========================================
+  const handleAcceptCategory = (categoryKey) => {
+    // Ei function user AI category accept korle select dropdown update korbe
+    setFormData(prev => ({ ...prev, category: categoryKey }));
+  };
+
+  // ==========================================
+  // handleApplySmartContent — AI suggested Title ebong Structured Description form e auto-fill kore
+  // ==========================================
+  const handleApplySmartContent = ({ smartTitle, smartDescription }) => {
+    // Ei function AI suggested content form input fields e inject kore
+    setFormData(prev => ({
+      ...prev,
+      title: smartTitle || prev.title,
+      description: smartDescription || prev.description
+    }));
+  };
+
+  const handleApplyTitleOnly = (title) => {
+    setFormData(prev => ({ ...prev, title: title || prev.title }));
+  };
+
+  const handleApplyDescOnly = (description) => {
+    setFormData(prev => ({ ...prev, description: description || prev.description }));
+  };
+
+  // ==========================================
+  // handleSubmit — Complete form data submit kore
   // ==========================================
   const handleSubmit = async (e) => {
-    // User anonymous choose korle isAnonymous backend e pathabe
+    // Ei function report create korar jonno backend e multipart FormData pathay
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -101,11 +176,8 @@ const CreateCivicProblemReportForm = () => {
       data.append('description', formData.description);
       data.append('category', formData.category);
       data.append('visibility', formData.visibility);
-      data.append('isAnonymous', formData.isAnonymous);
-      // Women Harassment e harassment_type backend e pathano hocche
-      if (formData.category === 'women_harassment' && formData.harassmentType) {
-        data.append('harassment_type', formData.harassmentType);
-      }
+      // Anonymous setting backend e pathano hocche
+      data.append('isAnonymous', formData.isAnonymous ? 'true' : 'false');
       if (formData.latitude) data.append('latitude', formData.latitude);
       if (formData.longitude) data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
@@ -116,7 +188,7 @@ const CreateCivicProblemReportForm = () => {
       });
 
       await CivicProblemReportService.submitReport(data);
-      setSuccess('Civic problem reported successfully!');
+      setSuccess('Civic problem reported successfully! AI analysis archived with report.');
       setTimeout(() => {
         navigate('/my-reports');
       }, 2000);
@@ -128,133 +200,46 @@ const CreateCivicProblemReportForm = () => {
   };
 
   return (
-    <div className="card shadow-sm p-4">
-      <h3 className="mb-4 text-primary-dark">Report a Civic Problem</h3>
+    <div className="card shadow-sm p-4" style={{ borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+      <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <div>
+          <h3 className="text-primary-dark mb-0 fw-bold">Report a Civic Problem</h3>
+          <small className="text-muted">Fill in the details below or let AI scan your evidence photo.</small>
+        </div>
+        <span className="badge bg-light text-success border border-success p-2" style={{ fontSize: '0.82rem' }}>
+          ✨ AI Assisted Recognition Enabled
+        </span>
+      </div>
+
       {error && <ErrorMessage message={error} />}
       {success && <SuccessMessage message={success} />}
-      
+
+      {/* 1. AI Image Analysis Result Widget (Shown upon uploading evidence photo) */}
+      {(isAiAnalyzing || aiRecognition) && (
+        <AIProblemRecognitionResult
+          recognition={aiRecognition}
+          isAnalyzing={isAiAnalyzing}
+        />
+      )}
+
+      {/* 2. AI Category Recommendation Widget */}
+      {aiRecognition && (
+        <SmartProblemCategorySuggestion
+          suggestedCategory={aiRecognition.suggestedCategory}
+          currentCategory={formData.category}
+          confidence={aiRecognition.confidence}
+          onAcceptCategory={handleAcceptCategory}
+          onDismiss={() => setAiRecognition(null)}
+        />
+      )}
+
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Problem Title *</label>
-          <input
-            type="text"
-            className="form-control"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            required
-            placeholder="E.g., Large Pothole on Mirpur Road"
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Description *</label>
-          <textarea
-            className="form-control"
-            name="description"
-            rows="4"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            placeholder="Describe the problem in detail..."
-          ></textarea>
-        </div>
-
-        <div className="row mb-3">
-          <div className="col-md-6">
-            <label className="form-label">Category *</label>
-            <select
-              className="form-select"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-            >
-              <option value="road_damage">Road Damage</option>
-              <option value="garbage_waste">Garbage / Waste</option>
-              <option value="street_light">Street Light</option>
-              <option value="water_drainage">Water / Drainage</option>
-              <option value="traffic_accident">Traffic / Accident</option>
-              <option value="public_safety">Public Safety</option>
-              <option value="women_harassment">Women Harassment</option>
-              <option value="extortion_chanda">Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
-            </select>
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">Visibility *</label>
-            <select
-              className="form-select"
-              name="visibility"
-              value={formData.visibility}
-              onChange={handleChange}
-            >
-              <option value="public">Public (Visible to Community)</option>
-              <option value="private">Private (Only Admins)</option>
-            </select>
-            <small className="text-muted">Private reports won't appear on the public map.</small>
-          </div>
-        </div>
-
-        {/* Women Harassment e Harassment Type dropdown show hobe */}
-        {formData.category === 'women_harassment' && (
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              Harassment Type <span className="text-danger">*</span>
-            </label>
-            <select
-              className="form-select"
-              name="harassmentType"
-              value={formData.harassmentType}
-              onChange={handleChange}
-              required
-            >
-              <option value="">— Select Harassment Type —</option>
-              <option value="online">Online Harassment</option>
-              <option value="offline">Offline / Physical Harassment</option>
-            </select>
-            <small className="text-muted">
-              Select whether this is online or in-person / physical harassment.
-            </small>
-          </div>
-        )}
-
-        {/* Reporter Identity Option (Anonymous Reporting) */}
-        <div className="mb-3 p-3 border rounded bg-light">
-          <label className="form-label fw-bold d-block mb-2">Reporter Identity</label>
-          <div className="form-check form-check-inline me-4">
-            <input
-              className="form-check-input"
-              type="radio"
-              name="isAnonymous"
-              id="identityPublic"
-              value="false"
-              checked={formData.isAnonymous === false}
-              onChange={() => setFormData(prev => ({ ...prev, isAnonymous: false }))}
-            />
-            <label className="form-check-label" htmlFor="identityPublic">
-              Show my identity
-            </label>
-          </div>
-          <div className="form-check form-check-inline">
-            <input
-              className="form-check-input"
-              type="radio"
-              name="isAnonymous"
-              id="identityAnonymous"
-              value="true"
-              checked={formData.isAnonymous === true}
-              onChange={() => setFormData(prev => ({ ...prev, isAnonymous: true }))}
-            />
-            <label className="form-check-label" htmlFor="identityAnonymous">
-              Report anonymously
-            </label>
-          </div>
-          <small className="form-text text-muted d-block mt-2">
-            Your identity will be hidden from other citizens, but authorized administrators can still identify the reporter when necessary.
-          </small>
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Evidence (Images/Videos)</label>
+        {/* Evidence Upload Section (placed higher for intuitive AI-first workflow) */}
+        <div className="mb-3 p-3 border rounded bg-light" style={{ borderColor: '#CBD5E1' }}>
+          <label className="form-label fw-bold d-flex justify-content-between align-items-center">
+            <span>📷 Evidence Photo / Video</span>
+            <span className="badge bg-success" style={{ fontSize: '0.74rem' }}>Triggers Instant AI Scan</span>
+          </label>
           <input
             type="file"
             className="form-control"
@@ -263,10 +248,140 @@ const CreateCivicProblemReportForm = () => {
             onChange={handleFileChange}
           />
           {files.length > 0 && (
-            <small className="text-success mt-1 d-block">{files.length} file(s) selected.</small>
+            <small className="text-success mt-1 d-block fw-bold">
+              ✓ {files.length} file(s) selected for upload & AI analysis.
+            </small>
           )}
         </div>
 
+        {/* Problem Title */}
+        <div className="mb-3">
+          <label className="form-label fw-bold">Problem Title *</label>
+          <input
+            type="text"
+            className="form-control"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            required
+            placeholder="E.g., Severe Road Damage on Mirpur-10 Main Road"
+          />
+        </div>
+
+        {/* Description & AI Enhancer */}
+        <div className="mb-3">
+          <div className="d-flex justify-content-between align-items-center mb-1">
+            <label className="form-label fw-bold mb-0">Description *</label>
+            <button
+              type="button"
+              className="btn-ai-enhance"
+              onClick={handleEnhanceWithAi}
+              disabled={isAiEnhancing}
+              title="Convert informal notes into structured civic description"
+            >
+              {isAiEnhancing ? '✨ Enhancing...' : '✨ Enhance with AI'}
+            </button>
+          </div>
+          <textarea
+            className="form-control"
+            name="description"
+            rows="4"
+            value={formData.description}
+            onChange={handleChange}
+            required
+            placeholder="Describe the problem in detail (or type short notes and click 'Enhance with AI')..."
+          ></textarea>
+        </div>
+
+        {/* Category & Visibility Selectors */}
+        <div className="row mb-3">
+          <div className="col-md-6">
+            <label className="form-label fw-bold">Category *</label>
+            <select
+              className="form-select"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+            >
+              <option value="road_damage">🛣️ Road Damage (সড়ক ক্ষতিগ্রস্ত)</option>
+              <option value="garbage_waste">🗑️ Garbage / Waste (ময়লা-আবর্জনা)</option>
+              <option value="street_light">💡 Street Light (রাস্তার বাতি)</option>
+              <option value="water_drainage">🌊 Water / Drainage (পানি নিষ্কাশন)</option>
+              <option value="traffic_accident">🚦 Traffic / Accident (যানজট ও দুর্ঘটনা)</option>
+              <option value="public_safety">🛡️ Public Safety (জননিরাপত্তা)</option>
+            </select>
+          </div>
+          <div className="col-md-6">
+            <label className="form-label fw-bold">Visibility *</label>
+            <select
+              className="form-select"
+              name="visibility"
+              value={formData.visibility}
+              onChange={handleChange}
+            >
+              <option value="public">Public (Visible to Community & Map)</option>
+              <option value="private">Private (Only Admins & Authorities)</option>
+            </select>
+            <small className="text-muted">Private reports won't appear on the public map.</small>
+          </div>
+        </div>
+
+        {/* Reporter Identity — Anonymous option */}
+        <div className="mb-3 p-3 border rounded" style={{ backgroundColor: '#F8FAFC', borderColor: '#CBD5E1' }}>
+          <label className="form-label fw-bold d-block mb-2">🔒 Reporter Identity</label>
+          <div className="d-flex gap-4">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="radio"
+                name="isAnonymous"
+                id="identityShow"
+                value="false"
+                checked={!formData.isAnonymous}
+                onChange={() => setFormData(prev => ({ ...prev, isAnonymous: false }))}
+              />
+              <label className="form-check-label" htmlFor="identityShow">
+                👤 Show my identity
+              </label>
+            </div>
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="radio"
+                name="isAnonymous"
+                id="identityAnonymous"
+                value="true"
+                checked={formData.isAnonymous}
+                onChange={() => setFormData(prev => ({ ...prev, isAnonymous: true }))}
+              />
+              <label className="form-check-label" htmlFor="identityAnonymous">
+                🕵️ Report anonymously
+              </label>
+            </div>
+          </div>
+          <small className="text-muted mt-1 d-block">
+            Your identity will be hidden from other citizens, but authorized administrators can still identify the reporter when necessary.
+          </small>
+          {formData.isAnonymous && (
+            <div className="alert alert-info py-1 px-2 mt-2 mb-0" style={{ fontSize: '0.85rem' }}>
+              🕵️ This report will appear as submitted by <strong>Anonymous Citizen</strong> to other users.
+            </div>
+          )}
+        </div>
+
+        {/* 3. AI Smart Suggestions & Duplicate Warning Widget */}
+        {(aiSuggestions || aiDuplicates) && (
+          <SmartReportSuggestion
+            suggestions={aiSuggestions}
+            duplicates={aiDuplicates}
+            onApplyAll={handleApplySmartContent}
+            onApplyTitle={handleApplyTitleOnly}
+            onApplyDescription={handleApplyDescOnly}
+            onViewExistingReport={(reportId) => window.open(`/reports/${reportId}`, '_blank')}
+          />
+        )}
+
+        {/* Location Picker */}
         <div className="mb-4">
           <label className="form-label fw-bold">Report Location Data *</label>
           <LocationMapPicker
@@ -293,8 +408,8 @@ const CreateCivicProblemReportForm = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-          {loading ? <LoadingSpinner size="sm" /> : 'Submit Report'}
+        <button type="submit" className="btn btn-primary w-100 py-2 fw-bold" disabled={loading} style={{ fontSize: '1rem' }}>
+          {loading ? <LoadingSpinner size="sm" /> : '🚀 Submit Verified Civic Report'}
         </button>
       </form>
     </div>

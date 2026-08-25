@@ -53,6 +53,7 @@ function Footer() {
                 <li><Link to="/map"       className="jb-footer-link">Civic Map</Link></li>
                 <li><Link to="/search"    className="jb-footer-link">Search</Link></li>
                 <li><Link to="/analytics" className="jb-footer-link">Analytics</Link></li>
+                <li><Link to="/admin/login" className="jb-footer-link">🛡️ Admin Portal</Link></li>
               </ul>
             </nav>
           </div>

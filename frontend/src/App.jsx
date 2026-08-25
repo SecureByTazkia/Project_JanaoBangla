@@ -26,6 +26,11 @@ import CreateCivicProblemReportPage from './pages/CreateCivicProblemReportPage';
 import MySubmittedReportsPage from './pages/MySubmittedReportsPage';
 import CivicProblemReportDetailsPage from './pages/CivicProblemReportDetailsPage';
 import CivicProblemMapPage from './pages/CivicProblemMapPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminLoginPage from './pages/AdminLoginPage';
+import AdminReportManagementPage from './pages/AdminReportManagementPage';
+import AdminUserManagementPage from './pages/AdminUserManagementPage';
+import CommunityFeedPage from './pages/CommunityFeedPage';
 
 // ==========================================
 // ComingSoonPage — Future phase placeholders
@@ -104,18 +109,37 @@ function App() {
           {/* Phase 4 — Location & Civic Problem Map */}
           <Route path="/map" element={<CivicProblemMapPage />} />
 
-          {/* Phase 5 — Community (Future) */}
-          <Route path="/community" element={<ComingSoonPage title="Community Feed" />} />
+          {/* Phase 5 — Community Feed & Discussion */}
+          <Route path="/community" element={<CommunityFeedPage />} />
 
           {/* Phase 7 — SOS (Future) */}
           <Route path="/sos" element={<ComingSoonPage title="SOS Emergency" />} />
 
-          {/* Phase 8 — Admin (Future) */}
+          {/* Phase 8 — Admin Login (Unprotected / Specialized Entry) */}
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+
+          {/* Phase 8 — Protected Admin Routes (Requires role === 'admin') */}
           <Route
             path="/admin"
             element={
               <ProtectedRoute requireAdmin={true}>
-                <ComingSoonPage title="Admin Dashboard" />
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminReportManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminUserManagementPage />
               </ProtectedRoute>
             }
           />
