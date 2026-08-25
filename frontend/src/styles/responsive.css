@@ -1,131 +1,100 @@
 /* ==========================================
-   JanaoBangla — Responsive CSS
-   BRANCH: main
-   Mobile, Tablet ar Desktop breakpoints
+   JanaoBangla — Master Responsive CSS System
+   BRANCH: feature-admin-dashboard-and-system-monitoring
+   Mobile (320px-575px), Tablet (576px-991px), Laptop (992px-1199px), Desktop (1200px+)
+   Preserves all design tokens, colors, branding, and layouts seamlessly
    ========================================== */
 
 /* ==========================================
-   BREAKPOINTS:
-   Mobile:  < 576px
-   Tablet:  576px — 991px
-   Desktop: >= 992px
-   Large:   >= 1200px
+   GLOBAL RESPONSIVE RESET & WRAPPER SAFETY
+   Eliminates unwanted horizontal scrollbars
    ========================================== */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
 
-/* ==========================================
-   TABLET BREAKPOINT — max 991px
-   ========================================== */
-@media (max-width: 991px) {
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
-  /* Navbar — Desktop links hide, hamburger show */
-  .jb-navbar-links {
-    display: none;
-  }
-
-  .jb-hamburger {
-    display: flex;
-  }
-
-  .jb-mobile-menu {
-    display: block;
-  }
-
-  /* Homepage hero text smaller on tablet */
-  .hero-title {
-    font-size: 2.5rem !important;
-  }
-
-  /* Footer grid 2-column on tablet */
-  .jb-footer-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-6);
-  }
-
-  /* Feature cards 2 per row */
-  .features-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
+img, video, iframe, canvas, svg {
+  max-width: 100%;
+  height: auto;
 }
 
 /* ==========================================
-   MOBILE BREAKPOINT — max 576px
+   CONTAINERS & LAYOUT SCALING
    ========================================== */
-@media (max-width: 576px) {
+.jb-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-4, 16px);
+}
 
-  /* Navbar SOS button shorter text */
-  .jb-sos-button .sos-label {
-    display: none;
-  }
+.page-content {
+  width: 100%;
+  overflow-x: hidden;
+}
 
-  /* Homepage hero - single column */
-  .hero-section {
-    padding: var(--spacing-12) var(--spacing-4) !important;
-    text-align: center;
-  }
+/* Responsive Table Wrapper */
+.table-responsive,
+.admin-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+}
 
-  .hero-title {
-    font-size: 1.875rem !important;
-  }
+.table-responsive::-webkit-scrollbar,
+.admin-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
 
-  .hero-subtitle {
-    font-size: var(--font-size-base) !important;
-  }
-
-  .hero-buttons {
-    flex-direction: column;
-    align-items: center !important;
-  }
-
-  /* Feature cards single column */
-  .features-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Stats single column */
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--spacing-4) !important;
-  }
-
-  /* Workflow single column */
-  .workflow-steps {
-    flex-direction: column !important;
-    align-items: center;
-  }
-
-  .workflow-arrow {
-    transform: rotate(90deg);
-  }
-
-  /* Footer single column */
-  .jb-footer-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .jb-footer-bottom {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-2);
-  }
-
-  /* Section padding smaller on mobile */
-  .jb-section {
-    padding: var(--spacing-10) 0;
-  }
-
-  /* Cards padding smaller */
-  .jb-card {
-    padding: var(--spacing-4);
-  }
-
-  /* Container padding */
-  .jb-container {
-    padding: 0 var(--spacing-4);
-  }
+.table-responsive::-webkit-scrollbar-thumb,
+.admin-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(0, 106, 78, 0.2);
+  border-radius: 4px;
 }
 
 /* ==========================================
-   LARGE SCREEN — min 1400px
+   INTERACTIVE MAPS RESPONSIVE CONTAINERS
+   ========================================== */
+.civic-map-wrapper-card {
+  height: 620px;
+  transition: height 0.3s ease;
+}
+
+.civic-map-list-wrapper-card {
+  height: 620px;
+  display: flex;
+  flex-direction: column;
+}
+
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: inherit;
+}
+
+/* Evidence Gallery Grids */
+.report-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.report-evidence-item {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-md, 10px);
+}
+
+/* ==========================================
+   DESKTOP & LARGE MONITORS (>= 1400px)
    ========================================== */
 @media (min-width: 1400px) {
   .jb-container {
@@ -134,13 +103,401 @@
 }
 
 /* ==========================================
-   TOUCH DEVICE — Min tap target 44px
+   LAPTOPS & DESKTOPS (992px — 1199px)
    ========================================== */
-@media (hover: none) {
+@media (min-width: 992px) and (max-width: 1199px) {
+  .hero-title {
+    font-size: 2.75rem !important;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ==========================================
+   TABLETS & MEDIUM SCREENS (768px — 991px)
+   ========================================== */
+@media (max-width: 991px) {
+  /* Navbar */
+  .jb-navbar-links {
+    display: none !important;
+  }
+
+  .jb-hamburger {
+    display: flex !important;
+  }
+
+  .jb-mobile-menu {
+    display: block;
+  }
+
+  /* Hero Section */
+  .hero-title {
+    font-size: 2.35rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .hero-subtitle {
+    font-size: 1.05rem !important;
+    margin-bottom: 28px !important;
+  }
+
+  /* Grid Layouts */
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Footer */
+  .jb-footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+  }
+
+  /* Map View Stack */
+  .civic-map-wrapper-card {
+    height: 480px !important;
+  }
+
+  .civic-map-list-wrapper-card {
+    height: 420px !important;
+  }
+
+  /* Admin Dashboard */
+  .admin-dashboard {
+    padding: 20px 16px !important;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+/* ==========================================
+   SMALL DEVICES & LARGE PHONES (576px — 767px)
+   ========================================== */
+@media (max-width: 767px) {
+  /* Headings */
+  h1, .h1 { font-size: 1.85rem !important; }
+  h2, .h2 { font-size: 1.5rem !important; }
+  h3, .h3 { font-size: 1.25rem !important; }
+
+  /* Map responsive height */
+  .civic-map-wrapper-card {
+    height: 380px !important;
+  }
+
+  .civic-map-list-wrapper-card {
+    height: 360px !important;
+  }
+
+  /* Admin components */
+  .admin-dashboard-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .admin-section-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .admin-filter-row {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .admin-filter-select,
+  .admin-search-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .admin-table {
+    min-width: 650px;
+  }
+
+  .admin-pagination {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  .admin-confirm-dialog {
+    width: 92vw !important;
+    max-width: 440px !important;
+    padding: 24px 18px !important;
+  }
+
+  /* Profile page */
+  .profile-header-card {
+    padding: 20px 16px !important;
+  }
+
+  .profile-avatar-wrapper {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+}
+
+/* ==========================================
+   MOBILE PHONES (< 576px down to 320px)
+   ========================================== */
+@media (max-width: 575px) {
+  /* Navbar */
+  .jb-navbar-inner {
+    height: 58px !important;
+    padding: 0 12px !important;
+    gap: 8px !important;
+  }
+
+  .jb-navbar-logo-text {
+    font-size: 1.15rem !important;
+  }
+
+  .jb-navbar-logo-icon {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 1rem !important;
+  }
+
+  .jb-sos-button {
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .jb-sos-button .sos-label {
+    display: none !important;
+  }
+
+  .jb-mobile-menu {
+    top: 58px !important;
+    padding: 16px 12px !important;
+  }
+
+  /* Hero Section */
+  .hero-section {
+    padding: 40px 12px !important;
+  }
+
+  .hero-title {
+    font-size: 1.75rem !important;
+    letter-spacing: -0.3px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem !important;
+    line-height: 1.55 !important;
+    margin-bottom: 24px !important;
+  }
+
+  .hero-buttons {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+    margin-bottom: 28px !important;
+  }
+
+  .hero-buttons a,
+  .hero-buttons button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 12px 20px !important;
+  }
+
+  /* Features & Grids */
+  .features-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .stat-card {
+    padding: 14px 10px !important;
+  }
+
+  .stat-number {
+    font-size: 1.65rem !important;
+  }
+
+  /* Workflow Steps */
+  .workflow-steps {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
+  }
+
+  .workflow-step {
+    width: 100% !important;
+    max-width: 320px !important;
+  }
+
+  .workflow-arrow {
+    transform: rotate(90deg) !important;
+    margin: 4px 0 !important;
+  }
+
+  /* Cards & Spacing */
+  .jb-card {
+    padding: 18px 14px !important;
+    border-radius: 12px !important;
+  }
+
+  .jb-section {
+    padding: 32px 0 !important;
+  }
+
+  /* Forms & Inputs */
+  .jb-input,
+  .form-control,
+  .form-select {
+    font-size: 16px !important; /* Prevents auto-zoom on mobile safari */
+    padding: 9px 12px !important;
+  }
+
+  .btn-primary-jb,
+  .btn-outline-jb {
+    padding: 10px 16px !important;
+    font-size: 0.88rem !important;
+  }
+
+  /* Evidence Galleries */
+  .report-evidence-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .report-evidence-item {
+    height: 190px !important;
+  }
+
+  /* Map View */
+  .civic-map-wrapper-card {
+    height: 320px !important;
+  }
+
+  .civic-map-list-wrapper-card {
+    height: 320px !important;
+  }
+
+  /* Admin Dashboard Mobile */
+  .admin-dashboard {
+    padding: 12px 8px !important;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .admin-stat-card {
+    padding: 12px 8px !important;
+  }
+
+  .admin-stat-value {
+    font-size: 1.25rem !important;
+  }
+
+  .admin-stat-label {
+    font-size: 0.72rem !important;
+  }
+
+  .admin-tabs {
+    gap: 2px !important;
+  }
+
+  .admin-tab-btn {
+    padding: 7px 10px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .admin-tab-btn .admin-tab-label {
+    display: none;
+  }
+
+  .admin-table {
+    min-width: 600px;
+    font-size: 0.78rem !important;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 6px 8px !important;
+  }
+
+  .admin-status-select {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .admin-actions-cell {
+    flex-wrap: wrap !important;
+  }
+
+  /* Footer */
+  .jb-footer {
+    padding: 36px 0 20px !important;
+  }
+
+  .jb-footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .jb-footer-bottom {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding-top: 16px !important;
+  }
+}
+
+/* ==========================================
+   EXTRA SMALL PHONES (< 360px)
+   ========================================== */
+@media (max-width: 359px) {
+  .jb-navbar-logo-text {
+    display: none !important;
+  }
+
+  .stats-grid,
+  .admin-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-stat-card {
+    padding: 10px !important;
+  }
+}
+
+/* ==========================================
+   TOUCH DEVICE TAP TARGET ENHANCEMENTS
+   ========================================== */
+@media (hover: none) and (pointer: coarse) {
   .jb-navbar-link,
+  .jb-mobile-link,
   .btn-primary-jb,
   .btn-outline-jb,
-  .btn-sos {
-    min-height: 44px;
+  .btn-sos,
+  .admin-tab-btn,
+  .admin-action-btn,
+  .admin-pagination-btn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
   }
 }

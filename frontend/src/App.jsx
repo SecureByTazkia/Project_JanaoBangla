@@ -22,6 +22,10 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 
+import CreateCivicProblemReportPage from './pages/CreateCivicProblemReportPage';
+import MySubmittedReportsPage from './pages/MySubmittedReportsPage';
+import CivicProblemReportDetailsPage from './pages/CivicProblemReportDetailsPage';
+
 // ==========================================
 // ComingSoonPage — Future phase placeholders
 // ==========================================
@@ -79,9 +83,22 @@ function App() {
             }
           />
 
-          {/* Phase 3 — Reports (Future) */}
-          <Route path="/report" element={<ComingSoonPage title="Report a Problem" />} />
-          <Route path="/reports" element={<ComingSoonPage title="My Reports" />} />
+          {/* Phase 3 — Reports */}
+          <Route path="/report-problem" element={
+            <ProtectedRoute>
+              <CreateCivicProblemReportPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/my-reports" element={
+            <ProtectedRoute>
+              <MySubmittedReportsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/reports/:id" element={
+            <ProtectedRoute>
+              <CivicProblemReportDetailsPage />
+            </ProtectedRoute>
+          } />
 
           {/* Phase 4 — Map (Future) */}
           <Route path="/map" element={<ComingSoonPage title="Civic Map" />} />

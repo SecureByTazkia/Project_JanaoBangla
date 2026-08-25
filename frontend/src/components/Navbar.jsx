@@ -37,12 +37,13 @@ function Navbar() {
   };
 
   const navLinks = [
-    { to: '/',          label: 'Home',          icon: '🏠' },
-    { to: '/report',    label: 'Report Problem', icon: '📋' },
-    { to: '/community', label: 'Community',      icon: '👥' },
-    { to: '/map',       label: 'Map',            icon: '🗺️' },
-    { to: '/search',    label: 'Search',         icon: '🔍' },
-    { to: '/analytics', label: 'Analytics',      icon: '📊' }
+    { to: '/',               label: 'Home',           icon: '🏠' },
+    { to: '/report-problem', label: 'Report Problem', icon: '📋' },
+    { to: '/my-reports',     label: 'My Reports',     icon: '📂' },
+    { to: '/community',      label: 'Community',      icon: '👥' },
+    { to: '/map',            label: 'Map',            icon: '🗺️' },
+    { to: '/search',         label: 'Search',         icon: '🔍' },
+    { to: '/analytics',      label: 'Analytics',      icon: '📊' }
   ];
 
   return (

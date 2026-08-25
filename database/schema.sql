@@ -119,8 +119,11 @@ CREATE TABLE IF NOT EXISTS reports (
                        'street_light',
                        'water_drainage',
                        'traffic_accident',
-                       'public_safety'
+                       'public_safety',
+                       'women_harassment',
+                       'extortion_chanda'
                      ) NOT NULL,
+  harassment_type    ENUM('online', 'offline') NULL DEFAULT NULL,
   status             ENUM(
                        'submitted',
                        'under_review',
@@ -128,6 +131,7 @@ CREATE TABLE IF NOT EXISTS reports (
                        'solved'
                      ) NOT NULL DEFAULT 'submitted',
   visibility         ENUM('public', 'private') NOT NULL DEFAULT 'public',
+  is_anonymous       TINYINT(1) NOT NULL DEFAULT 0,
   priority           ENUM('low', 'medium', 'high', 'critical') NOT NULL DEFAULT 'medium',
   is_duplicate       TINYINT(1) NOT NULL DEFAULT 0,
   duplicate_of_id    INT UNSIGNED,
