@@ -95,6 +95,25 @@ const LocationMapPicker = ({ initialLat, initialLng, onLocationSelect }) => {
     );
   };
 
+  // Component load holei auto GPS detect korbe
+  useEffect(() => {
+    if (!initialLat && !initialLng && navigator.geolocation) {
+      setGpsLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          handleSelectPosition(lat, lng);
+          setGpsLoading(false);
+        },
+        () => {
+          setGpsLoading(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="location-map-picker border rounded p-3 bg-light">
       <div className="d-flex flex-wrap align-items-center justify-content-between mb-2">
