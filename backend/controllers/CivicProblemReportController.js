@@ -41,7 +41,7 @@ class CivicProblemReportController {
       const reportId = await CivicProblemReportManagementService.createReport(userId, reportData, files);
 
       return res.status(201).json({
-        message: 'Report submitted successfully',
+        message: 'Report submitted successfully. Awaiting admin review before public display.',
         reportId: reportId
       });
     } catch (error) {
@@ -72,7 +72,7 @@ class CivicProblemReportController {
   // getPublicReports — Shob public reports return korbe, anonymous reports er identity mask korbe
   // ==========================================
   static async getPublicReports(req, res) {
-    // Public feed er jonno shob public reports return korbe
+    // Public feed er jonno shob public reports return korbe (shudhu admin accept kora reports)
     try {
       const reports = await CivicProblemReportManagementService.getPublicReports();
       return res.status(200).json({ reports });
@@ -102,6 +102,11 @@ class CivicProblemReportController {
 
       if (report.visibility === 'private' && !isOwner && !isAdmin) {
         return res.status(403).json({ error: 'Access denied. This is a private report.' });
+      }
+
+      // Jodi report submitted status e thake (awaiting admin review) ebong requester owner ba admin na hoy, tahole block korbe
+      if (report.status === 'submitted' && !isOwner && !isAdmin) {
+        return res.status(403).json({ error: 'Access denied. This report is awaiting admin review.' });
       }
 
       return res.status(200).json({ report });

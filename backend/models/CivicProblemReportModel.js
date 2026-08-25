@@ -103,9 +103,11 @@ class CivicProblemReportModel {
 
   // ==========================================
   // getPublicReports — Shob public reports return kore, anonymous reports er user identity hide kore
+  // Shudhumatro admin accept kora reports (status != 'submitted') public feed e show korbe
   // ==========================================
   static async getPublicReports() {
     // Public community feed er jonno: Jodi report anonymous hoy, tobe user_id null ebong reporter_name 'Anonymous Citizen' hobe
+    // Admin review accept korle (under_review, processing, solved) public feed e show korbe
     const reports = await db.query(
       `SELECT 
          r.id,
@@ -127,7 +129,7 @@ class CivicProblemReportModel {
        FROM reports r
        LEFT JOIN locations l ON l.report_id = r.id
        JOIN users u ON r.user_id = u.id
-       WHERE r.visibility = 'public'
+       WHERE r.visibility = 'public' AND r.status != 'submitted'
        ORDER BY r.created_at DESC`,
       []
     );

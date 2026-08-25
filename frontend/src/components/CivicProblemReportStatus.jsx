@@ -5,7 +5,7 @@ const CivicProblemReportStatus = ({ status }) => {
   const getStatusConfig = (s) => {
     switch(s) {
       case 'submitted':
-        return { color: 'bg-secondary', label: 'Submitted' };
+        return { color: 'bg-secondary', label: 'Pending Review' };
       case 'under_review':
         return { color: 'bg-warning text-dark', label: 'Under Review' };
       case 'processing':
@@ -13,7 +13,7 @@ const CivicProblemReportStatus = ({ status }) => {
       case 'solved':
         return { color: 'bg-success', label: 'Solved' };
       default:
-        return { color: 'bg-secondary', label: 'Unknown' };
+        return { color: 'bg-secondary', label: 'Pending Review' };
     }
   };
 
