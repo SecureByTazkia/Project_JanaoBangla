@@ -291,7 +291,7 @@ class CivicProblemCommentModel {
       LEFT JOIN locations l ON l.report_id = r.id
       LEFT JOIN comments c ON c.report_id = r.id AND c.is_removed = 0
       LEFT JOIN report_verifications rv ON rv.report_id = r.id
-      WHERE r.visibility = 'public'
+      WHERE r.visibility = 'public' AND (r.is_published = 1 OR r.status != 'submitted')
     `;
 
     const whereConditions = [];
@@ -303,12 +303,10 @@ class CivicProblemCommentModel {
       params.push(category);
     }
 
-    // Status filter logic (Admin approval requirement: default public feed only shows approved reports)
+    // Status filter logic
     if (status && status !== 'all') {
       whereConditions.push(`r.status = ?`);
       params.push(status);
-    } else {
-      whereConditions.push(`r.status != 'submitted'`);
     }
 
     // Search keyword search logic (title, description, location address, area, city)

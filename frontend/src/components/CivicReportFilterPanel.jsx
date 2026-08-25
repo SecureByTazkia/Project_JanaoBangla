@@ -13,7 +13,9 @@ const CATEGORIES = [
   { value: 'street_light', label: '💡 Street Light' },
   { value: 'water_drainage', label: '💧 Water / Drainage' },
   { value: 'traffic_accident', label: '🚦 Traffic / Accident' },
-  { value: 'public_safety', label: '🛡️ Public Safety' }
+  { value: 'public_safety', label: '🛡️ Public Safety' },
+  { value: 'women_harassment', label: '🚨 Women Harassment' },
+  { value: 'extortion_chanda', label: '💰 Illegal Money Collection / চাঁদাবাজি' }
 ];
 
 const STATUSES = [

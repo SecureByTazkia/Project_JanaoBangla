@@ -26,10 +26,12 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.2",
+    "jpeg-js": "^0.4.4",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0",
     "mysql2": "^3.23.3",
-    "nodemailer": "^9.0.5"
+    "nodemailer": "^9.0.5",
+    "pngjs": "^7.0.0"
   },
   "devDependencies": {
     "form-data": "^4.0.6",

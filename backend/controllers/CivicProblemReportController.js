@@ -19,8 +19,15 @@ class CivicProblemReportController {
         reportId: reportId
       });
     } catch (error) {
-      // Actual error ta log ar response e pathano hocche debug er jonno
-      console.error('Error submitting report:', error.message, error.stack);
+      console.error('Error submitting report:', error.message);
+      if (error.isClientError || error.statusCode) {
+        return res.status(error.statusCode || 400).json({
+          error: error.message,
+          message: error.message,
+          reasonBn: error.reasonBn,
+          flagType: error.flagType
+        });
+      }
       return res.status(500).json({
         error: 'Failed to submit report. Please try again.',
         debug: process.env.NODE_ENV === 'development' ? error.message : undefined

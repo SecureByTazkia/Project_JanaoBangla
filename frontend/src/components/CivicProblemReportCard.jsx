@@ -10,16 +10,32 @@ const CivicProblemReportCard = ({ report }) => {
   };
 
   const formatCategory = (cat) => {
-    return cat.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    if (cat === 'women_harassment') return '🚨 Women Harassment';
+    if (cat === 'extortion_chanda') return '💰 Illegal Money Collection';
+    return (cat || '').split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
   return (
     <div className="card shadow-sm h-100 border-0" style={{ borderRadius: '12px' }}>
       <div className="card-body">
-        <div className="d-flex justify-content-between align-items-start mb-2">
-          <span className="badge bg-primary-light text-primary-dark mb-2">
-            {formatCategory(report.category)}
-          </span>
+        <div className="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-1">
+          <div className="d-flex align-items-center gap-1 flex-wrap mb-2">
+            <span className="badge bg-primary-light text-primary-dark">
+              {formatCategory(report.category)}
+            </span>
+            {report.category === 'women_harassment' && report.harassment_type && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: report.harassment_type === 'online' ? '#EDE7F6' : '#FBE9E7',
+                  color: report.harassment_type === 'online' ? '#512DA8' : '#D84315',
+                  fontSize: '0.75rem'
+                }}
+              >
+                {report.harassment_type === 'online' ? '🌐 Online' : '🚶 Offline'}
+              </span>
+            )}
+          </div>
           <CivicProblemReportStatus status={report.status} />
         </div>
         

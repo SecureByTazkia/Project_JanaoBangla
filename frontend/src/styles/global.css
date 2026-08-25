@@ -399,14 +399,24 @@ input, textarea, select, button {
 /* ==========================================
    UTILITY CLASSES
    ========================================== */
-.text-primary-jb  { color: var(--color-primary); }
-.text-sos         { color: var(--color-sos); }
-.text-muted-jb    { color: var(--color-text-secondary); }
-.text-center      { text-align: center; }
+.text-primary-jb   { color: var(--color-primary); }
+.text-primary-dark { color: var(--color-primary-dark, #004D3A) !important; font-weight: 600; }
+.text-sos          { color: var(--color-sos); }
+.text-muted-jb     { color: var(--color-text-secondary); }
+.text-center       { text-align: center; }
 
-.bg-primary-jb    { background-color: var(--color-primary); }
-.bg-soft          { background-color: var(--color-bg-soft); }
-.bg-primary-light { background-color: var(--color-primary-light); }
+.bg-primary-jb     { background-color: var(--color-primary); }
+.bg-soft           { background-color: var(--color-bg-soft); }
+.bg-primary-light  { background-color: var(--color-primary-light, #E8F5F0) !important; color: #004D3A !important; }
+
+.badge.bg-primary-light,
+.badge.text-primary-dark,
+span.text-primary-dark {
+  color: #004D3A !important;
+  background-color: #E8F5F0 !important;
+  border: 1px solid #B2DFDB;
+  font-weight: 600;
+}
 
 .mt-1 { margin-top: var(--spacing-1); }
 .mt-2 { margin-top: var(--spacing-2); }

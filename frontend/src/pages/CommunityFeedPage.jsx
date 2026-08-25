@@ -25,13 +25,15 @@ function CommunityFeedPage() {
   const [totalReports, setTotalReports]         = useState(0);
 
   const categories = [
-    { id: 'all',              label: 'All Problems',     icon: '🌐' },
-    { id: 'road_damage',      label: 'Road Damage',      icon: '🚧' },
-    { id: 'garbage_waste',    label: 'Garbage & Waste',  icon: '🗑️' },
-    { id: 'street_light',     label: 'Street Light',     icon: '💡' },
-    { id: 'water_drainage',   label: 'Water & Drainage', icon: '🚰' },
-    { id: 'traffic_accident', label: 'Traffic Safety',   icon: '🚦' },
-    { id: 'public_safety',    label: 'Public Safety',    icon: '🛡️' }
+    { id: 'all',              label: 'All Problems',                 icon: '🌐' },
+    { id: 'road_damage',      label: 'Road Damage',                  icon: '🚧' },
+    { id: 'garbage_waste',    label: 'Garbage & Waste',              icon: '🗑️' },
+    { id: 'street_light',     label: 'Street Light',                 icon: '💡' },
+    { id: 'water_drainage',   label: 'Water & Drainage',             icon: '🚰' },
+    { id: 'traffic_accident', label: 'Traffic Safety',               icon: '🚦' },
+    { id: 'public_safety',    label: 'Public Safety',                icon: '🛡️' },
+    { id: 'women_harassment', label: 'Women Harassment',             icon: '🚨' },
+    { id: 'extortion_chanda', label: 'Illegal Money Collection/চাঁদা', icon: '💰' }
   ];
 
   // ==========================================

@@ -151,6 +151,7 @@ async function searchReports(req, res) {
         r.title,
         r.description,
         r.category,
+        r.harassment_type,
         r.status,
         r.visibility,
         r.is_anonymous,
@@ -181,7 +182,6 @@ async function searchReports(req, res) {
     const [reports] = await db.pool.query(fetchQuery, fetchParams);
 
     // Collect report IDs to fetch evidence attachments
-    // MySQL report_evidence table theke image/video metadata load kora hocche
     const reportIds = reports.map((rep) => rep.id);
     let evidenceMap = {};
 
@@ -259,7 +259,7 @@ async function getSearchFilterMetadata(req, res) {
     const [divisionCounts] = await db.pool.query(
       `SELECT COALESCE(NULLIF(l.city, ''), 'General Area') AS division, COUNT(r.id) AS count
        FROM reports r
-       JOIN locations l ON l.report_id = r.id
+       LEFT JOIN locations l ON l.report_id = r.id
        WHERE r.visibility = 'public'
        GROUP BY COALESCE(NULLIF(l.city, ''), 'General Area')
        ORDER BY count DESC`

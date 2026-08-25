@@ -26,7 +26,9 @@ const CATEGORY_LABELS = {
   street_light: '💡 Street Light',
   water_drainage: '💧 Water / Drainage',
   traffic_accident: '🚗 Traffic / Accident',
-  public_safety: '🛡️ Public Safety'
+  public_safety: '🛡️ Public Safety',
+  women_harassment: '🚨 Women Harassment',
+  extortion_chanda: '💰 Illegal Money Collection / চাঁদাবাজি'
 };
 
 // ==========================================

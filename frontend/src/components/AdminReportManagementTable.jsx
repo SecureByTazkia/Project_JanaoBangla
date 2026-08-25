@@ -23,7 +23,7 @@ const CATEGORY_LABELS = {
 
 // Status label formatting helper
 const STATUS_LABELS = {
-  submitted: 'Pending (অভিযোগ জমা হয়েছে)',
+  submitted: 'Pending (অভিযোগটি জমা হয়েছে)',
   under_review: 'Under Review (যাচাই চলছে)',
   processing: 'Action Taken (ব্যবস্থা নেওয়া হয়েছে)',
   solved: 'Resolved (নিষ্পত্তি হয়েছে)'
@@ -79,11 +79,7 @@ function AdminReportManagementTable({ showToast }) {
     try {
       await AdminDashboardService.updateReportStatus(reportId, newStatus);
       if (showToast) {
-        if (newStatus !== 'submitted') {
-          showToast(`Report #${reportId} approved & published to feed! 📢`, 'success');
-        } else {
-          showToast(`Report #${reportId} status updated to ${STATUS_LABELS[newStatus] || newStatus}.`, 'success');
-        }
+        showToast(`Report #${reportId} published & status updated to: ${STATUS_LABELS[newStatus] || newStatus} 📢`, 'success');
       }
       fetchReports();
     } catch (err) {
@@ -199,7 +195,7 @@ function AdminReportManagementTable({ showToast }) {
                         onChange={e => handleStatusChange(report.id, e.target.value)}
                         disabled={actionLoading === `status-${report.id}`}
                       >
-                        <option value="submitted">⏳ Pending (অভিযোগ জমা হয়েছে)</option>
+                        <option value="submitted">⏳ Pending (অভিযোগটি জমা হয়েছে)</option>
                         <option value="under_review">🔍 Under Review (যাচাই চলছে)</option>
                         <option value="processing">⚙️ Action Taken (ব্যবস্থা নেওয়া হয়েছে)</option>
                         <option value="solved">✅ Resolved (নিষ্পত্তি হয়েছে)</option>
@@ -213,12 +209,12 @@ function AdminReportManagementTable({ showToast }) {
                     <td style={{ fontSize: '0.8rem' }}>{formatDate(report.created_at)}</td>
                     <td>
                       <div className="admin-actions-cell" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                        {report.status === 'submitted' ? (
+                        {!report.is_published ? (
                           <button
                             className="admin-action-btn btn-sm"
-                            onClick={() => handleStatusChange(report.id, 'processing')}
+                            onClick={() => handleStatusChange(report.id, 'submitted')}
                             disabled={actionLoading === `status-${report.id}`}
-                            title="Approve report and publish to public feed"
+                            title="Publish report to public feed as submitted (Pending / অভিযোগটি জমা হয়েছে)"
                             style={{ background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap' }}
                           >
                             📢 Publish to Feed

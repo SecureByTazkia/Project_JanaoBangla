@@ -27,8 +27,8 @@ class CivicProblemReportModel {
     const harassmentVal = (category === 'women_harassment' && harassment_type) ? harassment_type : null;
 
     const reportId = await db.insert(
-      `INSERT INTO reports (user_id, title, description, category, harassment_type, visibility, is_anonymous, is_duplicate, duplicate_of, status, priority)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
+      `INSERT INTO reports (user_id, title, description, category, harassment_type, visibility, is_anonymous, is_duplicate, duplicate_of, status, priority, is_published)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted', 'medium', 0)`,
       [
         user_id,
         title,
@@ -110,13 +110,13 @@ class CivicProblemReportModel {
   // Ei function shob public report return korbe (community feed er jonno)
   // Shudhumatro admin accept kora reports (status != 'submitted') public feed e show korbe
   static async getPublicReports() {
-    // visibility = 'public' filter ebong status != 'submitted' (admin accepted), location ar user name shoho asbe
+    // visibility = 'public' filter ebong (is_published = 1 OR status != 'submitted'), location ar user name shoho asbe
     const reports = await db.query(
       `SELECT r.*, l.latitude, l.longitude, l.address, u.name as reporter_name
        FROM reports r
        LEFT JOIN locations l ON l.report_id = r.id
        JOIN users u ON r.user_id = u.id
-       WHERE r.visibility = 'public' AND r.status != 'submitted'
+       WHERE r.visibility = 'public' AND (r.is_published = 1 OR r.status != 'submitted')
        ORDER BY r.created_at DESC`,
       []
     );

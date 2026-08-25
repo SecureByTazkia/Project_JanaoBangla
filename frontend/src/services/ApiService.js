@@ -160,17 +160,36 @@ export const duplicateApi = {
 
 // Phase 7 — SOS Emergency
 export const sosApi = {
+  trigger: (data) => apiClient.post('/sos/trigger', data),
   triggerSOS: (data) => apiClient.post('/sos/trigger', data),
-  getSOSHistory: () => apiClient.get('/sos/history'),
-  cancelSOS: (id) => apiClient.patch(`/sos/${id}/cancel`)
+  resolve: (id) => apiClient.put(`/sos/${id}/resolve`),
+  cancel: (id) => apiClient.put(`/sos/${id}/cancel`),
+  cancelSOS: (id) => apiClient.put(`/sos/${id}/cancel`),
+  getHistory: (params) => apiClient.get('/sos/history', { params }),
+  getSOSHistory: (params) => apiClient.get('/sos/history', { params }),
+  getActiveStatus: () => apiClient.get('/sos/active'),
+  getById: (id) => apiClient.get(`/sos/${id}`)
 };
 
 // Phase 7 — Emergency Contact
 export const emergencyContactApi = {
+  getAll: () => apiClient.get('/emergency-contacts'),
   getContacts: () => apiClient.get('/emergency-contacts'),
+  create: (data) => apiClient.post('/emergency-contacts', data),
   addContact: (data) => apiClient.post('/emergency-contacts', data),
+  update: (id, data) => apiClient.put(`/emergency-contacts/${id}`, data),
   updateContact: (id, data) => apiClient.put(`/emergency-contacts/${id}`, data),
+  delete: (id) => apiClient.delete(`/emergency-contacts/${id}`),
   deleteContact: (id) => apiClient.delete(`/emergency-contacts/${id}`)
+};
+
+// Phase 7 — User Notifications
+export const notificationApi = {
+  getAll: (params) => apiClient.get('/notifications', { params }),
+  getUnreadCount: () => apiClient.get('/notifications/unread-count'),
+  markRead: (id) => apiClient.put(`/notifications/${id}/read`),
+  markAllRead: () => apiClient.put('/notifications/read-all'),
+  delete: (id) => apiClient.delete(`/notifications/${id}`)
 };
 
 // Phase 8 — Admin Dashboard API
@@ -199,15 +218,21 @@ export const adminApi = {
 
 // Phase 9 — Search & Analytics
 export const searchApi = {
-  searchReports: (params) => apiClient.get('/search/reports', { params }),
-  getFilters: () => apiClient.get('/search/filters')
+  search: (params) => apiClient.get('/search', { params }),
+  searchReports: (params) => apiClient.get('/search', { params }),
+  getMetadata: () => apiClient.get('/search/metadata'),
+  getFilters: () => apiClient.get('/search/metadata')
 };
 
 export const analyticsApi = {
-  getReportStats: (params) => apiClient.get('/analytics/reports', { params }),
+  getOverview: () => apiClient.get('/analytics/overview'),
+  getCategories: () => apiClient.get('/analytics/categories'),
+  getTrends: (params) => apiClient.get('/analytics/trends', { params }),
+  getAreas: () => apiClient.get('/analytics/areas'),
+  getPriorityAndStatus: () => apiClient.get('/analytics/priority-status'),
+  getReportStats: (params) => apiClient.get('/analytics/overview', { params }),
   getCategoryBreakdown: () => apiClient.get('/analytics/categories'),
-  getLocationHeatmap: () => apiClient.get('/analytics/heatmap'),
-  getTrends: (params) => apiClient.get('/analytics/trends', { params })
+  getLocationHeatmap: () => apiClient.get('/analytics/areas')
 };
 
 // Phase 10 — AI

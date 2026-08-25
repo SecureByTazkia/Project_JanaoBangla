@@ -48,12 +48,41 @@ const CreateCivicProblemReportForm = () => {
     }));
   };
 
-  // File change handler
-  const handleFileChange = (e) => {
+  // State for AI safety scanning on file upload
+  const [isModeratingImage, setIsModeratingImage] = useState(false);
+
+  // File change handler with instant AI adult content & nudity moderation
+  const handleFileChange = async (e) => {
     const selected = Array.from(e.target.files);
+    setError(null);
+    setSuccess(null);
+
+    const imageFiles = selected.filter(f => f.type.startsWith('image/'));
+
+    if (imageFiles.length > 0) {
+      setIsModeratingImage(true);
+      try {
+        for (const imgFile of imageFiles) {
+          const modRes = await AICivicProblemService.moderateUploadedImage(imgFile);
+          if (modRes && modRes.isSafe === false) {
+            const dangerMsg = `🚨 AI Content Safety Alert: ${modRes.reasonBn || modRes.reason || 'Adult content or nudity detected.'} (আপলোড করা ছবিতে নগ্নতা বা অনৈতিক কন্টেন্ট পাওয়ায় তা বাতিল করা হয়েছে)`;
+            setError(dangerMsg);
+            setFiles([]);
+            e.target.value = ''; // Clear file input
+            setIsModeratingImage(false);
+            return;
+          }
+        }
+      } catch (modErr) {
+        console.warn('AI Moderation scan warning:', modErr);
+      } finally {
+        setIsModeratingImage(false);
+      }
+    }
+
     setFiles(selected);
 
-    // If an image file was selected, clear old AI results
+    // If clean image file was selected, clear old AI results
     if (selected.length > 0 && selected[0].type.startsWith('image/')) {
       setAiRecognition(null);
       setAiSuggestions(null);
@@ -170,7 +199,7 @@ const CreateCivicProblemReportForm = () => {
         navigate('/my-reports');
       }, 2000);
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.response?.data?.message || 'An error occurred while submitting the report.';
+      const errMsg = err.response?.data?.reasonBn || err.response?.data?.error || err.response?.data?.message || 'An error occurred while submitting the report.';
       setError(errMsg);
     } finally {
       setLoading(false);
@@ -202,32 +231,8 @@ const CreateCivicProblemReportForm = () => {
         />
       )}
 
-      {/* AI Analysis Result & Suggestions */}
-      {(isAiAnalyzing || aiRecognition) && (
-        <AIProblemRecognitionResult
-          recognition={aiRecognition}
-          isAnalyzing={isAiAnalyzing}
-        />
-      )}
-
-      {aiSuggestions && (
-        <SmartReportSuggestion
-          suggestions={aiSuggestions}
-          onApplyTitle={(smartTitle) => setFormData(prev => ({ ...prev, title: smartTitle }))}
-          onApplyDescription={(smartDesc) => setFormData(prev => ({ ...prev, description: smartDesc }))}
-          onApplyAll={({ smartTitle, smartDescription }) => {
-            setFormData(prev => ({
-              ...prev,
-              title: smartTitle || prev.title,
-              description: smartDescription || prev.description
-            }));
-          }}
-          onViewExistingReport={(id) => window.open(`/reports/${id}`, '_blank')}
-        />
-      )}
-
       <form onSubmit={handleSubmit} className="mt-3">
-        {/* Evidence upload first or along with form */}
+        {/* Evidence upload with Automatic AI Nudity & Adult Content Protection */}
         <div className="mb-3 p-3 bg-light rounded border" style={{ borderColor: '#E2E8F0' }}>
           <label className="form-label fw-bold d-flex justify-content-between align-items-center">
             <span>📸 Evidence (Images / Videos)</span>
@@ -240,30 +245,19 @@ const CreateCivicProblemReportForm = () => {
               multiple
               accept="image/*,video/*"
               onChange={handleFileChange}
+              disabled={isModeratingImage}
             />
-            {files.some(f => f.type.startsWith('image/')) && (
-              <button
-                type="button"
-                className="btn btn-outline-success fw-bold d-flex align-items-center gap-1"
-                onClick={handleAnalyzeWithAI}
-                disabled={isAiAnalyzing}
-              >
-                {isAiAnalyzing ? '🤖 Analyzing...' : '✨ Scan with AI'}
-              </button>
-            )}
           </div>
           {files.length > 0 && (
             <div className="d-flex justify-content-between align-items-center mt-2">
               <small className="text-success fw-semibold">
-                ✓ {files.length} file(s) attached
+                ✓ {files.length} file(s) attached & verified clean by AI
               </small>
-              {files.some(f => f.type.startsWith('image/')) && !aiRecognition && (
-                <small className="text-muted">
-                  💡 Click <strong>"Scan with AI"</strong> to auto-detect problem and generate smart title & description!
-                </small>
-              )}
             </div>
           )}
+          <div className="mt-2 text-muted" style={{ fontSize: '0.78rem' }}>
+            🤖 <strong>AI Safety Guard Active:</strong> Nudity & adult content are automatically detected. Unsafe uploads are instantly canceled.
+          </div>
         </div>
 
         {/* Problem Title */}

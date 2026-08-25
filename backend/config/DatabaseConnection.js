@@ -30,12 +30,24 @@ const pool = mysql.createPool(dbConfig);
 // ==========================================
 async function testDatabaseConnection() {
   try {
-    // Pool theke ekta connection newa hocche test korar jonno
+    // Pool theke connection newa hocche ar test query chalano hocche
     const connection = await pool.getConnection();
 
     console.log('✅ MySQL database connection successful');
     console.log(`   Host: ${dbConfig.host}:${dbConfig.port}`);
     console.log(`   Database: ${dbConfig.database}`);
+
+    // Auto-migration: Ensure is_published column exists on reports table
+    try {
+      await connection.query(`ALTER TABLE reports ADD COLUMN is_published TINYINT(1) NOT NULL DEFAULT 0`);
+      console.log('✅ Migration: Added is_published column to reports table');
+    } catch (migErr) {
+      // Column already exists
+    }
+
+    try {
+      await connection.query(`UPDATE reports SET is_published = 1 WHERE status != 'submitted'`);
+    } catch (e) {}
 
     // Test shesh, connection release kora hocche pool e firiye dite
     connection.release();

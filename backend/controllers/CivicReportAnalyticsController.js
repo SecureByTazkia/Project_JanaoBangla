@@ -75,6 +75,17 @@ async function getOverviewStatistics(req, res) {
 // ==========================================
 async function getCategoryAnalytics(req, res) {
   try {
+    const ALL_CATEGORIES = [
+      'road_damage',
+      'garbage_waste',
+      'street_light',
+      'water_drainage',
+      'traffic_accident',
+      'public_safety',
+      'women_harassment',
+      'extortion_chanda'
+    ];
+
     const [rows] = await db.pool.query(
       `SELECT 
          category,
@@ -84,23 +95,34 @@ async function getCategoryAnalytics(req, res) {
          SUM(CASE WHEN priority IN ('critical', 'urgent', 'high') THEN 1 ELSE 0 END) AS high_priority_count,
          AVG(COALESCE(confirmation_count, 0)) AS avg_verifications
        FROM reports
-       GROUP BY category
-       ORDER BY total DESC`
+       GROUP BY category`
     );
 
-    const formatted = rows.map((r) => {
-      const total = parseInt(r.total, 10);
-      const solved = parseInt(r.solved, 10);
+    const dbMap = new Map();
+    rows.forEach((r) => {
+      if (r.category) {
+        dbMap.set(r.category, r);
+      }
+    });
+
+    // Ensure all 8 categories are included in formatted list
+    const formatted = ALL_CATEGORIES.map((catKey) => {
+      const r = dbMap.get(catKey) || {};
+      const total = parseInt(r.total || 0, 10);
+      const solved = parseInt(r.solved || 0, 10);
       return {
-        category: r.category,
+        category: catKey,
         total,
         solved,
-        pending: parseInt(r.pending, 10),
-        highPriority: parseInt(r.high_priority_count, 10),
+        pending: parseInt(r.pending || 0, 10),
+        highPriority: parseInt(r.high_priority_count || 0, 10),
         avgVerifications: parseFloat(Number(r.avg_verifications || 0).toFixed(1)),
         resolutionRate: total > 0 ? Math.round((solved / total) * 100) : 0
       };
     });
+
+    // Sort by total reports descending, preserving all 8 categories
+    formatted.sort((a, b) => b.total - a.total);
 
     res.json({
       success: true,

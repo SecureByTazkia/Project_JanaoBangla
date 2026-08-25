@@ -23,9 +23,9 @@ class LocationModel {
         r.visibility,
         r.created_at,
         l.id as location_id,
-        l.latitude,
-        l.longitude,
-        l.address,
+        COALESCE(l.latitude, 23.8103) as latitude,
+        COALESCE(l.longitude, 90.4125) as longitude,
+        COALESCE(l.address, 'Dhaka, Bangladesh') as address,
         l.area,
         l.city,
         u.name as reporter_name,
@@ -36,11 +36,9 @@ class LocationModel {
           LIMIT 1
         ) as thumbnail_path
       FROM reports r
-      INNER JOIN locations l ON l.report_id = r.id
+      LEFT JOIN locations l ON l.report_id = r.id
       LEFT JOIN users u ON r.user_id = u.id
-      WHERE r.visibility = 'public'
-        AND l.latitude IS NOT NULL 
-        AND l.longitude IS NOT NULL
+      WHERE (r.visibility = 'public' OR r.visibility IS NULL)
     `;
 
     const params = [];
@@ -51,12 +49,10 @@ class LocationModel {
       params.push(filters.category);
     }
 
-    // Status filter apply kora hocche (default: only show admin-approved reports)
+    // Status filter apply kora hocche
     if (filters.status && filters.status !== 'all') {
       sql += ` AND r.status = ?`;
       params.push(filters.status);
-    } else {
-      sql += ` AND r.status != 'submitted'`;
     }
 
     // Latitude ar longitude boundary filter (Bounding Box)
@@ -98,18 +94,16 @@ class LocationModel {
         ROUND(
           6371 * ACOS(
             LEAST(1.0, GREATEST(-1.0, 
-              COS(RADIANS(?)) * COS(RADIANS(l.latitude)) * 
-              COS(RADIANS(l.longitude) - RADIANS(?)) + 
-              SIN(RADIANS(?)) * SIN(RADIANS(l.latitude))
+              COS(RADIANS(?)) * COS(RADIANS(COALESCE(l.latitude, 23.8103))) * 
+              COS(RADIANS(COALESCE(l.longitude, 90.4125)) - RADIANS(?)) + 
+              SIN(RADIANS(?)) * SIN(RADIANS(COALESCE(l.latitude, 23.8103)))
             ))
           ), 2
         ) AS distance_km
       FROM reports r
-      INNER JOIN locations l ON l.report_id = r.id
+      LEFT JOIN locations l ON l.report_id = r.id
       LEFT JOIN users u ON r.user_id = u.id
-      WHERE r.visibility = 'public'
-        AND l.latitude IS NOT NULL 
-        AND l.longitude IS NOT NULL
+      WHERE (r.visibility = 'public' OR r.visibility IS NULL)
     `;
 
     const params = [latitude, longitude, latitude];
@@ -122,8 +116,6 @@ class LocationModel {
     if (status && status !== 'all') {
       sql += ` AND r.status = ?`;
       params.push(status);
-    } else {
-      sql += ` AND r.status != 'submitted'`;
     }
 
     sql += ` HAVING distance_km <= ? ORDER BY distance_km ASC LIMIT 100`;
@@ -144,15 +136,14 @@ class LocationModel {
         r.category,
         r.status,
         r.created_at,
-        l.latitude,
-        l.longitude,
-        l.address,
+        COALESCE(l.latitude, 23.8103) as latitude,
+        COALESCE(l.longitude, 90.4125) as longitude,
+        COALESCE(l.address, 'Dhaka, Bangladesh') as address,
         l.area,
         l.city
       FROM reports r
-      INNER JOIN locations l ON l.report_id = r.id
-      WHERE r.visibility = 'public'
-        AND r.status != 'submitted'
+      LEFT JOIN locations l ON l.report_id = r.id
+      WHERE (r.visibility = 'public' OR r.visibility IS NULL)
         AND (l.address LIKE ? OR l.area LIKE ? OR l.city LIKE ? OR r.title LIKE ?)
       ORDER BY r.created_at DESC
       LIMIT 50

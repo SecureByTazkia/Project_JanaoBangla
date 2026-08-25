@@ -237,9 +237,11 @@ const CivicProblemMapPage = () => {
             <div className="card shadow-sm border-0 civic-map-list-wrapper-card">
               <div className="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                 <h5 className="h6 mb-0 fw-bold">Mapped Problems ({filteredReports.length})</h5>
-                <span className="badge bg-success-subtle text-success border border-success-subtle">
-                  {userLocation ? 'GPS Active' : 'Dhaka Center'}
-                </span>
+                {userLocation && (
+                  <span className="badge bg-success-subtle text-success border border-success-subtle">
+                    GPS Active
+                  </span>
+                )}
               </div>
               <div className="card-body p-2" style={{ overflowY: 'auto', flex: 1 }}>
                 {filteredReports.length === 0 ? (

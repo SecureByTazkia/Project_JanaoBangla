@@ -2,12 +2,11 @@
 // JanaoBangla — CivicReportAnalyticsPage Page
 // BRANCH: feature-civic-report-search-filter-and-analytics
 // Comprehensive Civic Analytics & Statistics Dashboard
-// Category breakdown, Area hotspots, Timeline activity, and Division comparisons
+// Dark dashboard layout — JanaoBangla theme
 // ==========================================
 
 import { useState, useEffect } from 'react';
-import CivicReportStatisticsCard from '../components/CivicReportStatisticsCard';
-import CivicReportAnalyticsChart from '../components/CivicReportAnalyticsChart';
+import CivicReportAnalyticsDashboard from '../components/CivicReportAnalyticsDashboard';
 import {
   getOverviewStatistics,
   getCategoryAnalytics,
@@ -26,6 +25,7 @@ function CivicReportAnalyticsPage() {
   const [priorityData, setPriorityData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // ==========================================
   // useEffect — Initial mount e shob analytics data parallel load kora
@@ -75,174 +75,108 @@ function CivicReportAnalyticsPage() {
   };
 
   return (
-    <main className="page-content py-4" style={{ backgroundColor: '#F8FAFC', minHeight: '85vh' }}>
-      <div className="container" style={{ maxWidth: '1200px' }}>
-        
-        {/* Page Header */}
-        <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
-          <div>
-            <div className="d-flex align-items-center gap-2 mb-1">
-              <span style={{ fontSize: '1.8rem' }}>📊</span>
-              <h1 className="fw-bold text-dark mb-0" style={{ fontSize: '1.8rem' }}>
-                Civic Insights &amp; Analytics
-              </h1>
+    <main
+      id="civic-analytics-page"
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #021B14 0%, #062B20 45%, #031711 100%)',
+        paddingBottom: '60px',
+        fontFamily: "'Inter', 'Segoe UI', sans-serif"
+      }}
+    >
+      {/* ── Page Header ── */}
+      <div style={{
+        background: 'linear-gradient(180deg, rgba(0,106,78,0.25) 0%, transparent 100%)',
+        borderBottom: '1px solid rgba(0,201,138,0.12)',
+        padding: '28px 32px 24px'
+      }}>
+        <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #006A4E 0%, #00956E 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.15rem', boxShadow: '0 4px 18px rgba(0,106,78,0.4)', flexShrink: 0
+                }}>
+                  📊
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#00C98A', marginBottom: '2px' }}>
+                    JanaoBangla Dashboard
+                  </div>
+                  <h1 style={{ fontSize: '1.55rem', fontWeight: 800, color: '#FFFFFF', margin: 0, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+                    Civic Insights &amp; Analytics
+                  </h1>
+                </div>
+              </div>
+              <p style={{ color: '#A0B8AF', fontSize: '0.84rem', margin: '0 0 0 52px', maxWidth: '480px', lineHeight: 1.6 }}>
+                Evidence-based transparency: Real-time statistics, area-based problem density, and resolution performance across Bangladesh.
+              </p>
             </div>
-            <p className="text-secondary small mb-0">
-              Evidence-based transparency: Real-time statistics, area-based problem density, and resolution performance across Bangladesh.
-            </p>
+            <button
+              id="btn-refresh-analytics"
+              onClick={fetchAllAnalytics}
+              disabled={loading}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '10px 22px',
+                border: '1px solid rgba(0,149,110,0.35)',
+                borderRadius: '10px',
+                background: 'rgba(0,106,78,0.15)',
+                color: '#00C98A',
+                fontSize: '0.83rem', fontWeight: 600,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.18s ease',
+                whiteSpace: 'nowrap',
+                opacity: loading ? 0.6 : 1,
+                backdropFilter: 'blur(8px)'
+              }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = 'rgba(0,106,78,0.3)'; e.currentTarget.style.borderColor = '#00956E'; }}}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,106,78,0.15)'; e.currentTarget.style.borderColor = 'rgba(0,149,110,0.35)'; }}
+            >
+              <span style={{ fontSize: '0.95rem', display: 'inline-block', animation: loading ? 'analyticsSpin 1s linear infinite' : 'none' }}>🔄</span>
+              {loading ? 'Refreshing…' : 'Refresh'}
+            </button>
           </div>
-
-          <button
-            className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 shadow-sm bg-white"
-            onClick={fetchAllAnalytics}
-            disabled={loading}
-          >
-            <span>🔄</span> Refresh Analytics
-          </button>
         </div>
+      </div>
+
+      {/* ── Dashboard Content ── */}
+      <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '28px 32px 0' }}>
 
         {error && (
-          <div className="alert alert-danger py-2 small mb-4">
-            {error}
+          <div style={{
+            background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.3)',
+            borderRadius: '10px', padding: '12px 16px', marginBottom: '24px',
+            color: '#F87171', fontSize: '0.83rem', display: 'flex', alignItems: 'center', gap: '8px'
+          }}>
+            ⚠️ {error}
           </div>
         )}
 
-        {/* 1. Overall Statistics Metrics Cards */}
-        <CivicReportStatisticsCard
-          statistics={overviewStats}
-          loading={loading}
-        />
-
-        {/* 2. Recharts Interactive Visualisations */}
-        <CivicReportAnalyticsChart
+        <CivicReportAnalyticsDashboard
+          overviewStats={overviewStats}
           categoryData={categoryData}
           timelineData={timelineData}
           areaData={areaData}
+          topHotspots={topHotspots}
+          divisionComparison={divisionComparison}
           priorityData={priorityData}
+          loading={loading}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
         />
 
-        {/* 3. Division Comparison & Hotspots Tables */}
-        <div className="row g-4 mb-4">
-          
-          {/* Division Performance Breakdown */}
-          <div className="col-lg-7">
-            <div className="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
-              <h5 className="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
-                <span>🇧🇩</span> Division-Wise Resolution Comparison
-              </h5>
-              <p className="text-secondary small mb-3">
-                Tracking resolution rates and active caseload across Bangladesh's 8 administrative divisions.
-              </p>
-
-              {divisionComparison.length === 0 ? (
-                <div className="text-center py-4 text-muted small">No division data available</div>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-hover align-middle mb-0 small">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Division</th>
-                        <th>Total Reports</th>
-                        <th>Solved</th>
-                        <th>In Progress</th>
-                        <th>Resolution Rate</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {divisionComparison.map((div) => {
-                        const rate = div.totalReports > 0
-                          ? Math.round((div.solved / div.totalReports) * 100)
-                          : 0;
-                        return (
-                          <tr key={div.division}>
-                            <td className="fw-bold text-dark">{div.division}</td>
-                            <td>{div.totalReports}</td>
-                            <td className="text-success fw-semibold">{div.solved}</td>
-                            <td className="text-warning fw-semibold">{div.inProgress + div.submitted}</td>
-                            <td style={{ minWidth: '130px' }}>
-                              <div className="d-flex align-items-center gap-2">
-                                <div className="progress flex-grow-1" style={{ height: '6px' }}>
-                                  <div
-                                    className="progress-bar bg-success"
-                                    role="progressbar"
-                                    style={{ width: `${rate}%` }}
-                                  ></div>
-                                </div>
-                                <span className="text-muted fw-semibold" style={{ fontSize: '0.75rem', width: '32px' }}>
-                                  {rate}%
-                                </span>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Top Problematic Hotspots */}
-          <div className="col-lg-5">
-            <div className="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
-              <h5 className="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
-                <span>🔥</span> Top Civic Problem Hotspots
-              </h5>
-              <p className="text-secondary small mb-3">
-                Districts with highest reported issue volume requiring municipal attention.
-              </p>
-
-              {topHotspots.length === 0 ? (
-                <div className="text-center py-4 text-muted small">No hotspot data available</div>
-              ) : (
-                <div className="list-group list-group-flush">
-                  {topHotspots.map((spot, index) => (
-                    <div
-                      key={spot.district}
-                      className="list-group-item px-0 py-2 d-flex align-items-center justify-content-between border-bottom"
-                    >
-                      <div className="d-flex align-items-center gap-3">
-                        <span
-                          className="badge rounded-circle p-2 text-white"
-                          style={{
-                            backgroundColor: index === 0 ? '#FF1744' : index === 1 ? '#E65100' : '#006A4E',
-                            width: '28px',
-                            height: '28px',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.8rem'
-                          }}
-                        >
-                          {index + 1}
-                        </span>
-                        <div>
-                          <div className="fw-bold text-dark">{spot.district}</div>
-                          <small className="text-muted">{spot.division} Division</small>
-                        </div>
-                      </div>
-
-                      <div className="text-end">
-                        <span className="badge bg-light text-dark border px-2 py-1">
-                          {spot.totalIssues} Issues
-                        </span>
-                        {spot.criticalIssues > 0 && (
-                          <div className="text-danger small" style={{ fontSize: '0.7rem' }}>
-                            {spot.criticalIssues} High Priority
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-        </div>
-
       </div>
+
+      <style>{`
+        @keyframes analyticsSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </main>
   );
 }

@@ -37,23 +37,27 @@ function PublicCivicProblemFeed({
         return { label: 'Traffic / Accident', icon: '🚦', color: '#C62828', bg: '#FFEBEE' };
       case 'public_safety':
         return { label: 'Public Safety', icon: '🛡️', color: '#4A148C', bg: '#F3E5F5' };
+      case 'women_harassment':
+        return { label: 'Women Harassment', icon: '🚨', color: '#D81B60', bg: '#FCE4EC' };
+      case 'extortion_chanda':
+        return { label: 'Illegal Money Collection / চাঁদাবাজি', icon: '💰', color: '#B71C1C', bg: '#FFEBEE' };
       default:
         return { label: 'Civic Issue', icon: '📋', color: '#374151', bg: '#F3F4F6' };
     }
   };
 
-  // Status visual mapping helper
+  // Status visual mapping helper (Bilingual English & Bangla)
   const getStatusBadge = (status) => {
     switch (status) {
       case 'solved':
-        return <span className="badge" style={{ backgroundColor: '#2E7D32', color: '#FFF' }}>✅ Solved</span>;
+        return <span className="badge" style={{ backgroundColor: '#2E7D32', color: '#FFF' }}>✅ Resolved (নিষ্পত্তি হয়েছে)</span>;
       case 'processing':
-        return <span className="badge" style={{ backgroundColor: '#0288D1', color: '#FFF' }}>⚙️ Processing</span>;
+        return <span className="badge" style={{ backgroundColor: '#0288D1', color: '#FFF' }}>⚙️ Action Taken (ব্যবস্থা নেওয়া হয়েছে)</span>;
       case 'under_review':
-        return <span className="badge" style={{ backgroundColor: '#F57F17', color: '#FFF' }}>🔍 Under Review</span>;
+        return <span className="badge" style={{ backgroundColor: '#F57F17', color: '#FFF' }}>🔍 Under Review (যাচাই চলছে)</span>;
       case 'submitted':
       default:
-        return <span className="badge" style={{ backgroundColor: '#64748B', color: '#FFF' }}>📝 Submitted</span>;
+        return <span className="badge" style={{ backgroundColor: '#64748B', color: '#FFF' }}>📝 Pending (অভিযোগটি জমা হয়েছে)</span>;
     }
   };
 
@@ -169,7 +173,7 @@ function PublicCivicProblemFeed({
                 </div>
               </div>
 
-              <div className="d-flex align-items-center gap-2">
+              <div className="d-flex align-items-center gap-2 flex-wrap justify-content-end">
                 <span
                   className="badge"
                   style={{
@@ -181,6 +185,20 @@ function PublicCivicProblemFeed({
                 >
                   {catMeta.icon} {catMeta.label}
                 </span>
+                {report.category === 'women_harassment' && report.harassment_type && (
+                  <span
+                    className="badge"
+                    style={{
+                      backgroundColor: report.harassment_type === 'online' ? '#EDE7F6' : '#FBE9E7',
+                      color: report.harassment_type === 'online' ? '#512DA8' : '#D84315',
+                      border: '1px solid currentColor',
+                      fontWeight: 600,
+                      fontSize: '0.75rem'
+                    }}
+                  >
+                    {report.harassment_type === 'online' ? '🌐 Online' : '🚶 Offline'}
+                  </span>
+                )}
                 {getStatusBadge(report.status)}
               </div>
             </div>

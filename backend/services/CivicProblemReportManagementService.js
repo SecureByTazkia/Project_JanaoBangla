@@ -78,14 +78,14 @@ class CivicProblemReportManagementService {
       }
     }
 
-    // Jodi GPS coordinates pathano hoye thake, location table e save korbo
-    if (data.latitude && data.longitude) {
-      await CivicProblemReportModel.saveLocation(reportId, {
-        latitude: parseFloat(data.latitude),
-        longitude: parseFloat(data.longitude),
-        address: data.address || null
-      });
-    }
+    // Location data save kora hocche (GPS coordinates or fallback center)
+    const reportLat = (data.latitude && !isNaN(parseFloat(data.latitude))) ? parseFloat(data.latitude) : 23.8103;
+    const reportLng = (data.longitude && !isNaN(parseFloat(data.longitude))) ? parseFloat(data.longitude) : 90.4125;
+    await CivicProblemReportModel.saveLocation(reportId, {
+      latitude: reportLat,
+      longitude: reportLng,
+      address: data.address || 'Dhaka, Bangladesh'
+    });
 
     // Jodi evidence files upload kora hoye thake, segulo save korbo
     if (files && files.length > 0) {

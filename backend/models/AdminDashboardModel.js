@@ -152,10 +152,10 @@ class AdminDashboardModel {
     return { reports, total, page: parseInt(page) || 1, limit: safeLimit };
   }
 
-  // Ei function ta report er status update kore (submitted, under_review, processing, solved)
+  // Ei function ta report er status update kore (submitted, under_review, processing, solved) ar feed e publish kore (is_published = 1)
   static async updateReportStatus(reportId, newStatus) {
     return await db.update(
-      `UPDATE reports SET status = ?, updated_at = NOW() WHERE id = ?`,
+      `UPDATE reports SET status = ?, is_published = 1, updated_at = NOW() WHERE id = ?`,
       [newStatus, reportId]
     );
   }

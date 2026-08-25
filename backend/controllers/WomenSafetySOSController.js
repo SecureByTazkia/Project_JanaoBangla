@@ -53,6 +53,8 @@ async function triggerSOS(req, res) {
     let emailSent = false;
     let smsStatus   = 'no_contacts';
     let emailStatus = 'no_contacts';
+    let smsResult   = null;
+    let emailResult = null;
 
     // Jodi contact ache tahole notification pathano hobe
     if (contacts.length > 0) {
@@ -67,14 +69,14 @@ async function triggerSOS(req, res) {
       });
 
       // SMS pathano hocche sob contacts ke (parallel er bodole sequential, safe)
-      const smsResult = await EmergencySmsAlertService.sendBulkEmergencySms({
+      smsResult = await EmergencySmsAlertService.sendBulkEmergencySms({
         contacts,
         message:   messageData.smsMessage,
         requestId: emergencyRequest.id
       });
 
       // Email pathano hocche sob contacts ke
-      const emailResult = await EmergencyEmailAlertService.sendBulkEmergencyEmails({
+      emailResult = await EmergencyEmailAlertService.sendBulkEmergencyEmails({
         contacts,
         subject:   messageData.emailSubject,
         htmlBody:  messageData.emailHtml,
