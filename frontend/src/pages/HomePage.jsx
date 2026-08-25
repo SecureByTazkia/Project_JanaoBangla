@@ -44,12 +44,7 @@ const FEATURES = [
     desc:  'Smart similarity detection prevents duplicate reports and keeps the system clean.',
     color: '#FFF8E1'
   },
-  {
-    icon:  '🤖',
-    title: 'AI Assistance',
-    desc:  'AI recognizes problems from photos and suggests the right category, title, and description.',
-    color: '#E0F7FA'
-  },
+
   {
     icon:  '🆘',
     title: 'Women Safety SOS',
