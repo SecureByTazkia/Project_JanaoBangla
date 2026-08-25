@@ -14,7 +14,7 @@ const jwt = require('jsonwebtoken');
 // ==========================================
 function generateAccessToken(payload) {
   // JWT_SECRET .env theke newa hocche, token sign kora hocche
-  return jwt.sign(payload, process.env.JWT_SECRET, {
+  return jwt.sign(payload, process.env.JWT_SECRET || 'janaobangla_dev_jwt_secret_key_change_in_production_123456789', {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   });
 }
@@ -25,7 +25,7 @@ function generateAccessToken(payload) {
 // 30 din expire hobe
 // ==========================================
 function generateRefreshToken(payload) {
-  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET || 'janaobangla_dev_refresh_secret_key_change_in_production_987654321', {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d'
   });
 }
@@ -38,7 +38,7 @@ function generateRefreshToken(payload) {
 function verifyAccessToken(token) {
   try {
     // JWT verify kora hocche secret key diye
-    return jwt.verify(token, process.env.JWT_SECRET);
+    return jwt.verify(token, process.env.JWT_SECRET || 'janaobangla_dev_jwt_secret_key_change_in_production_123456789');
   } catch (error) {
     // Token expired ba invalid hoile null return kora hocche
     return null;
@@ -50,7 +50,7 @@ function verifyAccessToken(token) {
 // ==========================================
 function verifyRefreshToken(token) {
   try {
-    return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    return jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'janaobangla_dev_refresh_secret_key_change_in_production_987654321');
   } catch (error) {
     return null;
   }
@@ -61,18 +61,17 @@ function verifyRefreshToken(token) {
 // Random 6-digit OTP generate korbe
 // ==========================================
 function generateEmailVerificationToken() {
-  // 6-digit random number generate kora hocche
+  // 6-digit random OTP generate kora hocche
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // ==========================================
-// generatePasswordResetToken — Password reset er jonno
-// Random 32-byte hex string generate korbe
+// generatePasswordResetToken — Password reset er jonno 6-digit OTP
+// MySQL users table-er password_reset_code VARCHAR(10) column e fit hobe
 // ==========================================
 function generatePasswordResetToken() {
-  const crypto = require('crypto');
-  // Cryptographically secure random token generate kora hocche
-  return crypto.randomBytes(32).toString('hex');
+  // 6-digit cryptographically secure random OTP generate kora hocche
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // ==========================================

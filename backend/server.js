@@ -6,22 +6,24 @@
 // ==========================================
 
 // .env file theke environment variables load kora hocche
-require('dotenv').config();
+const path      = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-const express        = require('express');
-const cors           = require('cors');
-const rateLimit      = require('express-rate-limit');
-const path           = require('path');
+// Core packages import kora hocche — Express framework, CORS, ar Rate Limiter
+const express   = require('express');
+const cors      = require('cors');
+const rateLimit = require('express-rate-limit');
 
 // Project er nija middleware ar route files import kora hocche
-const { testDatabaseConnection }   = require('./config/DatabaseConnection');
-const healthCheckRoutes            = require('./routes/HealthCheckRoutes');
-const userAuthenticationRoutes     = require('./routes/UserAuthenticationRoutes'); // Phase 2
-const notFoundMiddleware           = require('./middleware/NotFoundMiddleware');
-const errorHandlingMiddleware      = require('./middleware/ErrorHandlingMiddleware');
+const { testDatabaseConnection } = require('./config/DatabaseConnection');
+const healthCheckRoutes          = require('./routes/HealthCheckRoutes');
+const userAuthenticationRoutes   = require('./routes/UserAuthenticationRoutes'); // Phase 2
+const notFoundMiddleware         = require('./middleware/NotFoundMiddleware');
+const errorHandlingMiddleware    = require('./middleware/ErrorHandlingMiddleware');
 
 // ==========================================
 // Express app create kora hocche
+// Ei app object diye sob route, middleware ar static file server run korbe
 // ==========================================
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -77,12 +79,7 @@ app.use('/uploads', express.static(uploadDir));
 // Porer phase e authentication, reports etc jog hobe
 // ==========================================
 app.use('/api/health', healthCheckRoutes);
-
-// ==========================================
-// PLACEHOLDER ROUTES — Future phases er jonno
-// Ekhane comment hisebe ache, pore uncomment hobe
-// ==========================================
-app.use('/api/auth', userAuthenticationRoutes);         // Phase 2 — User authentication routes
+app.use('/api/auth',   userAuthenticationRoutes); // Phase 2 — User Authentication & Security
 // app.use('/api/reports',       reportRoutes);         // Phase 3
 // app.use('/api/location',      locationRoutes);       // Phase 4
 // app.use('/api/community',     communityRoutes);      // Phase 5

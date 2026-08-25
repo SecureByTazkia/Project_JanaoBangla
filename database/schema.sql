@@ -16,20 +16,24 @@ USE janao_bangla_db;
 -- ==========================================
 -- TABLE: users
 -- System er sob user er information store hobe
--- role field diye admin ar normal user alag kora hobe
+-- role field diye admin ar citizen user alag kora hobe
 -- ==========================================
 CREATE TABLE IF NOT EXISTS users (
-  id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  full_name     VARCHAR(150) NOT NULL,
-  email         VARCHAR(255) NOT NULL,
-  phone         VARCHAR(20),
-  password_hash VARCHAR(255) NOT NULL,
-  role          ENUM('user', 'admin') NOT NULL DEFAULT 'user',
-  is_verified   TINYINT(1) NOT NULL DEFAULT 0,
-  is_active     TINYINT(1) NOT NULL DEFAULT 1,
-  avatar_url    VARCHAR(500),
-  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  id                          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name                        VARCHAR(100) NOT NULL,
+  email                       VARCHAR(191) NOT NULL,
+  phone_number                VARCHAR(20),
+  password                    VARCHAR(255) NOT NULL,
+  role                        ENUM('citizen', 'admin') NOT NULL DEFAULT 'citizen',
+  is_verified                 TINYINT(1) DEFAULT 0,
+  is_active                   TINYINT(1) NOT NULL DEFAULT 1,
+  verification_code           VARCHAR(10),
+  verification_expires_at     DATETIME,
+  created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  password_reset_code         VARCHAR(10),
+  password_reset_expires_at   DATETIME,
+  profile_picture             VARCHAR(255),
 
   PRIMARY KEY (id),
   UNIQUE KEY uq_users_email (email),

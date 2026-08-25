@@ -2,13 +2,12 @@
 // JanaoBangla — Password Encryption Service
 // BRANCH: feature-user-authentication-and-security
 // bcrypt diye password hash ar verify kora hobe
-// Plain text password kabhi database e jabe na
+// Plain text password database e kokhono jabe na
 // ==========================================
 
 const bcrypt = require('bcrypt');
 
-// bcrypt cost factor — higher = more secure, kintu slow
-// 12 recommended for production
+// bcrypt cost factor — 12 rounds for strong security
 const SALT_ROUNDS = 12;
 
 // ==========================================
@@ -74,11 +73,15 @@ function validatePasswordStrength(password) {
     errors.push('Password must contain at least one special character');
   }
 
-  // Sob thik thakle isValid = true, error array khaali thakbe
+  // Sob check pass korle isValid = true hobe
   return {
     isValid: errors.length === 0,
     errors
   };
 }
 
-module.exports = { hashPassword, comparePassword, validatePasswordStrength };
+module.exports = {
+  hashPassword,
+  comparePassword,
+  validatePasswordStrength
+};

@@ -2,33 +2,47 @@
 // JanaoBangla — User Authentication Controller
 // BRANCH: feature-user-authentication-and-security
 // Registration, Login, Logout, Email Verify,
-// Forgot Password, Reset Password, Change Password
-// Profile management — sob auth logic ekhane
+// Forgot Password, Reset Password, Change Password, Profile management
 // ==========================================
 
-const UserAccountModel        = require('../models/UserAccountModel');
-const { hashPassword, comparePassword, validatePasswordStrength } = require('../services/PasswordEncryptionService');
-const { generateAccessToken, generateEmailVerificationToken, buildTokenPayload } = require('../services/TokenService');
-const { sendEmailVerificationOTP } = require('../services/EmailVerificationService');
-const { createPasswordResetRequest, validatePasswordResetToken, markPasswordResetTokenUsed } = require('../services/PasswordResetService');
+const UserAccountModel = require('../models/UserAccountModel');
+const {
+  hashPassword,
+  comparePassword,
+  validatePasswordStrength
+} = require('../services/PasswordEncryptionService');
+const {
+  generateAccessToken,
+  generateEmailVerificationToken,
+  buildTokenPayload
+} = require('../services/TokenService');
+const {
+  sendEmailVerificationOTP
+} = require('../services/EmailVerificationService');
+const {
+  createPasswordResetRequest,
+  validatePasswordResetToken,
+  markPasswordResetTokenUsed
+} = require('../services/PasswordResetService');
 
 // ==========================================
-// registerUser — Noya user register korar jonno
+// registerUser — Noya user register korar jonno (Step 1)
+// Ei function user input validation kore, password hash kore, unverified user (is_verified = 0) database-e save kore,
+// 6-digit OTP generate kore database-e store kore ebong email/fallback OTP trigger kore.
 // POST /api/auth/register
-// Validation, duplicate check, hash, create, OTP send
 // ==========================================
 async function registerUser(req, res, next) {
   try {
     const { fullName, email, phone, password, confirmPassword } = req.body;
 
-    // ---- Input validation ----
+    // Step 1: Input validation kora hocche (Name, Email, Password presence & matching)
     const errors = [];
-    if (!fullName || fullName.trim().length < 2)  errors.push('Full name must be at least 2 characters');
-    if (!email    || !/^\S+@\S+\.\S+$/.test(email)) errors.push('Valid email address is required');
-    if (!password)                                 errors.push('Password is required');
-    if (password !== confirmPassword)              errors.push('Passwords do not match');
+    if (!fullName || fullName.trim().length < 2) errors.push('Full name must be at least 2 characters');
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) errors.push('Valid email address is required');
+    if (!password) errors.push('Password is required');
+    if (password !== confirmPassword) errors.push('Passwords do not match');
 
-    // Password strength check kora hocche
+    // Password strength check kora hocche (min 8 chars, uppercase, number, symbol)
     if (password) {
       const strengthCheck = validatePasswordStrength(password);
       if (!strengthCheck.isValid) {
@@ -36,73 +50,96 @@ async function registerUser(req, res, next) {
       }
     }
 
-    // Validation error thakle 400 response
     if (errors.length > 0) {
       return res.status(400).json({ success: false, message: errors[0], errors });
     }
 
-    // Email already registered ki check kora hocche
-    const existingUser = await UserAccountModel.findByEmail(email);
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Step 2: Duplicate email check kora hocche database e
+    const existingUser = await UserAccountModel.findByEmail(normalizedEmail);
     if (existingUser) {
-      return res.status(409).json({
-        success: false,
-        message: 'An account with this email already exists. Please login or use a different email.'
-      });
+      if (existingUser.is_verified) {
+        // Already verified thakle notun kore register kora jabe na
+        return res.status(409).json({
+          success: false,
+          message: 'An account with this email already exists. Please login or use a different email.'
+        });
+      } else {
+        // Jodi purono registration unverified thake, tobe update kore notun OTP pathano hocche
+        const passwordHash = await hashPassword(password);
+        await UserAccountModel.updateProfile(existingUser.id, {
+          fullName: fullName.trim(),
+          phone: phone ? phone.trim() : null
+        });
+        await UserAccountModel.updatePassword(existingUser.id, passwordHash);
+
+        // Notun 6-digit OTP generate kora hocche (15 minutes validity)
+        const otp = generateEmailVerificationToken();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+        await UserAccountModel.saveEmailVerificationToken(existingUser.id, otp, expiresAt);
+        const emailResult = await sendEmailVerificationOTP(normalizedEmail, fullName.trim(), otp);
+
+        const message = emailResult.success && !emailResult.dev
+          ? 'Verification code sent to your email! Please verify to complete registration.'
+          : 'Verification code generated! (Dev fallback OTP logged to server console).';
+
+        return res.status(200).json({
+          success: true,
+          requiresVerification: true,
+          email: normalizedEmail,
+          message,
+          emailSent: emailResult.success && !emailResult.dev
+        });
+      }
     }
 
-    // Password hash kora hocche — plain text never stored
+    // Step 3: Bcrypt diye password hash kora hocche
     const passwordHash = await hashPassword(password);
 
-    // Database e user create kora hocche
+    // Step 4: Database e unverified citizen hisebe user record save kora hocche (is_verified = 0)
     const userId = await UserAccountModel.createUser({
       fullName: fullName.trim(),
-      email,
-      phone,
+      email: normalizedEmail,
+      phone: phone ? phone.trim() : null,
       passwordHash
     });
 
-    // Email verification OTP generate kora hocche
-    const otp       = generateEmailVerificationToken();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-
-    // OTP database e save kora hocche
+    // Step 5: 6-digit email verification OTP generate kore expiry shoho MySQL table e save kora hocche
+    const otp = generateEmailVerificationToken();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
     await UserAccountModel.saveEmailVerificationToken(userId, otp, expiresAt);
 
-    // OTP email pathano hocche
-    await sendEmailVerificationOTP(email, fullName.trim(), otp);
+    // Step 6: Nodemailer diye OTP email pathano hocche (SMTP fail hole console fallback OTP log kora hobe)
+    const emailResult = await sendEmailVerificationOTP(normalizedEmail, fullName.trim(), otp);
 
-    // Access token generate kora hocche — user directly login thakbe
-    const newUser      = await UserAccountModel.findById(userId);
-    const accessToken  = generateAccessToken(buildTokenPayload(newUser));
+    const message = emailResult.success && !emailResult.dev
+      ? 'Account details submitted! Please enter the 6-digit OTP sent to your email to complete registration.'
+      : 'Account details submitted! Verification code generated (Dev fallback OTP logged to server console).';
 
-    // Success response pathano hocche
+    // Step 7: Frontend ke 201 Created response pathano hocche (requiresVerification = true)
     res.status(201).json({
-      success:     true,
-      message:     'Account created! Please check your email for the verification OTP.',
-      accessToken,
-      user: {
-        id:          newUser.id,
-        fullName:    newUser.full_name,
-        email:       newUser.email,
-        role:        newUser.role,
-        isVerified:  newUser.is_verified
-      }
+      success: true,
+      requiresVerification: true,
+      email: normalizedEmail,
+      message,
+      emailSent: emailResult.success && !emailResult.dev
     });
   } catch (error) {
+    // Error handling middleware e pass kora hocche
     next(error);
   }
 }
 
 // ==========================================
 // loginUser — User login korar jonno
+// Ei function credentials check kore ebong user verified thaklei kebol access token return kore.
 // POST /api/auth/login
-// Email/password check, JWT generate, return
 // ==========================================
 async function loginUser(req, res, next) {
   try {
     const { email, password } = req.body;
 
-    // Basic input validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -110,12 +147,8 @@ async function loginUser(req, res, next) {
       });
     }
 
-    // Database theke user khujbe email diye
-    // findByEmail password hash o return kore
+    // User lookup
     const user = await UserAccountModel.findByEmail(email);
-
-    // User na thakle ba password match na hoile same error dekhabe
-    // Security reason: attacker jate jan na kon email registered
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -123,9 +156,8 @@ async function loginUser(req, res, next) {
       });
     }
 
-    // Password compare kora hocche bcrypt diye
-    const isPasswordCorrect = await comparePassword(password, user.password_hash);
-
+    // Password comparison
+    const isPasswordCorrect = await comparePassword(password, user.password);
     if (!isPasswordCorrect) {
       return res.status(401).json({
         success: false,
@@ -133,18 +165,39 @@ async function loginUser(req, res, next) {
       });
     }
 
-    // JWT access token generate kora hocche
+    // Check if user is verified
+    if (!user.is_verified) {
+      // Unverified user-er jonno notun OTP generate kore pathano hocche
+      const otp = generateEmailVerificationToken();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+      await UserAccountModel.saveEmailVerificationToken(user.id, otp, expiresAt);
+      const emailResult = await sendEmailVerificationOTP(user.email, user.name, otp);
+
+      const message = emailResult.success && !emailResult.dev
+        ? 'Your email is not verified yet. A verification OTP has been sent to your email.'
+        : 'Your email is not verified yet. Verification code generated (Dev fallback OTP logged to server console).';
+
+      return res.status(403).json({
+        success: false,
+        requiresVerification: true,
+        email: user.email,
+        message,
+        emailSent: emailResult.success && !emailResult.dev
+      });
+    }
+
+    // JWT token generation
     const accessToken = generateAccessToken(buildTokenPayload(user));
 
-    // Login success response
     res.status(200).json({
-      success:     true,
-      message:     'Login successful. Welcome back!',
+      success: true,
+      message: 'Login successful. Welcome back!',
       accessToken,
       user: {
         id:         user.id,
-        fullName:   user.full_name,
+        fullName:   user.name,
         email:      user.email,
+        phone:      user.phone_number,
         role:       user.role,
         isVerified: user.is_verified
       }
@@ -155,25 +208,23 @@ async function loginUser(req, res, next) {
 }
 
 // ==========================================
-// getMyProfile — Logged-in user er profile data return korbe
+// getMyProfile — Logged-in user er profile data
+// Ei function authenticated user-er profile info fetch kore return kore.
 // GET /api/auth/profile
-// requireAuthentication middleware use korbe
 // ==========================================
 async function getMyProfile(req, res, next) {
   try {
-    // req.user requireAuthentication middleware e set hoyeche
     const user = req.user;
-
     res.status(200).json({
       success: true,
       user: {
         id:         user.id,
-        fullName:   user.full_name,
+        fullName:   user.name,
         email:      user.email,
-        phone:      user.phone,
+        phone:      user.phone_number,
         role:       user.role,
         isVerified: user.is_verified,
-        avatarUrl:  user.avatar_url,
+        avatarUrl:  user.profile_picture,
         createdAt:  user.created_at
       }
     });
@@ -183,14 +234,14 @@ async function getMyProfile(req, res, next) {
 }
 
 // ==========================================
-// updateMyProfile — Profile update korar jonno
+// updateMyProfile — Profile data update (name, phone)
+// Ei function logged-in user-er name ar phone number update kore database-e save kore.
 // PUT /api/auth/profile
 // ==========================================
 async function updateMyProfile(req, res, next) {
   try {
     const { fullName, phone } = req.body;
 
-    // Validation
     if (!fullName || fullName.trim().length < 2) {
       return res.status(400).json({
         success: false,
@@ -198,23 +249,23 @@ async function updateMyProfile(req, res, next) {
       });
     }
 
-    // Database e profile update kora hocche
     await UserAccountModel.updateProfile(req.user.id, {
       fullName: fullName.trim(),
-      phone
+      phone: phone ? phone.trim() : null
     });
 
-    // Updated user data return kora hocche
     const updatedUser = await UserAccountModel.findById(req.user.id);
 
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully.',
       user: {
-        id:       updatedUser.id,
-        fullName: updatedUser.full_name,
-        email:    updatedUser.email,
-        phone:    updatedUser.phone
+        id:         updatedUser.id,
+        fullName:   updatedUser.name,
+        email:      updatedUser.email,
+        phone:      updatedUser.phone_number,
+        role:       updatedUser.role,
+        isVerified: updatedUser.is_verified
       }
     });
   } catch (error) {
@@ -223,41 +274,62 @@ async function updateMyProfile(req, res, next) {
 }
 
 // ==========================================
-// verifyEmail — OTP diye email verify korar jonno
+// verifyEmail — 6-digit OTP diye email verify korbe (Step 2)
+// Ei function OTP verify kore registration complete kore ebong JWT token issue kore.
 // POST /api/auth/verify-email
 // ==========================================
 async function verifyEmail(req, res, next) {
   try {
-    const { otp } = req.body;
-    const userId  = req.user.id;
+    const { otp, email } = req.body;
+    let userId = req.user?.id;
 
-    // OTP validation
-    if (!otp || otp.length !== 6) {
+    if (!userId && email) {
+      const userByEmail = await UserAccountModel.findByEmail(email);
+      if (userByEmail) {
+        userId = userByEmail.id;
+      }
+    }
+
+    if (!otp || otp.toString().trim().length !== 6) {
       return res.status(400).json({
         success: false,
         message: 'Please enter the 6-digit OTP sent to your email.'
       });
     }
 
-    // Database e OTP check kora hocche
-    const tokenRecord = await UserAccountModel.findEmailVerificationToken(userId, otp);
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User email or authorization token is required.'
+      });
+    }
+
+    const tokenRecord = await UserAccountModel.findEmailVerificationToken(userId, otp.toString().trim());
 
     if (!tokenRecord) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired OTP. Please request a new one.'
+        message: 'Invalid or expired OTP. Please enter the correct code or request a new one.'
       });
     }
 
-    // User ke verified mark kora hocche
-    await UserAccountModel.updateUserVerifiedStatus(userId);
+    await UserAccountModel.markEmailVerificationTokenUsed(userId);
 
-    // Token used mark kora hocche
-    await UserAccountModel.markEmailVerificationTokenUsed(tokenRecord.id);
+    const verifiedUser = await UserAccountModel.findById(userId);
+    const accessToken = generateAccessToken(buildTokenPayload(verifiedUser));
 
     res.status(200).json({
       success: true,
-      message: 'Email verified successfully! Your account is now fully active.'
+      message: 'Registration verified and complete! Welcome to JanaoBangla.',
+      accessToken,
+      user: {
+        id:         verifiedUser.id,
+        fullName:   verifiedUser.name,
+        email:      verifiedUser.email,
+        phone:      verifiedUser.phone_number,
+        role:       verifiedUser.role,
+        isVerified: verifiedUser.is_verified
+      }
     });
   } catch (error) {
     next(error);
@@ -265,34 +337,50 @@ async function verifyEmail(req, res, next) {
 }
 
 // ==========================================
-// resendVerificationOTP — Noya OTP pathaber jonno
+// resendVerificationOTP — Noya OTP pathabe
+// Ei function unverified user-er jonno notun OTP create kore email-e send kore.
 // POST /api/auth/resend-verification
 // ==========================================
 async function resendVerificationOTP(req, res, next) {
   try {
-    const user = req.user;
+    let user = req.user;
+    const { email } = req.body;
 
-    // Already verified thakle na pathano
-    if (user.is_verified) {
-      return res.status(400).json({
+    if (!user && email) {
+      user = await UserAccountModel.findByEmail(email);
+    }
+
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: 'Your email is already verified.'
+        message: 'User account not found with this email.'
       });
     }
 
-    // Noya OTP generate kora hocche
-    const otp       = generateEmailVerificationToken();
+    if (user.is_verified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Your email is already verified. Please login.'
+      });
+    }
+
+    const otp = generateEmailVerificationToken();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    // Database e save kora hocche (puranogulo delete hobe)
+    // Database e notun OTP save kora hocche
     await UserAccountModel.saveEmailVerificationToken(user.id, otp, expiresAt);
 
-    // Email pathano hocche
-    await sendEmailVerificationOTP(user.email, user.full_name, otp);
+    // Email pathano hocche (Gmail SMTP or Dev fallback)
+    const emailResult = await sendEmailVerificationOTP(user.email, user.name, otp);
+
+    const message = emailResult.success && !emailResult.dev
+      ? 'Verification OTP has been resent to your email. Please check your inbox.'
+      : 'New verification OTP generated! (Dev fallback OTP logged to server console).';
 
     res.status(200).json({
       success: true,
-      message: 'Verification OTP sent to your email. Please check your inbox.'
+      message,
+      emailSent: emailResult.success && !emailResult.dev
     });
   } catch (error) {
     next(error);
@@ -300,9 +388,9 @@ async function resendVerificationOTP(req, res, next) {
 }
 
 // ==========================================
-// forgotPassword — Password reset request korar jonno
+// forgotPassword — Password reset link pathabe
+// Ei function email address check kore password reset request create kore link pathay.
 // POST /api/auth/forgot-password
-// Email exist korle reset link pathabe
 // ==========================================
 async function forgotPassword(req, res, next) {
   try {
@@ -315,23 +403,21 @@ async function forgotPassword(req, res, next) {
       });
     }
 
-    // User khujbe — na thakleo same response dekhabe (security)
     const user = await UserAccountModel.findByEmail(email);
 
-    // Email na thakleo attacker ke janabo na — same response
+    // Generic response to avoid email enumeration
     if (!user) {
       return res.status(200).json({
         success: true,
-        message: 'If an account with this email exists, a reset link has been sent.'
+        message: 'If an account with this email exists, a password reset link has been sent.'
       });
     }
 
-    // Password reset request create kora hocche
     await createPasswordResetRequest(user);
 
     res.status(200).json({
       success: true,
-      message: 'Password reset link sent to your email. Please check your inbox.'
+      message: 'If an account with this email exists, a password reset link has been sent.'
     });
   } catch (error) {
     next(error);
@@ -339,15 +425,14 @@ async function forgotPassword(req, res, next) {
 }
 
 // ==========================================
-// resetPassword — Noya password set korar jonno
+// resetPassword — Token diye noya password set korbe
+// Ei function password reset token verify kore notun hashed password save kore.
 // POST /api/auth/reset-password
-// Token validate kore noya password save korbe
 // ==========================================
 async function resetPassword(req, res, next) {
   try {
     const { token, newPassword, confirmPassword } = req.body;
 
-    // Validation
     if (!token || !newPassword || !confirmPassword) {
       return res.status(400).json({
         success: false,
@@ -362,17 +447,15 @@ async function resetPassword(req, res, next) {
       });
     }
 
-    // Password strength check
     const strengthCheck = validatePasswordStrength(newPassword);
     if (!strengthCheck.isValid) {
       return res.status(400).json({
-        success:  false,
-        message:  strengthCheck.errors[0],
-        errors:   strengthCheck.errors
+        success: false,
+        message: strengthCheck.errors[0],
+        errors:  strengthCheck.errors
       });
     }
 
-    // Token validate kora hocche
     const tokenValidation = await validatePasswordResetToken(token);
     if (!tokenValidation.valid) {
       return res.status(400).json({
@@ -381,14 +464,9 @@ async function resetPassword(req, res, next) {
       });
     }
 
-    // Noya password hash kora hocche
     const newPasswordHash = await hashPassword(newPassword);
-
-    // Database e password update kora hocche
     await UserAccountModel.updatePassword(tokenValidation.record.user_id, newPasswordHash);
-
-    // Token used mark kora hocche
-    await markPasswordResetTokenUsed(tokenValidation.record.id);
+    await markPasswordResetTokenUsed(tokenValidation.record.user_id);
 
     res.status(200).json({
       success: true,
@@ -400,15 +478,14 @@ async function resetPassword(req, res, next) {
 }
 
 // ==========================================
-// changePassword — Logged-in user er password change korar jonno
+// changePassword — Logged-in user er password change
+// Ei function logged-in user-er purano password verify kore notun password set kore.
 // PUT /api/auth/change-password
-// Current password verify kore noya password save korbe
 // ==========================================
 async function changePassword(req, res, next) {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    // Validation
     if (!currentPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({
         success: false,
@@ -430,7 +507,6 @@ async function changePassword(req, res, next) {
       });
     }
 
-    // Password strength check
     const strengthCheck = validatePasswordStrength(newPassword);
     if (!strengthCheck.isValid) {
       return res.status(400).json({
@@ -440,11 +516,8 @@ async function changePassword(req, res, next) {
       });
     }
 
-    // Database theke full user data (with password hash) newa hocche
     const userWithPassword = await UserAccountModel.findByIdWithPassword(req.user.id);
-
-    // Current password verify kora hocche
-    const isCurrentCorrect = await comparePassword(currentPassword, userWithPassword.password_hash);
+    const isCurrentCorrect = await comparePassword(currentPassword, userWithPassword.password);
     if (!isCurrentCorrect) {
       return res.status(400).json({
         success: false,
@@ -452,7 +525,6 @@ async function changePassword(req, res, next) {
       });
     }
 
-    // Noya password hash kore save kora hocche
     const newPasswordHash = await hashPassword(newPassword);
     await UserAccountModel.updatePassword(req.user.id, newPasswordHash);
 

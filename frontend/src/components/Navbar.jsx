@@ -1,61 +1,41 @@
 // ==========================================
 // JanaoBangla — Navbar Component
-// BRANCH: main
-// Global navigation bar — sob page e same navbar thakbe
-// Logo left, links center, SOS button right
+// BRANCH: feature-user-authentication-and-security
+// Global navigation bar with Authentication state support
+// Logo left, links center, Profile/Auth + SOS right
 // ==========================================
 
 import { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import '../styles/navbar.css';
 
-// ==========================================
-// Navbar — Main navigation component
-// scrolled state diye shadow add kora hobe
-// mobileOpen state diye mobile menu toggle hobe
-// ==========================================
 function Navbar() {
-  // Mobile menu open/close track kora hocche
-  const [mobileOpen, setMobileOpen]  = useState(false);
-  // Scroll position track kore shadow add korar jonno
-  const [scrolled,   setScrolled]    = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled,   setScrolled]   = useState(false);
 
   // ==========================================
-  // useEffect — Scroll position monitor korbe
-  // Window scroll hoile scrolled state update hobe
+  // useEffect — Scroll position monitor kore shadow toggle korbe
   // ==========================================
   useEffect(() => {
-    // Scroll event handler define kora hocche
     const handleScroll = () => {
-      // 20px er beshi scroll hoile scrolled = true
       setScrolled(window.scrollY > 20);
     };
 
-    // Event listener add kora hocche
     window.addEventListener('scroll', handleScroll);
-
-    // Component unmount hoile event listener remove kora hocche
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // ==========================================
-  // toggleMobileMenu — Hamburger button click e
-  // Mobile menu open/close toggle hobe
-  // ==========================================
   const toggleMobileMenu = () => {
-    // Previous state er opposite value set kora hocche
     setMobileOpen((prev) => !prev);
   };
 
-  // ==========================================
-  // closeMobileMenu — Mobile link click e
-  // Menu automatically close hobe
-  // ==========================================
   const closeMobileMenu = () => {
     setMobileOpen(false);
   };
 
-  // Sob navigation links er definition — ek jaigay rakhchi
   const navLinks = [
     { to: '/',          label: 'Home',          icon: '🏠' },
     { to: '/report',    label: 'Report Problem', icon: '📋' },
@@ -67,17 +47,10 @@ function Navbar() {
 
   return (
     <>
-      {/* ==========================================
-          MAIN NAVBAR
-          scrolled class diye shadow add hobe
-      ========================================== */}
       <nav className={`jb-navbar ${scrolled ? 'scrolled' : ''}`} role="navigation" aria-label="Main navigation">
         <div className="jb-navbar-inner">
 
-          {/* ==========================================
-              LOGO — Left side
-              JanaoBangla brand
-          ========================================== */}
+          {/* Logo — Left */}
           <Link to="/" className="jb-navbar-logo" aria-label="JanaoBangla Home">
             <div className="jb-navbar-logo-icon" aria-hidden="true">জ</div>
             <span className="jb-navbar-logo-text">
@@ -85,10 +58,7 @@ function Navbar() {
             </span>
           </Link>
 
-          {/* ==========================================
-              DESKTOP NAV LINKS — Center
-              Mobile e hidden thakbe
-          ========================================== */}
+          {/* Nav Links — Center (Desktop) */}
           <ul className="jb-navbar-links" role="list">
             {navLinks.map((link) => (
               <li key={link.to}>
@@ -105,12 +75,9 @@ function Navbar() {
             ))}
           </ul>
 
-          {/* ==========================================
-              NAVBAR ACTIONS — Right side
-              SOS button + future profile/notifications
-          ========================================== */}
+          {/* Actions — Right */}
           <div className="jb-navbar-actions">
-            {/* SOS Emergency Button — Har phone e visible thakbe */}
+            {/* SOS Emergency Button */}
             <Link
               to="/sos"
               className="jb-sos-button"
@@ -121,10 +88,54 @@ function Navbar() {
               <span className="sos-label">SOS</span>
             </Link>
 
-            {/* ==========================================
-                HAMBURGER BUTTON — Mobile only
-                jb-hamburger class er display none thakbe desktop e
-            ========================================== */}
+            {/* Authentication Buttons (Desktop) */}
+            <div className="d-none d-lg-flex align-items-center gap-2">
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/profile"
+                    id="navbar-profile-btn"
+                    className="btn-outline-jb"
+                    style={{ padding: '6px 14px', fontSize: '0.85rem', textDecoration: 'none' }}
+                  >
+                    👤 {user?.fullName?.split(' ')[0] || 'Profile'}
+                  </Link>
+                  <button
+                    type="button"
+                    id="navbar-logout-btn"
+                    onClick={logout}
+                    className="btn-outline-jb"
+                    style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                    title="Logout"
+                  >
+                    🚪
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    id="navbar-login-btn"
+                    style={{
+                      color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.9rem',
+                      textDecoration: 'none', padding: '6px 12px'
+                    }}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/register"
+                    id="navbar-register-btn"
+                    className="btn-primary-jb"
+                    style={{ padding: '6px 16px', fontSize: '0.85rem', textDecoration: 'none' }}
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Hamburger Button (Mobile) */}
             <button
               className="jb-hamburger"
               onClick={toggleMobileMenu}
@@ -141,16 +152,12 @@ function Navbar() {
         </div>
       </nav>
 
-      {/* ==========================================
-          MOBILE MENU OVERLAY
-          mobileOpen true hoile slide in hobe
-      ========================================== */}
+      {/* Mobile Menu Overlay */}
       <div
         className={`jb-mobile-menu ${mobileOpen ? 'open' : ''}`}
         id="mobile-nav-menu"
         aria-hidden={!mobileOpen}
       >
-        {/* Mobile navigation links */}
         <nav className="jb-mobile-links" aria-label="Mobile navigation">
           {navLinks.map((link) => (
             <NavLink
@@ -166,6 +173,51 @@ function Navbar() {
               {link.label}
             </NavLink>
           ))}
+
+          {/* Mobile Auth Links */}
+          <div style={{ padding: '12px 0', borderTop: '1px solid #E2E8F0', marginTop: '12px' }}>
+            {isAuthenticated ? (
+              <>
+                <NavLink
+                  to="/profile"
+                  className="jb-mobile-link"
+                  onClick={closeMobileMenu}
+                >
+                  <span aria-hidden="true">👤</span>
+                  My Profile ({user?.fullName})
+                </NavLink>
+                <button
+                  type="button"
+                  onClick={() => { closeMobileMenu(); logout(); }}
+                  className="jb-mobile-link"
+                  style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', color: '#C62828' }}
+                >
+                  <span aria-hidden="true">🚪</span>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  to="/login"
+                  className="jb-mobile-link"
+                  onClick={closeMobileMenu}
+                >
+                  <span aria-hidden="true">🔑</span>
+                  Sign In
+                </NavLink>
+                <NavLink
+                  to="/register"
+                  className="jb-mobile-link"
+                  onClick={closeMobileMenu}
+                  style={{ color: 'var(--color-primary)', fontWeight: 700 }}
+                >
+                  <span aria-hidden="true">📝</span>
+                  Create Free Account
+                </NavLink>
+              </>
+            )}
+          </div>
         </nav>
 
         {/* Mobile SOS button */}

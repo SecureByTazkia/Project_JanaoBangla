@@ -1,35 +1,28 @@
 // ==========================================
-// JanaoBangla — User Login Form
+// JanaoBangla — User Login Form Component
 // BRANCH: feature-user-authentication-and-security
-// Email ar password diye login korar form
-// Submit hoile JWT token niye context e save korbe
+// User er email ar password niye login korar UI form
 // ==========================================
 
-import { useState }          from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { authApi }           from '../services/ApiService';
-import { useAuth }           from '../context/AuthContext';
-import ErrorMessage          from './ErrorMessage';
-import LoadingSpinner        from './LoadingSpinner';
+import { authApi } from '../services/ApiService';
+import { useAuth } from '../context/AuthContext';
+import ErrorMessage from './ErrorMessage';
+import LoadingSpinner from './LoadingSpinner';
 
-// ==========================================
-// UserLoginForm — Login form component
-// Success hoile previous page ba home e redirect korbe
-// ==========================================
 function UserLoginForm() {
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
-  // Login er pore kothay jabe — ProtectedRoute theke state e from save kore
   const redirectTo = location.state?.from?.pathname || '/';
 
-  // Form states
-  const [email,     setEmail]     = useState('');
-  const [password,  setPassword]  = useState('');
-  const [showPass,  setShowPass]  = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg,  setErrorMsg]  = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   // ==========================================
   // handleSubmit — Form submit hoile backend login API call korbe
@@ -38,25 +31,22 @@ function UserLoginForm() {
     e.preventDefault();
     setErrorMsg('');
 
-    // Basic validation
     if (!email.trim() || !password) {
-      return setErrorMsg('Please enter your email and password.');
+      return setErrorMsg('Please enter both email and password.');
     }
 
     setIsLoading(true);
     try {
-      // Backend login API call kora hocche
+      // Backend e login request pathano hocche
       const response = await authApi.login({ email: email.trim(), password });
 
       if (response.data.success) {
-        // Token ar user data AuthContext e save kora hocche
+        // Context e user data ar token save kora hocche
         login(response.data.accessToken, response.data.user);
-        // Previous page ba home e redirect kora hocche
         navigate(redirectTo, { replace: true });
       }
     } catch (error) {
-      // Backend error message dekhano hocche
-      const message = error.response?.data?.message || 'Login failed. Please try again.';
+      const message = error.response?.data?.message || 'Login failed. Please check credentials.';
       setErrorMsg(message);
     } finally {
       setIsLoading(false);
@@ -65,20 +55,17 @@ function UserLoginForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate id="login-form">
-
-      {/* Error display */}
       <ErrorMessage message={errorMsg} onDismiss={() => setErrorMsg('')} />
 
-      {/* Email field */}
       <div style={{ marginBottom: '16px' }}>
         <label className="jb-label" htmlFor="login-email">
-          Email Address
+          Email Address <span style={{ color: '#FF1744' }}>*</span>
         </label>
         <input
           id="login-email"
           type="email"
           className="jb-input"
-          placeholder="yourname@email.com"
+          placeholder="yourname@domain.com"
           value={email}
           onChange={(e) => { setEmail(e.target.value); setErrorMsg(''); }}
           required
@@ -88,16 +75,15 @@ function UserLoginForm() {
         />
       </div>
 
-      {/* Password field with show/hide */}
-      <div style={{ marginBottom: '8px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+      <div style={{ marginBottom: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <label className="jb-label" htmlFor="login-password" style={{ margin: 0 }}>
-            Password
+            Password <span style={{ color: '#FF1744' }}>*</span>
           </label>
-          {/* Forgot password link */}
           <Link
             to="/forgot-password"
-            style={{ fontSize: '0.8rem', color: '#006A4E', fontWeight: 500 }}
+            id="forgot-password-link"
+            style={{ fontSize: '0.85rem', color: '#006A4E', fontWeight: 600, textDecoration: 'none' }}
           >
             Forgot password?
           </Link>
@@ -121,7 +107,7 @@ function UserLoginForm() {
             onClick={() => setShowPass((p) => !p)}
             style={{
               position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-              background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: '0'
+              background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontSize: '1rem', padding: '0'
             }}
             aria-label={showPass ? 'Hide password' : 'Show password'}
           >
@@ -130,12 +116,11 @@ function UserLoginForm() {
         </div>
       </div>
 
-      {/* Submit button */}
       <button
         type="submit"
-        id="login-submit-btn"
+        id="login-submit-button"
         className="btn-primary-jb"
-        style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: '20px' }}
+        style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: '16px' }}
         disabled={isLoading}
       >
         {isLoading ? (
@@ -148,11 +133,10 @@ function UserLoginForm() {
         )}
       </button>
 
-      {/* Register link */}
       <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.875rem', color: '#64748B' }}>
         Don't have an account?{' '}
-        <Link to="/register" style={{ color: '#006A4E', fontWeight: 600 }}>
-          Create Account
+        <Link to="/register" id="login-to-register-link" style={{ color: '#006A4E', fontWeight: 700 }}>
+          Create Free Account
         </Link>
       </p>
     </form>

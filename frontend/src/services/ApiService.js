@@ -85,8 +85,6 @@ export const healthApi = {
 
 // ==========================================
 // Phase 2 — Authentication API
-// Sob auth related API call ekhane define kora hobe
-// Component e directly axios call korbo na
 // ==========================================
 export const authApi = {
   // Noya user register korar jonno
@@ -95,22 +93,28 @@ export const authApi = {
   // User login korar jonno
   login: (data) => apiClient.post('/auth/login', data),
 
-  // Logged-in user er profile nebar jonno
+  // Current logged in user er profile data
   getProfile: () => apiClient.get('/auth/profile'),
 
-  // Profile update korar jonno
+  // Profile data update korar jonno
   updateProfile: (data) => apiClient.put('/auth/profile', data),
 
-  // Email OTP verify korar jonno
-  verifyEmail: (otp) => apiClient.post('/auth/verify-email', { otp }),
+  // Email verification OTP submit korar jonno (Step 2 registration or authenticated)
+  verifyEmail: (data) => {
+    const payload = typeof data === 'string' ? { otp: data } : data;
+    return apiClient.post('/auth/verify-email', payload);
+  },
 
-  // Noya OTP pathano jonno
-  resendVerification: () => apiClient.post('/auth/resend-verification'),
+  // OTP resend korar jonno
+  resendVerification: (data) => {
+    const payload = typeof data === 'string' ? { email: data } : (data || {});
+    return apiClient.post('/auth/resend-verification', payload);
+  },
 
-  // Forgot password — email pathabe
+  // Forgot password email request pathanor jonno
   forgotPassword: (email) => apiClient.post('/auth/forgot-password', { email }),
 
-  // Noya password set korar jonno (reset token use kore)
+  // Reset token diye password update korar jonno
   resetPassword: (data) => apiClient.post('/auth/reset-password', data),
 
   // Logged-in user er password change korar jonno

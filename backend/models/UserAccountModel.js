@@ -9,7 +9,7 @@ const db = require('../services/DatabaseService');
 
 // ==========================================
 // findByEmail — Email diye user khujbe
-// Login ar registration duplicate check er jonno
+// Ei function email diye users table theke active user khuje ber kore.
 // ==========================================
 async function findByEmail(email) {
   // Email case-insensitive search kora hocche
@@ -21,20 +21,19 @@ async function findByEmail(email) {
 
 // ==========================================
 // findById — ID diye user khujbe
-// JWT token er payload e user id thake, sei diye user data newa jonno
+// Ei function user ID diye users table theke safe user profile data fetch kore.
 // ==========================================
 async function findById(userId) {
-  // Password hash return hobe na — security er jonno alada query
   return db.queryOne(
-    `SELECT id, full_name, email, phone, role, is_verified, is_active, avatar_url, created_at, updated_at
+    `SELECT id, name, email, phone_number, role, is_verified, is_active, profile_picture, created_at, updated_at
      FROM users WHERE id = ? AND is_active = 1`,
     [userId]
   );
 }
 
 // ==========================================
-// findByIdWithPassword — Login verification er jonno password hash o nebe
-// Shudhu authentication er somoy use korte hobe
+// findByIdWithPassword — Password shoho user fetch korbe
+// Ei function user ID diye password soho user-er shob data fetch kore password check korar jonno.
 // ==========================================
 async function findByIdWithPassword(userId) {
   return db.queryOne(
@@ -45,13 +44,12 @@ async function findByIdWithPassword(userId) {
 
 // ==========================================
 // createUser — Noya user register korar jonno
-// Password hash insert er age kore nite hobe
+// Ei function noya user-er data (name, email, phone_number, password, role citizen) database-e save kore.
 // ==========================================
 async function createUser({ fullName, email, phone, passwordHash }) {
-  // User insert kora hocche, role default 'user' thakbe
   const userId = await db.insert(
-    `INSERT INTO users (full_name, email, phone, password_hash, role, is_verified, is_active)
-     VALUES (?, ?, ?, ?, 'user', 0, 1)`,
+    `INSERT INTO users (name, email, phone_number, password, role, is_verified, is_active)
+     VALUES (?, ?, ?, ?, 'citizen', 0, 1)`,
     [fullName, email.toLowerCase().trim(), phone || null, passwordHash]
   );
   return userId;
@@ -59,81 +57,80 @@ async function createUser({ fullName, email, phone, passwordHash }) {
 
 // ==========================================
 // updateUserVerifiedStatus — Email verify hoile is_verified = 1 set korbe
+// Ei function email verify hole users table-e is_verified = 1 kore verification code clear kore dei.
 // ==========================================
 async function updateUserVerifiedStatus(userId) {
   return db.update(
-    'UPDATE users SET is_verified = 1, updated_at = NOW() WHERE id = ?',
+    'UPDATE users SET is_verified = 1, verification_code = NULL, verification_expires_at = NULL, updated_at = NOW() WHERE id = ?',
     [userId]
   );
 }
 
 // ==========================================
 // updatePassword — Password change ar reset er jonno
+// Ei function user-er notun hashed password database-e update kore.
 // ==========================================
 async function updatePassword(userId, newPasswordHash) {
   return db.update(
-    'UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?',
+    'UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?',
     [newPasswordHash, userId]
   );
 }
 
 // ==========================================
-// updateProfile — Profile update korar jonno
-// Full name, phone update kora jabe
+// updateProfile — Profile update korar jonno (name, phone_number)
+// Ei function user-er name ar phone_number database-e update kore.
 // ==========================================
 async function updateProfile(userId, { fullName, phone }) {
   return db.update(
-    'UPDATE users SET full_name = ?, phone = ?, updated_at = NOW() WHERE id = ?',
+    'UPDATE users SET name = ?, phone_number = ?, updated_at = NOW() WHERE id = ?',
     [fullName, phone || null, userId]
   );
 }
 
 // ==========================================
 // saveEmailVerificationToken — OTP save korbe database e
-// Purano token delete kore noya token insert korbe
+// Ei function verification OTP ar tar expiry time users table-e save kore.
 // ==========================================
 async function saveEmailVerificationToken(userId, token, expiresAt) {
-  // Purano unused token gulo delete kora hocche
-  await db.query(
-    'DELETE FROM email_verifications WHERE user_id = ? AND used_at IS NULL',
-    [userId]
-  );
-
-  // Noya token insert kora hocche
-  return db.insert(
-    'INSERT INTO email_verifications (user_id, token, expires_at) VALUES (?, ?, ?)',
-    [userId, token, expiresAt]
+  return db.update(
+    'UPDATE users SET verification_code = ?, verification_expires_at = ?, updated_at = NOW() WHERE id = ?',
+    [token, expiresAt, userId]
   );
 }
 
 // ==========================================
 // findEmailVerificationToken — OTP valid ki na check korar jonno
+// Ei function user ID ar verification OTP diye valid code check kore.
 // ==========================================
 async function findEmailVerificationToken(userId, token) {
   return db.queryOne(
-    `SELECT * FROM email_verifications
-     WHERE user_id = ? AND token = ? AND used_at IS NULL AND expires_at > NOW()`,
+    `SELECT id, name, email, verification_code, verification_expires_at
+     FROM users
+     WHERE id = ? AND verification_code = ? AND verification_expires_at > NOW()`,
     [userId, token]
   );
 }
 
 // ==========================================
-// markEmailVerificationTokenUsed — OTP use hoyeche mark korbe
+// markEmailVerificationTokenUsed — OTP used mark korbe
+// Ei function verification code clear kore user-ke verified hisebe mark kore.
 // ==========================================
-async function markEmailVerificationTokenUsed(tokenId) {
+async function markEmailVerificationTokenUsed(userId) {
   return db.update(
-    'UPDATE email_verifications SET used_at = NOW() WHERE id = ?',
-    [tokenId]
+    'UPDATE users SET is_verified = 1, verification_code = NULL, verification_expires_at = NULL, updated_at = NOW() WHERE id = ?',
+    [userId]
   );
 }
 
 // ==========================================
-// getAllUsers — Admin dashboard er jonno sob user list
+// getAllUsers — Admin user list er jonno
+// Ei function admin panel-er jonno pagination soho shob user-er list niye ashe.
 // ==========================================
 async function getAllUsers(page = 1, limit = 20) {
   const offset = (page - 1) * limit;
   const users = await db.query(
-    `SELECT id, full_name, email, phone, role, is_verified, is_active, created_at
+    `SELECT id, name, email, phone_number, role, is_verified, is_active, profile_picture, created_at
      FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?`,
     [limit, offset]
   );

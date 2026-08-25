@@ -15,7 +15,7 @@ USE janao_bangla_db;
 -- bcrypt hash generate korte:
 --   node -e "const b=require('bcrypt'); b.hash('Admin@1234',12).then(h=>console.log(h))"
 -- ==========================================
-INSERT INTO users (full_name, email, phone, password_hash, role, is_verified, is_active)
+INSERT INTO users (name, email, phone_number, password, role, is_verified, is_active)
 VALUES (
   'JanaoBangla Admin',
   'admin@janaobangla.com',
@@ -30,14 +30,14 @@ VALUES (
 -- SAMPLE USERS — Development testing er jonno
 -- Password sob er jonno: User@1234
 -- ==========================================
-INSERT INTO users (full_name, email, phone, password_hash, role, is_verified, is_active)
+INSERT INTO users (name, email, phone_number, password, role, is_verified, is_active)
 VALUES
   (
     'Rahim Uddin',
     'rahim@example.com',
     '+8801711111111',
     '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMYJZNiEIxvSIl5qGEYlHbJMSG',
-    'user',
+    'citizen',
     1,
     1
   ),
@@ -46,7 +46,7 @@ VALUES
     'fatema@example.com',
     '+8801722222222',
     '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMYJZNiEIxvSIl5qGEYlHbJMSG',
-    'user',
+    'citizen',
     1,
     1
   ),
@@ -55,7 +55,7 @@ VALUES
     'karim@example.com',
     '+8801733333333',
     '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMYJZNiEIxvSIl5qGEYlHbJMSG',
-    'user',
+    'citizen',
     0,
     1
   );
