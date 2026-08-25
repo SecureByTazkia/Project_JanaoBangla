@@ -5,14 +5,17 @@
 // ==========================================
 
 const CivicProblemReportModel = require('../models/CivicProblemReportModel');
+const DuplicateReportLinkingService = require('./DuplicateReportLinkingService');
 
 class CivicProblemReportManagementService {
 
   // ==========================================
-  // createReport — Report create kore, location save kore, evidence save kore
+  // createReport — Report create kore, location save kore, evidence save kore ebong duplicate link handle kore
   // User anonymous choose korle is_anonymous flag true (1) set hobe
+  // User duplicate link choose korle duplicate_links table e link hobe
   // ==========================================
   static async createReport(userId, data, files) {
+    // Ei function report create korar shob steps eksathe manage kore
     const isAnonymous = Boolean(
       data.isAnonymous === 'true' ||
       data.isAnonymous === true ||
@@ -21,14 +24,32 @@ class CivicProblemReportManagementService {
       data.is_anonymous === 1
     );
 
+    const duplicateOfId = data.duplicateOfId || data.duplicate_of_id || null;
+    const similarityScore = data.similarityScore || data.similarity_score || null;
+
     const reportId = await CivicProblemReportModel.createReport({
       user_id: userId,
       title: data.title,
       description: data.description,
       category: data.category,
       visibility: data.visibility || 'public',
-      is_anonymous: isAnonymous ? 1 : 0
+      is_anonymous: isAnonymous ? 1 : 0,
+      is_duplicate: duplicateOfId ? 1 : 0,
+      duplicate_of_id: duplicateOfId
     });
+
+    // Jodi duplicate_of_id dewa thake, duplicate_links table e automatically link korbo
+    if (duplicateOfId) {
+      try {
+        await DuplicateReportLinkingService.linkReports({
+          originalId: duplicateOfId,
+          duplicateId: reportId,
+          similarityScore: similarityScore ? parseFloat(similarityScore) : null
+        });
+      } catch (linkErr) {
+        console.warn('Auto duplicate link failed on creation:', linkErr.message);
+      }
+    }
 
     // Jodi GPS coordinates pathano hoye thake, location table e save korbo
     if (data.latitude && data.longitude) {

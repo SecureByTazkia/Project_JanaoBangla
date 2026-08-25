@@ -1,17 +1,19 @@
 // ==========================================
 // JanaoBangla — Create Civic Problem Report Form
-// BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
-// AI problem recognition, smart suggestions, category recommendations
-// ebong duplicate warning integrated civic report submission form
+// BRANCH: feature-duplicate-civic-problem-report-detection
+// AI problem recognition, smart suggestions, category recommendations,
+// ebong duplicate civic report detection & linking integrated submission form
 // ==========================================
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CivicProblemReportService from '../services/CivicProblemReportService';
 import AICivicProblemService from '../services/AICivicProblemService';
+import DuplicateReportDetectionService from '../services/DuplicateReportDetectionService';
 import AIProblemRecognitionResult from './AIProblemRecognitionResult';
 import SmartProblemCategorySuggestion from './SmartProblemCategorySuggestion';
 import SmartReportSuggestion from './SmartReportSuggestion';
+import DuplicateReportWarning from './DuplicateReportWarning';
 import ErrorMessage from './ErrorMessage';
 import SuccessMessage from './SuccessMessage';
 import LoadingSpinner from './LoadingSpinner';
@@ -40,16 +42,60 @@ const CreateCivicProblemReportForm = () => {
   const [aiSuggestions, setAiSuggestions] = useState(null);
   const [aiDuplicates, setAiDuplicates] = useState(null);
   const [isAiEnhancing, setIsAiEnhancing] = useState(false);
+
+  // Phase 6 — Duplicate Detection States
+  const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
+  const [duplicateData, setDuplicateData] = useState(null);
+  const [selectedDuplicate, setSelectedDuplicate] = useState(null);
+  const [duplicateDismissed, setDuplicateDismissed] = useState(false);
   
   const navigate = useNavigate();
 
   // ==========================================
-  // handleChange — Form input field er change handle kore
+  // handleChange — Form input field er change handle kore ebong duplicate state reset kore
   // ==========================================
   const handleChange = (e) => {
     // Ei function user input korar sathe sathe formData state update korbe
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Input change hole duplicate check notun kore allow korbe
+    setDuplicateDismissed(false);
+  };
+
+  // ==========================================
+  // handleCheckDuplicates — Title, description ebong location niye duplicate API call kore
+  // ==========================================
+  const handleCheckDuplicates = async () => {
+    // Ei function user er typed problem details niye similar/duplicate report khuje ber kore
+    if (!formData.title && !formData.description) {
+      setError('Please enter a title or description first to check for duplicates.');
+      return;
+    }
+
+    setIsCheckingDuplicates(true);
+    setError(null);
+    try {
+      const data = await DuplicateReportDetectionService.checkDuplicates({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        latitude: formData.latitude,
+        longitude: formData.longitude
+      });
+
+      if (data.success) {
+        setDuplicateData(data);
+        setDuplicateDismissed(false);
+        if (data.similarReports && data.similarReports.length > 0) {
+          // Auto select top candidate as recommendation
+          setSelectedDuplicate(data.similarReports[0]);
+        }
+      }
+    } catch (err) {
+      console.warn('Duplicate check failed:', err.message);
+    } finally {
+      setIsCheckingDuplicates(false);
+    }
   };
 
   // ==========================================
@@ -85,6 +131,12 @@ const CreateCivicProblemReportForm = () => {
               ...prev,
               category: aiData.recognition.suggestedCategory
             }));
+          }
+
+          // Duplicate data sync kora
+          if (aiData.duplicates && aiData.duplicates.similarReports?.length > 0) {
+            setDuplicateData(aiData.duplicates);
+            setSelectedDuplicate(aiData.duplicates.similarReports[0]);
           }
         }
       } catch (aiErr) {
@@ -161,14 +213,50 @@ const CreateCivicProblemReportForm = () => {
   };
 
   // ==========================================
-  // handleSubmit — Complete form data submit kore
+  // handleSelectDuplicateForLink — User existing report ke duplicate parent hisebe select korle
   // ==========================================
-  const handleSubmit = async (e) => {
+  const handleSelectDuplicateForLink = (report) => {
+    // Ei function selected duplicate candidate ke state e save kore
+    setSelectedDuplicate(report);
+  };
+
+  // ==========================================
+  // handleSubmit — Complete form data submit kore (duplicate linking shoho)
+  // ==========================================
+  const handleSubmit = async (e, forcedSubmit = false, linkWithReport = null) => {
     // Ei function report create korar jonno backend e multipart FormData pathay
-    e.preventDefault();
-    setLoading(true);
+    if (e && e.preventDefault) e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    // Jodi duplicate check kora na hoye thake ebong direct submit kora hoy, age duplicate check korbo
+    const targetLink = linkWithReport || selectedDuplicate;
+    if (!forcedSubmit && !duplicateDismissed && !duplicateData && formData.title) {
+      try {
+        setIsCheckingDuplicates(true);
+        const dupCheck = await DuplicateReportDetectionService.checkDuplicates({
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          latitude: formData.latitude,
+          longitude: formData.longitude
+        });
+
+        if (dupCheck && dupCheck.hasDuplicate && dupCheck.similarReports?.length > 0) {
+          setDuplicateData(dupCheck);
+          setSelectedDuplicate(dupCheck.similarReports[0]);
+          setIsCheckingDuplicates(false);
+          // Intercept and warn user
+          return;
+        }
+      } catch (checkErr) {
+        console.warn('Pre-submit duplicate check error:', checkErr.message);
+      } finally {
+        setIsCheckingDuplicates(false);
+      }
+    }
+
+    setLoading(true);
 
     try {
       const data = new FormData();
@@ -176,19 +264,28 @@ const CreateCivicProblemReportForm = () => {
       data.append('description', formData.description);
       data.append('category', formData.category);
       data.append('visibility', formData.visibility);
-      // Anonymous setting backend e pathano hocche
       data.append('isAnonymous', formData.isAnonymous ? 'true' : 'false');
       if (formData.latitude) data.append('latitude', formData.latitude);
       if (formData.longitude) data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
+
+      // Phase 6 — Duplicate linking parameters
+      if (targetLink && targetLink.reportId) {
+        data.append('duplicateOfId', targetLink.reportId);
+        data.append('similarityScore', targetLink.similarityPercentage || 85);
+      }
 
       // Add files
       files.forEach(file => {
         data.append('evidence', file);
       });
 
-      await CivicProblemReportService.submitReport(data);
-      setSuccess('Civic problem reported successfully! AI analysis archived with report.');
+      const res = await CivicProblemReportService.submitReport(data);
+      const successMsg = targetLink
+        ? `Report #${res.reportId} successfully linked as duplicate of #${targetLink.reportId}!`
+        : 'Civic problem reported successfully!';
+
+      setSuccess(successMsg);
       setTimeout(() => {
         navigate('/my-reports');
       }, 2000);
@@ -206,9 +303,21 @@ const CreateCivicProblemReportForm = () => {
           <h3 className="text-primary-dark mb-0 fw-bold">Report a Civic Problem</h3>
           <small className="text-muted">Fill in the details below or let AI scan your evidence photo.</small>
         </div>
-        <span className="badge bg-light text-success border border-success p-2" style={{ fontSize: '0.82rem' }}>
-          ✨ AI Assisted Recognition Enabled
-        </span>
+        <div className="d-flex gap-2 align-items-center">
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary"
+            onClick={handleCheckDuplicates}
+            disabled={isCheckingDuplicates || (!formData.title && !formData.description)}
+            title="Check if this problem is already reported nearby"
+            style={{ fontSize: '0.8rem' }}
+          >
+            {isCheckingDuplicates ? '🔍 Checking...' : '🔍 Check Duplicates'}
+          </button>
+          <span className="badge bg-light text-success border border-success p-2" style={{ fontSize: '0.8rem' }}>
+            ✨ AI & Duplicate Recognition
+          </span>
+        </div>
       </div>
 
       {error && <ErrorMessage message={error} />}
@@ -233,8 +342,26 @@ const CreateCivicProblemReportForm = () => {
         />
       )}
 
-      <form onSubmit={handleSubmit}>
-        {/* Evidence Upload Section (placed higher for intuitive AI-first workflow) */}
+      {/* 3. Phase 6 — Duplicate Report Warning Widget */}
+      {duplicateData && duplicateData.similarReports?.length > 0 && !duplicateDismissed && (
+        <DuplicateReportWarning
+          duplicateData={duplicateData}
+          selectedDuplicate={selectedDuplicate}
+          onSelectDuplicateForLink={handleSelectDuplicateForLink}
+          onSubmitAnyway={() => {
+            setDuplicateDismissed(true);
+            handleSubmit(null, true, null); // Forced submit as independent report
+          }}
+          onSubmitWithLink={() => {
+            handleSubmit(null, true, selectedDuplicate); // Submit and link to chosen report
+          }}
+          onViewExistingReport={(reportId) => window.open(`/reports/${reportId}`, '_blank')}
+          onDismiss={() => setDuplicateDismissed(true)}
+        />
+      )}
+
+      <form onSubmit={(e) => handleSubmit(e, false, null)}>
+        {/* Evidence Upload Section */}
         <div className="mb-3 p-3 border rounded bg-light" style={{ borderColor: '#CBD5E1' }}>
           <label className="form-label fw-bold d-flex justify-content-between align-items-center">
             <span>📷 Evidence Photo / Video</span>
@@ -369,8 +496,8 @@ const CreateCivicProblemReportForm = () => {
           )}
         </div>
 
-        {/* 3. AI Smart Suggestions & Duplicate Warning Widget */}
-        {(aiSuggestions || aiDuplicates) && (
+        {/* 4. AI Smart Suggestions Widget */}
+        {(aiSuggestions) && (
           <SmartReportSuggestion
             suggestions={aiSuggestions}
             duplicates={aiDuplicates}
@@ -408,8 +535,37 @@ const CreateCivicProblemReportForm = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn btn-primary w-100 py-2 fw-bold" disabled={loading} style={{ fontSize: '1rem' }}>
-          {loading ? <LoadingSpinner size="sm" /> : '🚀 Submit Verified Civic Report'}
+        {/* Linked Duplicate Summary Badge if Selected */}
+        {selectedDuplicate && (
+          <div className="mb-3 p-3 rounded border border-primary bg-primary-light d-flex justify-content-between align-items-center">
+            <div>
+              <strong className="text-primary-dark d-block">🔗 Linking as Duplicate to #{selectedDuplicate.reportId}:</strong>
+              <small className="text-dark">{selectedDuplicate.title}</small>
+            </div>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              onClick={() => setSelectedDuplicate(null)}
+              title="Remove duplicate link"
+            >
+              ✕ Remove Link
+            </button>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          className="btn btn-primary w-100 py-2 fw-bold"
+          disabled={loading || isCheckingDuplicates}
+          style={{ fontSize: '1rem' }}
+        >
+          {loading ? (
+            <LoadingSpinner size="sm" />
+          ) : selectedDuplicate ? (
+            `🔗 Submit & Link to Report #${selectedDuplicate.reportId}`
+          ) : (
+            '🚀 Submit Verified Civic Report'
+          )}
         </button>
       </form>
     </div>
