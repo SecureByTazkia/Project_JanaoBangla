@@ -5,13 +5,15 @@ const CivicProblemReportStatus = ({ status }) => {
   const getStatusConfig = (s) => {
     switch(s) {
       case 'submitted':
-        return { color: 'bg-secondary', label: 'Pending Review' };
+        return { color: 'bg-secondary', label: 'Pending' };
+      case 'under_review':
+        return { color: 'bg-warning text-dark', label: 'Under Review' };
       case 'processing':
-        return { color: 'bg-primary', label: 'Processing' };
+        return { color: 'bg-info text-dark', label: 'Action Taken' };
       case 'solved':
-        return { color: 'bg-success', label: 'Solved' };
+        return { color: 'bg-success', label: 'Resolved' };
       default:
-        return { color: 'bg-secondary', label: 'Pending Review' };
+        return { color: 'bg-secondary', label: 'Pending' };
     }
   };
 
