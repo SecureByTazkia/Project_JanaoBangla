@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CivicProblemReportService from '../services/CivicProblemReportService';
+import AICivicProblemService from '../services/AICivicProblemService';
+import DuplicateReportDetectionService from '../services/DuplicateReportDetectionService';
 import ErrorMessage from './ErrorMessage';
 import SuccessMessage from './SuccessMessage';
 import LoadingSpinner from './LoadingSpinner';
 import LocationMapPicker from './LocationMapPicker';
+import AIProblemRecognitionResult from './AIProblemRecognitionResult';
+import SmartReportSuggestion from './SmartReportSuggestion';
+import DuplicateReportWarning from './DuplicateReportWarning';
 import { useNavigate } from 'react-router-dom';
 
 const CreateCivicProblemReportForm = () => {
@@ -14,56 +19,123 @@ const CreateCivicProblemReportForm = () => {
     visibility: 'public',
     latitude: '',
     longitude: '',
-    address: ''
+    address: '',
+    isAnonymous: false
   });
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [locationLoading, setLocationLoading] = useState(false);
-  
+
+  // AI & Duplicate states
+  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+  const [aiRecognition, setAiRecognition] = useState(null);
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+  const [duplicateData, setDuplicateData] = useState(null);
+  const [selectedDuplicate, setSelectedDuplicate] = useState(null);
+  const [duplicateDismissed, setDuplicateDismissed] = useState(false);
+  const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
+
   const navigate = useNavigate();
 
-  // Ei function input field er change handle korbe
+  // Input change handler
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
-  // Ei function user jokhon file select korbe tokhon state update korbe
+  // File change handler
   const handleFileChange = (e) => {
-    // Convert FileList to Array
-    setFiles(Array.from(e.target.files));
+    const selected = Array.from(e.target.files);
+    setFiles(selected);
+
+    // If an image file was selected, clear old AI results
+    if (selected.length > 0 && selected[0].type.startsWith('image/')) {
+      setAiRecognition(null);
+      setAiSuggestions(null);
+    }
   };
 
-  // Ei function browser er GPS API theke location collect korbe
-  const getLocation = () => {
-    setLocationLoading(true);
-    if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser');
-      setLocationLoading(false);
+  // Run AI analysis on the selected image
+  const handleAnalyzeWithAI = async () => {
+    const imageFile = files.find(f => f.type.startsWith('image/'));
+    if (!imageFile) {
+      setError('Please select an image file first to analyze with AI.');
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setFormData(prev => ({
-          ...prev,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        }));
-        setLocationLoading(false);
-      },
-      (err) => {
-        setError('Unable to retrieve your location');
-        setLocationLoading(false);
+    setIsAiAnalyzing(true);
+    setError(null);
+
+    try {
+      const result = await AICivicProblemService.analyzeEvidenceImage(imageFile, {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        address: formData.address,
+        latitude: formData.latitude,
+        longitude: formData.longitude
+      });
+
+      if (result.success) {
+        if (result.recognition) {
+          setAiRecognition(result.recognition);
+          if (result.recognition.suggestedCategory) {
+            setFormData(prev => ({ ...prev, category: result.recognition.suggestedCategory }));
+          }
+        }
+        if (result.suggestions) {
+          setAiSuggestions(result.suggestions);
+        }
+        if (result.duplicates && result.duplicates.similarReports?.length > 0) {
+          setDuplicateData(result.duplicates);
+        }
       }
-    );
+    } catch (err) {
+      console.error('AI Analysis failed:', err);
+      const errMsg = err.response?.data?.message || err.response?.data?.error || 'AI analysis could not process this image.';
+      setError(errMsg);
+    } finally {
+      setIsAiAnalyzing(false);
+    }
   };
 
-  // Ei function form submit korle backend e data send korbe
+  // Check for duplicate reports manually or triggered
+  const handleCheckDuplicates = async () => {
+    if (!formData.title && !formData.description) {
+      setError('Please provide at least a title or description to check for duplicates.');
+      return;
+    }
+
+    setIsCheckingDuplicates(true);
+    try {
+      const res = await DuplicateReportDetectionService.checkDuplicates({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        latitude: formData.latitude,
+        longitude: formData.longitude
+      });
+
+      if (res.success && res.similarReports?.length > 0) {
+        setDuplicateData(res);
+        setDuplicateDismissed(false);
+      } else {
+        setDuplicateData(null);
+      }
+    } catch (err) {
+      console.warn('Duplicate check error:', err);
+    } finally {
+      setIsCheckingDuplicates(false);
+    }
+  };
+
+  // Submit report handler
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -74,22 +146,28 @@ const CreateCivicProblemReportForm = () => {
       data.append('description', formData.description);
       data.append('category', formData.category);
       data.append('visibility', formData.visibility);
+      data.append('isAnonymous', formData.isAnonymous ? 'true' : 'false');
       if (formData.latitude) data.append('latitude', formData.latitude);
       if (formData.longitude) data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
 
-      // Add files
+      if (selectedDuplicate) {
+        data.append('duplicateOfId', selectedDuplicate.reportId);
+        data.append('similarityScore', selectedDuplicate.similarityPercentage || 80);
+      }
+
       files.forEach(file => {
         data.append('evidence', file);
       });
 
       await CivicProblemReportService.submitReport(data);
-      setSuccess('Civic problem reported successfully!');
+      setSuccess('Civic problem reported successfully! Awaiting review.');
       setTimeout(() => {
         navigate('/my-reports');
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.error || 'An error occurred while submitting the report.');
+      const errMsg = err.response?.data?.error || err.response?.data?.message || 'An error occurred while submitting the report.';
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
@@ -97,13 +175,109 @@ const CreateCivicProblemReportForm = () => {
 
   return (
     <div className="card shadow-sm p-4">
-      <h3 className="mb-4 text-primary-dark">Report a Civic Problem</h3>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h3 className="text-primary-dark mb-0">📋 Report a Civic Problem</h3>
+        <span className="badge bg-light text-dark border px-3 py-2">
+          🇧🇩 JanaoBangla Civic Portal
+        </span>
+      </div>
+
       {error && <ErrorMessage message={error} />}
       {success && <SuccessMessage message={success} />}
-      
-      <form onSubmit={handleSubmit}>
+
+      {/* Duplicate Warning Box if detected */}
+      {duplicateData && !duplicateDismissed && (
+        <DuplicateReportWarning
+          duplicateData={duplicateData}
+          selectedDuplicate={selectedDuplicate}
+          onSelectDuplicateForLink={(rep) => setSelectedDuplicate(rep)}
+          onSubmitWithLink={() => handleSubmit()}
+          onSubmitAnyway={() => { setSelectedDuplicate(null); setDuplicateDismissed(true); }}
+          onViewExistingReport={(id) => window.open(`/reports/${id}`, '_blank')}
+          onDismiss={() => setDuplicateDismissed(true)}
+        />
+      )}
+
+      {/* AI Analysis Result & Suggestions */}
+      {(isAiAnalyzing || aiRecognition) && (
+        <AIProblemRecognitionResult
+          recognition={aiRecognition}
+          isAnalyzing={isAiAnalyzing}
+        />
+      )}
+
+      {aiSuggestions && (
+        <SmartReportSuggestion
+          suggestions={aiSuggestions}
+          onApplyTitle={(smartTitle) => setFormData(prev => ({ ...prev, title: smartTitle }))}
+          onApplyDescription={(smartDesc) => setFormData(prev => ({ ...prev, description: smartDesc }))}
+          onApplyAll={({ smartTitle, smartDescription }) => {
+            setFormData(prev => ({
+              ...prev,
+              title: smartTitle || prev.title,
+              description: smartDescription || prev.description
+            }));
+          }}
+          onViewExistingReport={(id) => window.open(`/reports/${id}`, '_blank')}
+        />
+      )}
+
+      <form onSubmit={handleSubmit} className="mt-3">
+        {/* Evidence upload first or along with form */}
+        <div className="mb-3 p-3 bg-light rounded border" style={{ borderColor: '#E2E8F0' }}>
+          <label className="form-label fw-bold d-flex justify-content-between align-items-center">
+            <span>📸 Evidence (Images / Videos)</span>
+            <small className="text-muted">Max 5 files</small>
+          </label>
+          <div className="input-group">
+            <input
+              type="file"
+              className="form-control"
+              multiple
+              accept="image/*,video/*"
+              onChange={handleFileChange}
+            />
+            {files.some(f => f.type.startsWith('image/')) && (
+              <button
+                type="button"
+                className="btn btn-outline-success fw-bold d-flex align-items-center gap-1"
+                onClick={handleAnalyzeWithAI}
+                disabled={isAiAnalyzing}
+              >
+                {isAiAnalyzing ? '🤖 Analyzing...' : '✨ Scan with AI'}
+              </button>
+            )}
+          </div>
+          {files.length > 0 && (
+            <div className="d-flex justify-content-between align-items-center mt-2">
+              <small className="text-success fw-semibold">
+                ✓ {files.length} file(s) attached
+              </small>
+              {files.some(f => f.type.startsWith('image/')) && !aiRecognition && (
+                <small className="text-muted">
+                  💡 Click <strong>"Scan with AI"</strong> to auto-detect problem and generate smart title & description!
+                </small>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Problem Title */}
         <div className="mb-3">
-          <label className="form-label">Problem Title *</label>
+          <div className="d-flex justify-content-between align-items-center">
+            <label className="form-label fw-semibold">Problem Title *</label>
+            {formData.title && (
+              <button
+                type="button"
+                className="btn btn-sm btn-link text-decoration-none p-0"
+                style={{ fontSize: '0.82rem' }}
+                onClick={handleCheckDuplicates}
+                disabled={isCheckingDuplicates}
+              >
+                {isCheckingDuplicates ? 'Checking...' : '🔍 Check Duplicates'}
+              </button>
+            )}
+          </div>
           <input
             type="text"
             className="form-control"
@@ -111,12 +285,13 @@ const CreateCivicProblemReportForm = () => {
             value={formData.title}
             onChange={handleChange}
             required
-            placeholder="E.g., Large Pothole on Mirpur Road"
+            placeholder="E.g., Large Pothole on Mirpur Road near Bus Stand"
           />
         </div>
 
+        {/* Description */}
         <div className="mb-3">
-          <label className="form-label">Description *</label>
+          <label className="form-label fw-semibold">Description *</label>
           <textarea
             className="form-control"
             name="description"
@@ -124,60 +299,69 @@ const CreateCivicProblemReportForm = () => {
             value={formData.description}
             onChange={handleChange}
             required
-            placeholder="Describe the problem in detail..."
+            placeholder="Describe the problem in detail (what happened, severity, how long it has been there)..."
           ></textarea>
         </div>
 
+        {/* Category & Visibility */}
         <div className="row mb-3">
           <div className="col-md-6">
-            <label className="form-label">Category *</label>
+            <label className="form-label fw-semibold">Category *</label>
             <select
               className="form-select"
               name="category"
               value={formData.category}
               onChange={handleChange}
             >
-              <option value="road_damage">Road Damage</option>
-              <option value="garbage_waste">Garbage / Waste</option>
-              <option value="street_light">Street Light</option>
-              <option value="water_drainage">Water / Drainage</option>
-              <option value="traffic_accident">Traffic / Accident</option>
-              <option value="public_safety">Public Safety</option>
-              <option value="women_harassment">Women Harassment</option>
-              <option value="extortion_chanda">Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
+              <option value="road_damage">🛣️ Road Damage</option>
+              <option value="garbage_waste">🗑️ Garbage / Waste</option>
+              <option value="street_light">💡 Street Light</option>
+              <option value="water_drainage">🌊 Water / Drainage</option>
+              <option value="traffic_accident">🚦 Traffic / Accident</option>
+              <option value="public_safety">🛡️ Public Safety</option>
+              <option value="women_harassment">🚨 Women Harassment</option>
+              <option value="extortion_chanda">💰 Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
             </select>
           </div>
+
           <div className="col-md-6">
-            <label className="form-label">Visibility *</label>
+            <label className="form-label fw-semibold">Visibility *</label>
             <select
               className="form-select"
               name="visibility"
               value={formData.visibility}
               onChange={handleChange}
             >
-              <option value="public">Public (Visible to Community)</option>
-              <option value="private">Private (Only Admins)</option>
+              <option value="public">🌐 Public (Visible to Community & Feed)</option>
+              <option value="private">🔒 Private (Only Admins)</option>
             </select>
-            <small className="text-muted">Private reports won't appear on the public map.</small>
+            <small className="text-muted">Private reports won't appear on the public map or feed.</small>
           </div>
         </div>
 
-        <div className="mb-3">
-          <label className="form-label">Evidence (Images/Videos)</label>
-          <input
-            type="file"
-            className="form-control"
-            multiple
-            accept="image/*,video/*"
-            onChange={handleFileChange}
-          />
-          {files.length > 0 && (
-            <small className="text-success mt-1 d-block">{files.length} file(s) selected.</small>
-          )}
+        {/* Anonymous Reporting Checkbox */}
+        <div className="mb-3 p-2 bg-light rounded border">
+          <div className="form-check form-switch">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="isAnonymous"
+              name="isAnonymous"
+              checked={formData.isAnonymous}
+              onChange={handleChange}
+            />
+            <label className="form-check-label fw-semibold" htmlFor="isAnonymous">
+              🎭 Report Anonymously (আপনার নাম ও প্রোফাইল অন্য নাগরিকদের কাছে গোপন থাকবে)
+            </label>
+          </div>
+          <small className="text-muted d-block ps-4">
+            If enabled, your name will be displayed as "Anonymous Citizen" on public feeds and map.
+          </small>
         </div>
 
+        {/* Location Map Picker */}
         <div className="mb-4">
-          <label className="form-label fw-bold">Report Location Data *</label>
+          <label className="form-label fw-bold">📍 Report Location Data</label>
           <LocationMapPicker
             initialLat={formData.latitude}
             initialLng={formData.longitude}
@@ -202,8 +386,13 @@ const CreateCivicProblemReportForm = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-          {loading ? <LoadingSpinner size="sm" /> : 'Submit Report'}
+        <button
+          type="submit"
+          className="btn btn-primary w-100 py-2 fw-bold"
+          disabled={loading || isAiAnalyzing}
+          style={{ fontSize: '1rem' }}
+        >
+          {loading ? <LoadingSpinner size="sm" /> : (selectedDuplicate ? '🔗 Link as Duplicate & Submit' : '🚀 Submit Civic Report')}
         </button>
       </form>
     </div>
