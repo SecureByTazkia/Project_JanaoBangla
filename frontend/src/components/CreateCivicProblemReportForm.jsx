@@ -171,6 +171,13 @@ const CreateCivicProblemReportForm = () => {
     setSuccess(null);
 
     try {
+      // Location mandatory check
+      if (!formData.latitude || !formData.longitude) {
+        setError('📍 Location is required. Please use "My GPS Location" button or click on the map to select your location.');
+        setLoading(false);
+        return;
+      }
+
       const data = new FormData();
       data.append('title', formData.title);
       data.append('description', formData.description);
@@ -180,8 +187,8 @@ const CreateCivicProblemReportForm = () => {
       if (formData.category === 'women_harassment' && formData.harassmentType) {
         data.append('harassment_type', formData.harassmentType);
       }
-      if (formData.latitude) data.append('latitude', formData.latitude);
-      if (formData.longitude) data.append('longitude', formData.longitude);
+      data.append('latitude', formData.latitude);
+      data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
 
       if (selectedDuplicate) {
@@ -255,6 +262,9 @@ const CreateCivicProblemReportForm = () => {
               </small>
             </div>
           )}
+          <small className="text-muted d-block mt-2" style={{ fontSize: '0.78rem' }}>
+            🚫 Nudity, adult, or inappropriate content is strictly prohibited. AI will automatically detect & block.
+          </small>
         </div>
 
         {/* Problem Title */}
@@ -407,7 +417,7 @@ const CreateCivicProblemReportForm = () => {
 
         {/* Location Map Picker */}
         <div className="mb-4">
-          <label className="form-label fw-bold">📍 Report Location Data</label>
+          <label className="form-label fw-bold">📍 Report Location Data <span className="text-danger">*</span></label>
           <LocationMapPicker
             initialLat={formData.latitude}
             initialLng={formData.longitude}
