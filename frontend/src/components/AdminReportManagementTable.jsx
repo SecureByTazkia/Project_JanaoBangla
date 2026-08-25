@@ -114,7 +114,7 @@ function AdminReportManagementTable({ showToast }) {
             onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
           >
             <option value="all">All Status</option>
-            <option value="submitted">Submitted</option>
+            <option value="submitted">Pending Review (Submitted)</option>
             <option value="under_review">Under Review</option>
             <option value="processing">Processing</option>
             <option value="solved">Solved</option>
@@ -189,7 +189,7 @@ function AdminReportManagementTable({ showToast }) {
                         onChange={e => handleStatusChange(report.id, e.target.value)}
                         disabled={actionLoading === `status-${report.id}`}
                       >
-                        <option value="submitted">Submitted</option>
+                        <option value="submitted">Pending Review</option>
                         <option value="under_review">Under Review</option>
                         <option value="processing">Processing</option>
                         <option value="solved">Solved</option>
@@ -202,7 +202,18 @@ function AdminReportManagementTable({ showToast }) {
                     </td>
                     <td style={{ fontSize: '0.8rem' }}>{formatDate(report.created_at)}</td>
                     <td>
-                      <div className="admin-actions-cell">
+                      <div className="admin-actions-cell" style={{ display: 'flex', gap: '6px' }}>
+                        {report.status === 'submitted' && (
+                          <button
+                            className="admin-action-btn btn-sm"
+                            onClick={() => handleStatusChange(report.id, 'under_review')}
+                            disabled={actionLoading === `status-${report.id}`}
+                            title="Accept and publish report"
+                            style={{ background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}
+                          >
+                            ✅ Accept
+                          </button>
+                        )}
                         <button
                           className="admin-action-btn btn-danger btn-sm"
                           onClick={() => setConfirmDelete(report.id)}

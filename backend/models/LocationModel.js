@@ -39,6 +39,7 @@ class LocationModel {
       INNER JOIN locations l ON l.report_id = r.id
       LEFT JOIN users u ON r.user_id = u.id
       WHERE r.visibility = 'public'
+        AND r.status != 'submitted'
         AND l.latitude IS NOT NULL 
         AND l.longitude IS NOT NULL
     `;
@@ -106,6 +107,7 @@ class LocationModel {
       INNER JOIN locations l ON l.report_id = r.id
       LEFT JOIN users u ON r.user_id = u.id
       WHERE r.visibility = 'public'
+        AND r.status != 'submitted'
         AND l.latitude IS NOT NULL 
         AND l.longitude IS NOT NULL
     `;
@@ -148,6 +150,7 @@ class LocationModel {
       FROM reports r
       INNER JOIN locations l ON l.report_id = r.id
       WHERE r.visibility = 'public'
+        AND r.status != 'submitted'
         AND (l.address LIKE ? OR l.area LIKE ? OR l.city LIKE ? OR r.title LIKE ?)
       ORDER BY r.created_at DESC
       LIMIT 50

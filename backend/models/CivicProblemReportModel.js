@@ -86,14 +86,15 @@ class CivicProblemReportModel {
   }
 
   // Ei function shob public report return korbe (community feed er jonno)
+  // Shudhumatro admin accept kora reports (status != 'submitted') public feed e show korbe
   static async getPublicReports() {
-    // visibility = 'public' filter, location ar user name shoho asbe
+    // visibility = 'public' filter ebong status != 'submitted' (admin accepted), location ar user name shoho asbe
     const reports = await db.query(
       `SELECT r.*, l.latitude, l.longitude, l.address, u.name as reporter_name
        FROM reports r
        LEFT JOIN locations l ON l.report_id = r.id
        JOIN users u ON r.user_id = u.id
-       WHERE r.visibility = 'public'
+       WHERE r.visibility = 'public' AND r.status != 'submitted'
        ORDER BY r.created_at DESC`,
       []
     );
