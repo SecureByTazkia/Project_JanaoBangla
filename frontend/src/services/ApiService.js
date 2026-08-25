@@ -122,19 +122,56 @@ export const authApi = {
 };
 
 // Phase 3 — Reports
-export const reportApi = {};
+export const reportApi = {
+  createReport: (data) => apiClient.post('/reports', data),
+  getPublicReports: (params) => apiClient.get('/reports', { params }),
+  getReportById: (id) => apiClient.get(`/reports/${id}`),
+  getMyReports: (params) => apiClient.get('/reports/my-reports', { params }),
+  updateReport: (id, data) => apiClient.put(`/reports/${id}`, data),
+  deleteReport: (id) => apiClient.delete(`/reports/${id}`),
+  getReportComments: (id) => apiClient.get(`/reports/${id}/comments`),
+  addComment: (id, data) => apiClient.post(`/reports/${id}/comments`, data),
+  getDuplicates: (id) => apiClient.get(`/reports/${id}/duplicates`)
+};
 
 // Phase 4 — Location/Map
-export const locationApi = {};
+export const locationApi = {
+  getMapReports: (params) => apiClient.get('/location/map-reports', { params }),
+  getNearbyReports: (params) => apiClient.get('/location/nearby', { params }),
+  getBoundingBoxReports: (params) => apiClient.get('/location/bounding-box', { params }),
+  searchByKeyword: (params) => apiClient.get('/location/search', { params })
+};
 
 // Phase 5 — Community
-export const communityApi = {};
+export const communityApi = {
+  getFeed: (params) => apiClient.get('/community/feed', { params }),
+  getReportComments: (reportId, params) => apiClient.get(`/community/reports/${reportId}/comments`, { params }),
+  addComment: (reportId, data) => apiClient.post(`/community/reports/${reportId}/comments`, data),
+  deleteComment: (commentId) => apiClient.delete(`/community/comments/${commentId}`),
+  flagComment: (commentId) => apiClient.post(`/community/comments/${commentId}/flag`),
+  addReply: (commentId, data) => apiClient.post(`/community/comments/${commentId}/replies`, data)
+};
 
 // Phase 6 — Duplicates
-export const duplicateApi = {};
+export const duplicateApi = {
+  checkDuplicates: (data) => apiClient.post('/ai/check-duplicates', data),
+  getDuplicatesByReport: (id) => apiClient.get(`/reports/${id}/duplicates`)
+};
 
 // Phase 7 — SOS Emergency
-export const sosApi = {};
+export const sosApi = {
+  triggerSOS: (data) => apiClient.post('/sos/trigger', data),
+  getSOSHistory: () => apiClient.get('/sos/history'),
+  cancelSOS: (id) => apiClient.patch(`/sos/${id}/cancel`)
+};
+
+// Phase 7 — Emergency Contact
+export const emergencyContactApi = {
+  getContacts: () => apiClient.get('/emergency-contacts'),
+  addContact: (data) => apiClient.post('/emergency-contacts', data),
+  updateContact: (id, data) => apiClient.put(`/emergency-contacts/${id}`, data),
+  deleteContact: (id) => apiClient.delete(`/emergency-contacts/${id}`)
+};
 
 // Phase 8 — Admin Dashboard API
 export const adminApi = {
@@ -161,11 +198,27 @@ export const adminApi = {
 };
 
 // Phase 9 — Search & Analytics
-export const searchApi = {};
-export const analyticsApi = {};
+export const searchApi = {
+  searchReports: (params) => apiClient.get('/search/reports', { params }),
+  getFilters: () => apiClient.get('/search/filters')
+};
+
+export const analyticsApi = {
+  getReportStats: (params) => apiClient.get('/analytics/reports', { params }),
+  getCategoryBreakdown: () => apiClient.get('/analytics/categories'),
+  getLocationHeatmap: () => apiClient.get('/analytics/heatmap'),
+  getTrends: (params) => apiClient.get('/analytics/trends', { params })
+};
 
 // Phase 10 — AI
-export const aiApi = {};
+export const aiApi = {
+  analyzeReport: (data) => apiClient.post('/ai/analyze', data),
+  getSuggestions: (data) => apiClient.post('/ai/suggestions', data),
+  recognizeImage: (data) => apiClient.post('/ai/recognize-image', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+};
 
 // Default export hisebe apiClient export kora hocche
 export default apiClient;
+
