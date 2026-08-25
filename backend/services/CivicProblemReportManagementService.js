@@ -49,12 +49,16 @@ class CivicProblemReportManagementService {
 
     const duplicateOfId = data.duplicateOfId || data.duplicate_of_id || null;
     const similarityScore = data.similarityScore || data.similarity_score || null;
+    const harassmentType = (data.category === 'women_harassment' && (data.harassment_type || data.harassmentType))
+      ? (data.harassment_type || data.harassmentType)
+      : null;
 
     const reportId = await CivicProblemReportModel.createReport({
       user_id: userId,
       title: data.title,
       description: data.description,
       category: data.category,
+      harassment_type: harassmentType,
       visibility: data.visibility || 'public',
       is_anonymous: isAnonymous ? 1 : 0,
       is_duplicate: duplicateOfId ? 1 : 0,

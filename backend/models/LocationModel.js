@@ -39,7 +39,6 @@ class LocationModel {
       INNER JOIN locations l ON l.report_id = r.id
       LEFT JOIN users u ON r.user_id = u.id
       WHERE r.visibility = 'public'
-        AND r.status != 'submitted'
         AND l.latitude IS NOT NULL 
         AND l.longitude IS NOT NULL
     `;
@@ -52,10 +51,12 @@ class LocationModel {
       params.push(filters.category);
     }
 
-    // Status filter apply kora hocche
+    // Status filter apply kora hocche (default: only show admin-approved reports)
     if (filters.status && filters.status !== 'all') {
       sql += ` AND r.status = ?`;
       params.push(filters.status);
+    } else {
+      sql += ` AND r.status != 'submitted'`;
     }
 
     // Latitude ar longitude boundary filter (Bounding Box)
@@ -107,7 +108,6 @@ class LocationModel {
       INNER JOIN locations l ON l.report_id = r.id
       LEFT JOIN users u ON r.user_id = u.id
       WHERE r.visibility = 'public'
-        AND r.status != 'submitted'
         AND l.latitude IS NOT NULL 
         AND l.longitude IS NOT NULL
     `;
@@ -122,6 +122,8 @@ class LocationModel {
     if (status && status !== 'all') {
       sql += ` AND r.status = ?`;
       params.push(status);
+    } else {
+      sql += ` AND r.status != 'submitted'`;
     }
 
     sql += ` HAVING distance_km <= ? ORDER BY distance_km ASC LIMIT 100`;

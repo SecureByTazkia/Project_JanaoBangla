@@ -148,12 +148,14 @@ const CivicProblemMapPage = () => {
                   onChange={(e) => setCategoryFilter(e.target.value)}
                 >
                   <option value="all">All Categories</option>
-                  <option value="road_damage">Road Damage</option>
-                  <option value="garbage_waste">Garbage / Waste</option>
-                  <option value="street_light">Street Light</option>
-                  <option value="water_drainage">Water / Drainage</option>
-                  <option value="traffic_accident">Traffic / Accident</option>
-                  <option value="public_safety">Public Safety</option>
+                  <option value="road_damage">🛣️ Road Damage</option>
+                  <option value="garbage_waste">🗑️ Garbage / Waste</option>
+                  <option value="street_light">💡 Street Light</option>
+                  <option value="water_drainage">🌊 Water / Drainage</option>
+                  <option value="traffic_accident">🚦 Traffic / Accident</option>
+                  <option value="public_safety">🛡️ Public Safety</option>
+                  <option value="women_harassment">🚨 Women Harassment</option>
+                  <option value="extortion_chanda">💰 Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
                 </select>
               </div>
 

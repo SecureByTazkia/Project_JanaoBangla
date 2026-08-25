@@ -75,9 +75,9 @@ async function testCommunityFeature() {
 
     // 7. Test toggleVerification
     console.log('\n7. Testing toggleVerification (Confirm problem)...');
-    const verResult1 = await CivicProblemCommentModel.toggleVerification(3, 2);
+    const verResult1 = await CivicProblemCommentModel.toggleVerification(1, 2);
     console.log(`✅ Verification toggled ON:`, verResult1);
-    const verResult2 = await CivicProblemCommentModel.toggleVerification(3, 2);
+    const verResult2 = await CivicProblemCommentModel.toggleVerification(1, 2);
     console.log(`✅ Verification toggled OFF:`, verResult2);
 
     // 8. Test getReportDiscussionSummary

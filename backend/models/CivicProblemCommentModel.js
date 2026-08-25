@@ -303,10 +303,12 @@ class CivicProblemCommentModel {
       params.push(category);
     }
 
-    // Status filter logic
+    // Status filter logic (Admin approval requirement: default public feed only shows approved reports)
     if (status && status !== 'all') {
       whereConditions.push(`r.status = ?`);
       params.push(status);
+    } else {
+      whereConditions.push(`r.status != 'submitted'`);
     }
 
     // Search keyword search logic (title, description, location address, area, city)

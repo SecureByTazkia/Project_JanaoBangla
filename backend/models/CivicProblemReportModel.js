@@ -12,12 +12,34 @@ class CivicProblemReportModel {
   // Ei function natun civic report create kore reports table e insert korbe
   // reports table: id, user_id, title, description, category, status, visibility, priority, is_duplicate, duplicate_of, confirmation_count, created_at, updated_at
   static async createReport(reportData) {
-    const { user_id, title, description, category, visibility } = reportData;
-    // reports table e noya row insert kora hocche — actual columns onujayi
+    const {
+      user_id,
+      title,
+      description,
+      category,
+      visibility,
+      is_anonymous,
+      is_duplicate,
+      duplicate_of_id,
+      harassment_type
+    } = reportData;
+
+    const harassmentVal = (category === 'women_harassment' && harassment_type) ? harassment_type : null;
+
     const reportId = await db.insert(
-      `INSERT INTO reports (user_id, title, description, category, visibility, status, priority)
-       VALUES (?, ?, ?, ?, ?, 'submitted', 'medium')`,
-      [user_id, title, description, category, visibility || 'public']
+      `INSERT INTO reports (user_id, title, description, category, harassment_type, visibility, is_anonymous, is_duplicate, duplicate_of, status, priority)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
+      [
+        user_id,
+        title,
+        description,
+        category,
+        harassmentVal,
+        visibility || 'public',
+        is_anonymous ? 1 : 0,
+        is_duplicate ? 1 : 0,
+        duplicate_of_id || null
+      ]
     );
     return reportId;
   }

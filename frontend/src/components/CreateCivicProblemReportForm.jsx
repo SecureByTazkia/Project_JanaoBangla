@@ -20,7 +20,8 @@ const CreateCivicProblemReportForm = () => {
     latitude: '',
     longitude: '',
     address: '',
-    isAnonymous: false
+    isAnonymous: false,
+    harassmentType: ''
   });
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -147,6 +148,9 @@ const CreateCivicProblemReportForm = () => {
       data.append('category', formData.category);
       data.append('visibility', formData.visibility);
       data.append('isAnonymous', formData.isAnonymous ? 'true' : 'false');
+      if (formData.category === 'women_harassment' && formData.harassmentType) {
+        data.append('harassment_type', formData.harassmentType);
+      }
       if (formData.latitude) data.append('latitude', formData.latitude);
       if (formData.longitude) data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
@@ -311,7 +315,14 @@ const CreateCivicProblemReportForm = () => {
               className="form-select"
               name="category"
               value={formData.category}
-              onChange={handleChange}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  category: val,
+                  harassmentType: val === 'women_harassment' ? (prev.harassmentType || 'offline') : ''
+                }));
+              }}
             >
               <option value="road_damage">🛣️ Road Damage</option>
               <option value="garbage_waste">🗑️ Garbage / Waste</option>
@@ -338,6 +349,50 @@ const CreateCivicProblemReportForm = () => {
             <small className="text-muted">Private reports won't appear on the public map or feed.</small>
           </div>
         </div>
+
+        {/* Women Harassment online/offline selector */}
+        {formData.category === 'women_harassment' && (
+          <div className="mb-3 p-3 rounded border" style={{ backgroundColor: '#FFF5F5', borderColor: '#FEB2B2' }}>
+            <label className="form-label fw-bold text-danger d-block mb-1">
+              🚨 Harassment Type (হয়রানির ধরন) *
+            </label>
+            <div className="d-flex gap-4 mt-2">
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="harassmentType"
+                  id="harassmentOnline"
+                  value="online"
+                  checked={formData.harassmentType === 'online'}
+                  onChange={handleChange}
+                  required
+                />
+                <label className="form-check-label fw-semibold" htmlFor="harassmentOnline">
+                  🌐 Online Harassment (সোশ্যাল মিডিয়া, মেসেজিং বা অনলাইনে হয়রানি)
+                </label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="harassmentType"
+                  id="harassmentOffline"
+                  value="offline"
+                  checked={formData.harassmentType === 'offline' || !formData.harassmentType}
+                  onChange={handleChange}
+                  required
+                />
+                <label className="form-check-label fw-semibold" htmlFor="harassmentOffline">
+                  🚶 Offline / Physical Harassment (রাস্তায়, কর্মস্থলে বা প্রত্যক্ষ হয়রানি)
+                </label>
+              </div>
+            </div>
+            <small className="text-muted d-block mt-2">
+              অনলাইন বা অফলাইন নির্বাচন করুন যাতে সংশ্লিষ্ট নিরাপত্তা বিভাগ তাৎক্ষণিক পদক্ষেপ গ্রহণ করতে পারে।
+            </small>
+          </div>
+        )}
 
         {/* Anonymous Reporting Checkbox */}
         <div className="mb-3 p-2 bg-light rounded border">

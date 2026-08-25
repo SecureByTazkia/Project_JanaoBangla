@@ -7,16 +7,21 @@
 
 const db = require('../config/DatabaseConnection');
 
+const VALID_TYPES = new Set(['report_status_change', 'new_comment', 'comment_reply', 'report_confirmed', 'emergency_alert', 'announcement']);
+
 // ==========================================
 // create — Notun notification insert kora
 // SOS trigger hoile, status change hoile ei function call hobe
 // ==========================================
 async function create({ userId, type, title, message, relatedId }) {
+  // Safe type map to prevent ENUM truncation errors
+  const safeType = VALID_TYPES.has(type) ? type : 'emergency_alert';
+
   // Notun notification insert kora hocche
   const [result] = await db.pool.query(
     `INSERT INTO notifications (user_id, type, title, message, related_id)
      VALUES (?, ?, ?, ?, ?)`,
-    [userId, type, title, message, relatedId || null]
+    [userId, safeType, title, message, relatedId || null]
   );
   return result.insertId;
 }
