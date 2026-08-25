@@ -37,9 +37,13 @@ function AdminLoginPage() {
     setError(null);
 
     try {
-      const response = await authApi.login(formData);
+      const response = await authApi.login({
+        email: formData.email.trim(),
+        password: formData.password
+      });
       if (response.data.success) {
-        const { user, token } = response.data;
+        const { user } = response.data;
+        const accessToken = response.data.accessToken || response.data.token;
 
         // Strictly check if the user is an admin
         if (user.role !== 'admin') {
@@ -49,7 +53,7 @@ function AdminLoginPage() {
         }
 
         // Login context e update kora hocche
-        login(token, user);
+        login(accessToken, user);
 
         // Direct navigate to /admin dashboard
         navigate('/admin', { replace: true });

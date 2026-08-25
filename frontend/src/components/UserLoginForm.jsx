@@ -43,7 +43,11 @@ function UserLoginForm() {
       if (response.data.success) {
         // Context e user data ar token save kora hocche
         login(response.data.accessToken, response.data.user);
-        navigate(redirectTo, { replace: true });
+        if (response.data.user?.role === 'admin' && redirectTo === '/') {
+          navigate('/admin', { replace: true });
+        } else {
+          navigate(redirectTo, { replace: true });
+        }
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed. Please check credentials.';
