@@ -6,10 +6,42 @@
 
 const AIImageBasedProblemRecognitionService = require('../services/AIImageBasedProblemRecognitionService');
 const AIProblemCategorySuggestionService = require('../services/AIProblemCategorySuggestionService');
-const AIAdvancedDuplicateDetectionService = require('../services/AIAdvancedDuplicateDetectionService');
+const SimilarReportDetectionService = require('../services/SimilarReportDetectionService');
 const ImageContentSafetyModerationService = require('../services/ImageContentSafetyModerationService');
 
 class AICivicProblemController {
+
+  // ==========================================
+  // moderateImage — Uploaded image inspect kore safety, nudity ba NSFW check kore
+  // ==========================================
+  static async moderateImage(req, res, next) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          isSafe: false,
+          flagType: 'no_file',
+          reason: 'Please upload an image file for moderation.'
+        });
+      }
+
+      const filePath = req.file.path;
+      const originalName = req.file.originalname;
+
+      const safetyCheck = await ImageContentSafetyModerationService.inspectImage(filePath, originalName);
+
+      if (!safetyCheck.isSafe) {
+        ImageContentSafetyModerationService.safelyRemoveFile(filePath);
+      }
+
+      return res.status(200).json({
+        success: true,
+        ...safetyCheck
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 
   // ==========================================
   // analyzeImage — Uploaded evidence image analyze kore problem + category + confidence return kore
@@ -57,7 +89,7 @@ class AICivicProblemController {
       // 3. Run Duplicate check if coordinates/title present
       let duplicateResult = null;
       if (req.body.latitude && req.body.longitude) {
-        duplicateResult = await AIAdvancedDuplicateDetectionService.detectDuplicates({
+        duplicateResult = await SimilarReportDetectionService.findSimilarReports({
           title: smartContent.smartTitle,
           description: smartContent.smartDescription,
           category: recognitionResult.suggestedCategory,
@@ -121,7 +153,7 @@ class AICivicProblemController {
     try {
       const { title, description, category, latitude, longitude } = req.body;
 
-      const result = await AIAdvancedDuplicateDetectionService.detectDuplicates({
+      const result = await SimilarReportDetectionService.findSimilarReports({
         title,
         description,
         category,
