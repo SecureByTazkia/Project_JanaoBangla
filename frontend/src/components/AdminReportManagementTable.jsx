@@ -78,7 +78,13 @@ function AdminReportManagementTable({ showToast }) {
     setActionLoading(`status-${reportId}`);
     try {
       await AdminDashboardService.updateReportStatus(reportId, newStatus);
-      if (showToast) showToast(`Report status updated to '${STATUS_LABELS[newStatus]}' ✅`, 'success');
+      if (showToast) {
+        if (newStatus !== 'submitted') {
+          showToast(`Report #${reportId} approved & published to feed! 📢`, 'success');
+        } else {
+          showToast(`Report #${reportId} status updated to ${STATUS_LABELS[newStatus] || newStatus}.`, 'success');
+        }
+      }
       fetchReports();
     } catch (err) {
       if (showToast) showToast(err.response?.data?.message || 'Failed to update status.', 'error');
@@ -117,9 +123,9 @@ function AdminReportManagementTable({ showToast }) {
           >
             <option value="all">All Status</option>
             <option value="submitted">Pending Review (Submitted)</option>
-            <option value="under_review">Under Review</option>
-            <option value="processing">Processing</option>
-            <option value="solved">Solved</option>
+            <option value="under_review">Under Review (Published)</option>
+            <option value="processing">Processing (Published)</option>
+            <option value="solved">Solved (Published)</option>
           </select>
           <select
             className="admin-filter-select"
@@ -182,7 +188,7 @@ function AdminReportManagementTable({ showToast }) {
                       </span>
                     </td>
                     <td>{report.reporter_name || '—'}</td>
-                    <td style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.8rem' }}>
+                    <td style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {report.address || '—'}
                     </td>
                     <td>
@@ -193,10 +199,10 @@ function AdminReportManagementTable({ showToast }) {
                         onChange={e => handleStatusChange(report.id, e.target.value)}
                         disabled={actionLoading === `status-${report.id}`}
                       >
-                        <option value="submitted">Pending Review</option>
-                        <option value="under_review">Under Review</option>
-                        <option value="processing">Processing</option>
-                        <option value="solved">Solved</option>
+                        <option value="submitted">⏳ Pending Review</option>
+                        <option value="under_review">🔍 Under Review (Published)</option>
+                        <option value="processing">⚙️ Processing (Published)</option>
+                        <option value="solved">✅ Solved (Published)</option>
                       </select>
                     </td>
                     <td>
@@ -206,17 +212,21 @@ function AdminReportManagementTable({ showToast }) {
                     </td>
                     <td style={{ fontSize: '0.8rem' }}>{formatDate(report.created_at)}</td>
                     <td>
-                      <div className="admin-actions-cell" style={{ display: 'flex', gap: '6px' }}>
-                        {report.status === 'submitted' && (
+                      <div className="admin-actions-cell" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        {report.status === 'submitted' ? (
                           <button
                             className="admin-action-btn btn-sm"
                             onClick={() => handleStatusChange(report.id, 'under_review')}
                             disabled={actionLoading === `status-${report.id}`}
-                            title="Accept and publish report"
-                            style={{ background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}
+                            title="Approve report and publish to public feed"
+                            style={{ background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap' }}
                           >
-                            ✅ Accept
+                            📢 Publish to Feed
                           </button>
+                        ) : (
+                          <span style={{ fontSize: '0.75rem', color: '#2e7d32', fontWeight: 600, padding: '2px 6px', background: '#e8f5e9', borderRadius: '4px' }}>
+                            ✓ In Feed
+                          </span>
                         )}
                         <button
                           className="admin-action-btn btn-danger btn-sm"
