@@ -53,18 +53,14 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     // 401 Unauthorized — token invalid/expired hoile logout korbe
-    // Kintu shudhu real auth failure e redirect korbo, SOS/feature API e na
     if (error.response && error.response.status === 401) {
-      const requestUrl = error.config?.url || '';
-      // Feature-level 401 e (SOS, emergency-contacts) redirect korbo na —
-      // token timeout hole shudhu /auth/ route fail korle redirect korbo
-      const isAuthRoute = requestUrl.includes('/auth/profile') ||
-                          requestUrl.includes('/auth/login') ||
-                          requestUrl.includes('/auth/change-password');
-      if (isAuthRoute && window.location.pathname !== '/login') {
-        // Token clear kora hocche LocalStorage theke
-        localStorage.removeItem('jb_access_token');
-        localStorage.removeItem('jb_user');
+      // Token clear kora hocche LocalStorage theke
+      localStorage.removeItem('jb_access_token');
+      localStorage.removeItem('jb_user');
+
+      // Login page e redirect kora hocche (window.location use kora hocche React context er baire theke)
+      // Phase 2 e proper redirect add hobe
+      if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
     }
@@ -126,89 +122,55 @@ export const authApi = {
 };
 
 // Phase 3 — Reports
-export const reportApi = {};
-
-// Phase 4 — Location/Map
-export const locationApi = {};
-
-// Phase 5 — Community API
-export const communityApi = {
-  getFeed: (params) => apiClient.get('/community/feed', { params }),
-  getDiscussion: (reportId) => apiClient.get(`/community/reports/${reportId}/discussion`),
-  getComments: (reportId) => apiClient.get(`/community/reports/${reportId}/comments`),
-  postComment: (reportId, data) => apiClient.post(`/community/reports/${reportId}/comments`, data),
-  toggleVerify: (reportId) => apiClient.post(`/community/reports/${reportId}/verify`),
-  getVerifyStatus: (reportId) => apiClient.get(`/community/reports/${reportId}/verification-status`),
-  flagComment: (commentId) => apiClient.post(`/community/comments/${commentId}/flag`),
-  deleteComment: (commentId) => apiClient.delete(`/community/comments/${commentId}`)
+export const reportApi = {
+  createReport: (data) => apiClient.post('/reports', data),
+  getPublicReports: (params) => apiClient.get('/reports', { params }),
+  getReportById: (id) => apiClient.get(`/reports/${id}`),
+  getMyReports: (params) => apiClient.get('/reports/my-reports', { params }),
+  updateReport: (id, data) => apiClient.put(`/reports/${id}`, data),
+  deleteReport: (id) => apiClient.delete(`/reports/${id}`),
+  getReportComments: (id) => apiClient.get(`/reports/${id}/comments`),
+  addComment: (id, data) => apiClient.post(`/reports/${id}/comments`, data),
+  getDuplicates: (id) => apiClient.get(`/reports/${id}/duplicates`)
 };
 
-// Phase 6 — Duplicates API
+// Phase 4 — Location/Map
+export const locationApi = {
+  getMapReports: (params) => apiClient.get('/location/map-reports', { params }),
+  getNearbyReports: (params) => apiClient.get('/location/nearby', { params }),
+  getBoundingBoxReports: (params) => apiClient.get('/location/bounding-box', { params }),
+  searchByKeyword: (params) => apiClient.get('/location/search', { params })
+};
+
+// Phase 5 — Community
+export const communityApi = {
+  getFeed: (params) => apiClient.get('/community/feed', { params }),
+  getReportComments: (reportId, params) => apiClient.get(`/community/reports/${reportId}/comments`, { params }),
+  addComment: (reportId, data) => apiClient.post(`/community/reports/${reportId}/comments`, data),
+  deleteComment: (commentId) => apiClient.delete(`/community/comments/${commentId}`),
+  flagComment: (commentId) => apiClient.post(`/community/comments/${commentId}/flag`),
+  addReply: (commentId, data) => apiClient.post(`/community/comments/${commentId}/replies`, data)
+};
+
+// Phase 6 — Duplicates
 export const duplicateApi = {
-  // Similar reports check korar jonno
-  checkDuplicates: (data) => apiClient.post('/duplicates/check', data),
-  // Duita report link korar jonno
-  linkReport: (data) => apiClient.post('/duplicates/link', data),
-  // Linked reports fetch korar jonno
-  getLinkedReports: (reportId) => apiClient.get(`/duplicates/linked/${reportId}`),
-  // Duplicate link remove korar jonno
-  unlinkReport: (reportId) => apiClient.delete(`/duplicates/link/${reportId}`),
-  // All clusters list
-  getClusters: () => apiClient.get('/duplicates/clusters')
+  checkDuplicates: (data) => apiClient.post('/ai/check-duplicates', data),
+  getDuplicatesByReport: (id) => apiClient.get(`/reports/${id}/duplicates`)
 };
 
 // Phase 7 — SOS Emergency
 export const sosApi = {
-  // SOS trigger kora — location data sহ
-  trigger: (data) => apiClient.post('/sos/trigger', data),
-
-  // Active SOS status check — SOS button state manage er jonno
-  getActiveStatus: () => apiClient.get('/sos/active'),
-
-  // SOS history fetch — user er previous alerts
-  getHistory: (params) => apiClient.get('/sos/history', { params }),
-
-  // Single SOS detail fetch
-  getById: (id) => apiClient.get(`/sos/${id}`),
-
-  // SOS resolve kora — safe ache
-  resolve: (id) => apiClient.put(`/sos/${id}/resolve`),
-
-  // SOS cancel kora — false alarm
-  cancel: (id) => apiClient.put(`/sos/${id}/cancel`)
+  triggerSOS: (data) => apiClient.post('/sos/trigger', data),
+  getSOSHistory: () => apiClient.get('/sos/history'),
+  cancelSOS: (id) => apiClient.patch(`/sos/${id}/cancel`)
 };
 
-// Phase 7 — Emergency Contacts
+// Phase 7 — Emergency Contact
 export const emergencyContactApi = {
-  // Sob emergency contacts list
-  getAll: () => apiClient.get('/emergency-contacts'),
-
-  // Notun contact add kora
-  create: (data) => apiClient.post('/emergency-contacts', data),
-
-  // Contact update kora
-  update: (id, data) => apiClient.put(`/emergency-contacts/${id}`, data),
-
-  // Contact delete kora
-  delete: (id) => apiClient.delete(`/emergency-contacts/${id}`)
-};
-
-// Phase 7 — Notifications
-export const notificationApi = {
-  // Sob notifications fetch
-  getAll: (params) => apiClient.get('/notifications', { params }),
-
-  // Shudhu unread count
-  getUnreadCount: () => apiClient.get('/notifications/unread-count'),
-
-  // Sob notifications read mark kora
-  markAllRead: () => apiClient.put('/notifications/read-all'),
-
-  // Specific notification read mark kora
-  markRead: (id) => apiClient.put(`/notifications/${id}/read`),
-
-  // Notification delete kora
-  delete: (id) => apiClient.delete(`/notifications/${id}`)
+  getContacts: () => apiClient.get('/emergency-contacts'),
+  addContact: (data) => apiClient.post('/emergency-contacts', data),
+  updateContact: (id, data) => apiClient.put(`/emergency-contacts/${id}`, data),
+  deleteContact: (id) => apiClient.delete(`/emergency-contacts/${id}`)
 };
 
 // Phase 8 — Admin Dashboard API
@@ -237,33 +199,26 @@ export const adminApi = {
 
 // Phase 9 — Search & Analytics
 export const searchApi = {
-  // Advanced search with filters and sorting
-  search: (params) => apiClient.get('/search', { params }),
-  // Filter options and counts
-  getMetadata: () => apiClient.get('/search/metadata')
+  searchReports: (params) => apiClient.get('/search/reports', { params }),
+  getFilters: () => apiClient.get('/search/filters')
 };
 
 export const analyticsApi = {
-  // High-level statistics
-  getOverview: () => apiClient.get('/analytics/overview'),
-  // Category breakdown & resolution
-  getCategories: () => apiClient.get('/analytics/categories'),
-  // Timeline monthly/daily trends
-  getTrends: () => apiClient.get('/analytics/trends'),
-  // Area problem distribution and hotspots
-  getAreas: () => apiClient.get('/analytics/areas'),
-  // Priority and status breakdowns
-  getPriorityAndStatus: () => apiClient.get('/analytics/priority-status')
+  getReportStats: (params) => apiClient.get('/analytics/reports', { params }),
+  getCategoryBreakdown: () => apiClient.get('/analytics/categories'),
+  getLocationHeatmap: () => apiClient.get('/analytics/heatmap'),
+  getTrends: (params) => apiClient.get('/analytics/trends', { params })
 };
 
 // Phase 10 — AI
 export const aiApi = {
-  analyzeImage: (formData) => apiClient.post('/ai/analyze-image', formData, {
+  analyzeReport: (data) => apiClient.post('/ai/analyze', data),
+  getSuggestions: (data) => apiClient.post('/ai/suggestions', data),
+  recognizeImage: (data) => apiClient.post('/ai/recognize-image', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  getSuggestions: (data) => apiClient.post('/ai/suggest', data),
-  detectDuplicates: (data) => apiClient.post('/ai/detect-duplicates', data)
+  })
 };
 
 // Default export hisebe apiClient export kora hocche
 export default apiClient;
+

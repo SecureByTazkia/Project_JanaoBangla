@@ -16,15 +16,17 @@ const CATEGORY_LABELS = {
   street_light: '💡 Street Light',
   water_drainage: '💧 Water / Drainage',
   traffic_accident: '🚗 Traffic / Accident',
-  public_safety: '🛡️ Public Safety'
+  public_safety: '🛡️ Public Safety',
+  women_harassment: '🚨 Women Harassment',
+  extortion_chanda: '💰 Illegal Money Collection Report/চাঁদাবাজির অভিযোগ'
 };
 
 // Status label formatting helper
 const STATUS_LABELS = {
-  submitted: 'Submitted',
-  under_review: 'Under Review',
-  processing: 'Processing',
-  solved: 'Solved'
+  submitted: 'Pending (অভিযোগ জমা হয়েছে)',
+  under_review: 'Under Review (যাচাই চলছে)',
+  processing: 'Action Taken (ব্যবস্থা নেওয়া হয়েছে)',
+  solved: 'Resolved (নিষ্পত্তি হয়েছে)'
 };
 
 // Date formatter
@@ -76,7 +78,13 @@ function AdminReportManagementTable({ showToast }) {
     setActionLoading(`status-${reportId}`);
     try {
       await AdminDashboardService.updateReportStatus(reportId, newStatus);
-      if (showToast) showToast(`Report status updated to '${STATUS_LABELS[newStatus]}' ✅`, 'success');
+      if (showToast) {
+        if (newStatus !== 'submitted') {
+          showToast(`Report #${reportId} approved & published to feed! 📢`, 'success');
+        } else {
+          showToast(`Report #${reportId} status updated to ${STATUS_LABELS[newStatus] || newStatus}.`, 'success');
+        }
+      }
       fetchReports();
     } catch (err) {
       if (showToast) showToast(err.response?.data?.message || 'Failed to update status.', 'error');
@@ -114,10 +122,10 @@ function AdminReportManagementTable({ showToast }) {
             onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
           >
             <option value="all">All Status</option>
-            <option value="submitted">Submitted</option>
-            <option value="under_review">Under Review</option>
-            <option value="processing">Processing</option>
-            <option value="solved">Solved</option>
+            <option value="submitted">⏳ Pending (অভিযোগ জমা হয়েছে)</option>
+            <option value="under_review">🔍 Under Review (যাচাই চলছে)</option>
+            <option value="processing">⚙️ Action Taken (ব্যবস্থা নেওয়া হয়েছে)</option>
+            <option value="solved">✅ Resolved (নিষ্পত্তি হয়েছে)</option>
           </select>
           <select
             className="admin-filter-select"
@@ -131,6 +139,8 @@ function AdminReportManagementTable({ showToast }) {
             <option value="water_drainage">Water / Drainage</option>
             <option value="traffic_accident">Traffic / Accident</option>
             <option value="public_safety">Public Safety</option>
+            <option value="women_harassment">Women Harassment</option>
+            <option value="extortion_chanda">Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
           </select>
         </div>
       </div>
@@ -178,7 +188,7 @@ function AdminReportManagementTable({ showToast }) {
                       </span>
                     </td>
                     <td>{report.reporter_name || '—'}</td>
-                    <td style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.8rem' }}>
+                    <td style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {report.address || '—'}
                     </td>
                     <td>
@@ -189,10 +199,10 @@ function AdminReportManagementTable({ showToast }) {
                         onChange={e => handleStatusChange(report.id, e.target.value)}
                         disabled={actionLoading === `status-${report.id}`}
                       >
-                        <option value="submitted">Submitted</option>
-                        <option value="under_review">Under Review</option>
-                        <option value="processing">Processing</option>
-                        <option value="solved">Solved</option>
+                        <option value="submitted">⏳ Pending (অভিযোগ জমা হয়েছে)</option>
+                        <option value="under_review">🔍 Under Review (যাচাই চলছে)</option>
+                        <option value="processing">⚙️ Action Taken (ব্যবস্থা নেওয়া হয়েছে)</option>
+                        <option value="solved">✅ Resolved (নিষ্পত্তি হয়েছে)</option>
                       </select>
                     </td>
                     <td>
@@ -202,7 +212,22 @@ function AdminReportManagementTable({ showToast }) {
                     </td>
                     <td style={{ fontSize: '0.8rem' }}>{formatDate(report.created_at)}</td>
                     <td>
-                      <div className="admin-actions-cell">
+                      <div className="admin-actions-cell" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        {report.status === 'submitted' ? (
+                          <button
+                            className="admin-action-btn btn-sm"
+                            onClick={() => handleStatusChange(report.id, 'processing')}
+                            disabled={actionLoading === `status-${report.id}`}
+                            title="Approve report and publish to public feed"
+                            style={{ background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap' }}
+                          >
+                            📢 Publish to Feed
+                          </button>
+                        ) : (
+                          <span style={{ fontSize: '0.75rem', color: '#2e7d32', fontWeight: 600, padding: '2px 6px', background: '#e8f5e9', borderRadius: '4px' }}>
+                            ✓ In Feed
+                          </span>
+                        )}
                         <button
                           className="admin-action-btn btn-danger btn-sm"
                           onClick={() => setConfirmDelete(report.id)}

@@ -754,16 +754,28 @@
 }
 
 /* ==========================================
-   RESPONSIVE — Mobile ar Tablet support
+   RESPONSIVE — Mobile, Tablet & Desktop support
    ========================================== */
+@media (max-width: 991px) {
+  .admin-dashboard {
+    padding: 18px 14px;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
 @media (max-width: 768px) {
   .admin-dashboard {
-    padding: 16px 12px;
+    padding: 14px 10px;
   }
 
   .admin-dashboard-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
 
   .admin-stats-grid {
@@ -772,7 +784,7 @@
   }
 
   .admin-stat-card {
-    padding: 14px;
+    padding: 14px 12px;
   }
 
   .admin-stat-value {
@@ -780,7 +792,8 @@
   }
 
   .admin-tabs {
-    gap: 2px;
+    gap: 4px;
+    padding-bottom: 4px;
   }
 
   .admin-tab-btn {
@@ -791,14 +804,28 @@
   .admin-section-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
+  }
+
+  .admin-filter-row {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
 
   .admin-search-bar {
     max-width: 100%;
+    width: 100%;
+  }
+
+  .admin-filter-select {
+    width: 100%;
   }
 
   .admin-table {
     font-size: 0.82rem;
+    min-width: 650px;
   }
 
   .admin-table th,
@@ -808,21 +835,52 @@
 
   .admin-pagination {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    gap: 10px;
   }
 }
 
 @media (max-width: 480px) {
+  .admin-dashboard {
+    padding: 10px 8px;
+  }
+
   .admin-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .admin-stat-card {
+    padding: 10px 8px;
+  }
+
+  .admin-stat-value {
+    font-size: 1.2rem;
+  }
+
+  .admin-stat-label {
+    font-size: 0.72rem;
   }
 
   .admin-tab-btn {
-    padding: 8px 10px;
-    font-size: 0.78rem;
+    padding: 6px 10px;
+    font-size: 0.76rem;
   }
 
   .admin-tab-btn .admin-tab-label {
     display: none;
+  }
+
+  .admin-modal,
+  .admin-confirm-dialog {
+    width: 94vw !important;
+    max-width: 94vw !important;
+    padding: 18px 14px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -211,8 +211,8 @@ const CivicProblemMapPage = () => {
         <div className="row g-3">
           {/* Map Column */}
           <div className="col-lg-8 col-md-7">
-            <div className="card shadow-sm border-0" style={{ height: '620px' }}>
-              <div className="card-body p-2 style={{ height: '100%' }}">
+            <div className="card shadow-sm border-0 civic-map-wrapper-card">
+              <div className="card-body p-2" style={{ height: '100%' }}>
                 {loading ? (
                   <div className="d-flex justify-content-center align-items-center h-100">
                     <LoadingSpinner message="Loading interactive map & markers..." />
@@ -232,7 +232,7 @@ const CivicProblemMapPage = () => {
 
           {/* Mapped Reports Side List Column */}
           <div className="col-lg-4 col-md-5">
-            <div className="card shadow-sm border-0" style={{ height: '620px', display: 'flex', flexDirection: 'column' }}>
+            <div className="card shadow-sm border-0 civic-map-list-wrapper-card">
               <div className="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                 <h5 className="h6 mb-0 fw-bold">Mapped Problems ({filteredReports.length})</h5>
                 <span className="badge bg-success-subtle text-success border border-success-subtle">

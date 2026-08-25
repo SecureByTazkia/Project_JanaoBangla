@@ -1,21 +1,12 @@
-// ==========================================
-// JanaoBangla — Civic Problem Report Controller
-// BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
-// isAnonymous support add kora hoyeche
-// ==========================================
-
 const CivicProblemReportManagementService = require('../services/CivicProblemReportManagementService');
 
 class CivicProblemReportController {
-
-  // ==========================================
-  // submitReport — Incoming report submission request handle korbe
-  // ==========================================
+  // Ei function incoming report submission request handle korbe
   static async submitReport(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.user.id; // user authenticate howar por token theke asbe
       const reportData = req.body;
-      const files = req.files;
+      const files = req.files; // multer diye asbe
 
       if (!reportData.title || !reportData.description || !reportData.category) {
         return res.status(400).json({ error: 'Title, description and category are required' });
@@ -24,20 +15,12 @@ class CivicProblemReportController {
       const reportId = await CivicProblemReportManagementService.createReport(userId, reportData, files);
 
       return res.status(201).json({
-        message: 'Report submitted successfully',
+        message: 'Report submitted successfully. Awaiting admin review before public display.',
         reportId: reportId
       });
     } catch (error) {
-      console.error('Error submitting report:', error.message);
-      if (error.statusCode || error.isClientError) {
-        return res.status(error.statusCode || 400).json({
-          success: false,
-          error: error.message,
-          messageBn: error.reasonBn,
-          flagType: error.flagType,
-          isUnsafe: Boolean(error.flagType)
-        });
-      }
+      // Actual error ta log ar response e pathano hocche debug er jonno
+      console.error('Error submitting report:', error.message, error.stack);
       return res.status(500).json({
         error: 'Failed to submit report. Please try again.',
         debug: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -45,9 +28,7 @@ class CivicProblemReportController {
     }
   }
 
-  // ==========================================
-  // getMyReports — Logged in user er nijer shob report return korbe
-  // ==========================================
+  // Ei function logged in user er nijer report gulo dekhanor jonno return korbe
   static async getMyReports(req, res) {
     try {
       const userId = req.user.id;
@@ -59,9 +40,7 @@ class CivicProblemReportController {
     }
   }
 
-  // ==========================================
-  // getPublicReports — Shob public reports return korbe, anonymous identity mask korbe
-  // ==========================================
+  // Ei function shob public report gulo return korbe
   static async getPublicReports(req, res) {
     try {
       const reports = await CivicProblemReportManagementService.getPublicReports();
@@ -72,24 +51,27 @@ class CivicProblemReportController {
     }
   }
 
-  // ==========================================
-  // getReportDetails — Single report er data dibe, anonymous access control enforce kore
-  // ==========================================
+  // Ei function specific ekta report er data dibe
   static async getReportDetails(req, res) {
     try {
       const reportId = req.params.id;
-      const requestingUser = req.user || null;
-      const report = await CivicProblemReportManagementService.getReportDetails(reportId, requestingUser);
-
+      const report = await CivicProblemReportManagementService.getReportDetails(reportId);
+      
       if (!report) {
         return res.status(404).json({ error: 'Report not found' });
       }
+      
+      const isOwner = req.user && report.user_id && report.user_id === req.user.id;
+      const isAdmin = req.user && req.user.role === 'admin';
 
-      const isOwner = requestingUser && report.user_id && report.user_id === requestingUser.id;
-      const isAdmin = requestingUser && requestingUser.role === 'admin';
-
+      // Jodi report private hoy ebong requester owner na hoy ba admin na hoy, tahole block korbe
       if (report.visibility === 'private' && !isOwner && !isAdmin) {
-        return res.status(403).json({ error: 'Access denied. This is a private report.' });
+          return res.status(403).json({ error: 'Access denied. This is a private report.' });
+      }
+
+      // Jodi report submitted status e thake (awaiting admin review) ebong requester owner ba admin na hoy, tahole block korbe
+      if (report.status === 'submitted' && !isOwner && !isAdmin) {
+        return res.status(403).json({ error: 'Access denied. This report is awaiting admin review.' });
       }
 
       return res.status(200).json({ report });
