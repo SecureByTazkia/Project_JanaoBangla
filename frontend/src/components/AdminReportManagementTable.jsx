@@ -23,8 +23,7 @@ const CATEGORY_LABELS = {
 
 // Status label formatting helper
 const STATUS_LABELS = {
-  submitted: 'Submitted',
-  under_review: 'Under Review',
+  submitted: 'Pending Review',
   processing: 'Processing',
   solved: 'Solved'
 };
@@ -123,7 +122,6 @@ function AdminReportManagementTable({ showToast }) {
           >
             <option value="all">All Status</option>
             <option value="submitted">Pending Review (Submitted)</option>
-            <option value="under_review">Under Review (Published)</option>
             <option value="processing">Processing (Published)</option>
             <option value="solved">Solved (Published)</option>
           </select>
@@ -200,7 +198,6 @@ function AdminReportManagementTable({ showToast }) {
                         disabled={actionLoading === `status-${report.id}`}
                       >
                         <option value="submitted">⏳ Pending Review</option>
-                        <option value="under_review">🔍 Under Review (Published)</option>
                         <option value="processing">⚙️ Processing (Published)</option>
                         <option value="solved">✅ Solved (Published)</option>
                       </select>
@@ -216,7 +213,7 @@ function AdminReportManagementTable({ showToast }) {
                         {report.status === 'submitted' ? (
                           <button
                             className="admin-action-btn btn-sm"
-                            onClick={() => handleStatusChange(report.id, 'under_review')}
+                            onClick={() => handleStatusChange(report.id, 'processing')}
                             disabled={actionLoading === `status-${report.id}`}
                             title="Approve report and publish to public feed"
                             style={{ background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap' }}
