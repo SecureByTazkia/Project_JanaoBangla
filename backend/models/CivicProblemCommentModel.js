@@ -22,23 +22,14 @@ class CivicProblemCommentModel {
         c.report_id,
         c.parent_id,
         c.content,
-        c.is_anonymous,
-        c.is_flagged,
+        0 as is_anonymous,
+        0 as is_flagged,
         c.is_removed,
         c.created_at,
         c.updated_at,
-        CASE 
-          WHEN c.is_anonymous = 1 THEN 'Anonymous Citizen'
-          ELSE u.name 
-        END as author_name,
-        CASE 
-          WHEN c.is_anonymous = 1 THEN NULL
-          ELSE u.id 
-        END as author_id,
-        CASE 
-          WHEN c.is_anonymous = 1 THEN NULL
-          ELSE u.profile_picture 
-        END as author_avatar,
+        u.name as author_name,
+        u.id as author_id,
+        u.profile_picture as author_avatar,
         u.role as author_role
       FROM comments c
       JOIN users u ON c.user_id = u.id
@@ -71,18 +62,17 @@ class CivicProblemCommentModel {
   }
 
   // ==========================================
+  // ==========================================
   // createComment
   // Ei function ta noya comment ba nested reply create kore comments table e insert kore
-  // is_anonymous checkbox check thakle is_anonymous = 1 save hobe
   // ==========================================
   static async createComment({ report_id, user_id, parent_id = null, content, is_anonymous = 0 }) {
-    const anonymousFlag = is_anonymous ? 1 : 0;
     const cleanParentId = parent_id ? parseInt(parent_id) : null;
 
     const commentId = await db.insert(
-      `INSERT INTO comments (report_id, user_id, parent_id, content, is_anonymous, is_flagged, is_removed)
-       VALUES (?, ?, ?, ?, ?, 0, 0)`,
-      [report_id, user_id, cleanParentId, content.trim(), anonymousFlag]
+      `INSERT INTO comments (report_id, user_id, parent_id, content, is_removed)
+       VALUES (?, ?, ?, ?, 0)`,
+      [report_id, user_id, cleanParentId, content.trim()]
     );
 
     // Inserted comment ta author info shoho fetch kore return kora hocche
@@ -92,23 +82,14 @@ class CivicProblemCommentModel {
         c.report_id,
         c.parent_id,
         c.content,
-        c.is_anonymous,
-        c.is_flagged,
+        0 as is_anonymous,
+        0 as is_flagged,
         c.is_removed,
         c.created_at,
         c.updated_at,
-        CASE 
-          WHEN c.is_anonymous = 1 THEN 'Anonymous Citizen'
-          ELSE u.name 
-        END as author_name,
-        CASE 
-          WHEN c.is_anonymous = 1 THEN NULL
-          ELSE u.id 
-        END as author_id,
-        CASE 
-          WHEN c.is_anonymous = 1 THEN NULL
-          ELSE u.profile_picture 
-        END as author_avatar,
+        u.name as author_name,
+        u.id as author_id,
+        u.profile_picture as author_avatar,
         u.role as author_role
       FROM comments c
       JOIN users u ON c.user_id = u.id
@@ -139,12 +120,11 @@ class CivicProblemCommentModel {
 
   // ==========================================
   // flagComment
-  // Ei function ta kono inappropriate comment ke user report/flag korle is_flagged = 1 kore
-  // Jar fole admin dashboard e moderation list e eita show korbe
+  // Ei function ta kono inappropriate comment ke user report/flag korle handle kore
   // ==========================================
   static async flagComment(commentId) {
     return await db.update(
-      `UPDATE comments SET is_flagged = 1, updated_at = NOW() WHERE id = ?`,
+      `UPDATE comments SET updated_at = NOW() WHERE id = ?`,
       [commentId]
     );
   }
@@ -171,8 +151,8 @@ class CivicProblemCommentModel {
   // ==========================================
   // toggleVerification
   // Ei function ta citizen der civic problem confirm ba unconfirm korte dey
-  // Jodi age theke verify kora thake, tobe remove korbe ar verification_count 1 komabe
-  // Jodi age verify na thake, tobe add korbe ar verification_count 1 barabe
+  // Jodi age theke verify kora thake, tobe remove korbe ar confirmation_count 1 komabe
+  // Jodi age verify na thake, tobe add korbe ar confirmation_count 1 barabe
   // ==========================================
   static async toggleVerification(reportId, userId) {
     // Prothome check kora hocche user agei verify koreche kina
@@ -188,22 +168,22 @@ class CivicProblemCommentModel {
         [reportId, userId]
       );
 
-      // Report table er verification_count update kora hocche
+      // Report table er confirmation_count update kora hocche
       await db.update(
         `UPDATE reports 
-         SET verification_count = GREATEST(0, verification_count - 1), updated_at = NOW() 
+         SET confirmation_count = GREATEST(0, COALESCE(confirmation_count, 0) - 1), updated_at = NOW() 
          WHERE id = ?`,
         [reportId]
       );
 
       const countRow = await db.queryOne(
-        `SELECT verification_count FROM reports WHERE id = ?`,
+        `SELECT confirmation_count FROM reports WHERE id = ?`,
         [reportId]
       );
 
       return {
         verified: false,
-        verification_count: countRow ? countRow.verification_count : 0,
+        verification_count: countRow ? countRow.confirmation_count : 0,
         message: 'Civic problem confirmation removed.'
       };
     } else {
@@ -213,22 +193,22 @@ class CivicProblemCommentModel {
         [reportId, userId]
       );
 
-      // Report table er verification_count 1 barano hocche
+      // Report table er confirmation_count 1 barano hocche
       await db.update(
         `UPDATE reports 
-         SET verification_count = verification_count + 1, updated_at = NOW() 
+         SET confirmation_count = COALESCE(confirmation_count, 0) + 1, updated_at = NOW() 
          WHERE id = ?`,
         [reportId]
       );
 
       const countRow = await db.queryOne(
-        `SELECT verification_count FROM reports WHERE id = ?`,
+        `SELECT confirmation_count FROM reports WHERE id = ?`,
         [reportId]
       );
 
       return {
         verified: true,
-        verification_count: countRow ? countRow.verification_count : 1,
+        verification_count: countRow ? countRow.confirmation_count : 1,
         message: 'Civic problem confirmed successfully! Thank you for community verification.'
       };
     }
@@ -287,7 +267,7 @@ class CivicProblemCommentModel {
         r.visibility,
         r.priority,
         r.is_anonymous,
-        r.verification_count,
+        COALESCE(r.confirmation_count, 0) as verification_count,
         r.created_at,
         r.updated_at,
         CASE 
@@ -301,9 +281,9 @@ class CivicProblemCommentModel {
         l.latitude,
         l.longitude,
         l.address,
-        l.division,
-        l.district,
-        l.upazila,
+        COALESCE(l.city, 'Dhaka') as division,
+        COALESCE(l.area, l.city, 'General Area') as district,
+        COALESCE(l.area, 'Area') as upazila,
         COUNT(DISTINCT c.id) as comment_count,
         ${currentUserId ? `MAX(CASE WHEN rv.user_id = ${parseInt(currentUserId)} THEN 1 ELSE 0 END)` : '0'} as has_verified
       FROM reports r
@@ -329,25 +309,25 @@ class CivicProblemCommentModel {
       params.push(status);
     }
 
-    // Search keyword search logic (title, description, location address)
+    // Search keyword search logic (title, description, location address, area, city)
     if (search && search.trim() !== '') {
-      whereConditions.push(`(r.title LIKE ? OR r.description LIKE ? OR l.address LIKE ? OR l.district LIKE ?)`);
+      whereConditions.push(`(r.title LIKE ? OR r.description LIKE ? OR l.address LIKE ? OR l.area LIKE ? OR l.city LIKE ?)`);
       const term = `%${search.trim()}%`;
-      params.push(term, term, term, term);
+      params.push(term, term, term, term, term);
     }
 
     if (whereConditions.length > 0) {
       baseQuery += ' AND ' + whereConditions.join(' AND ');
     }
 
-    baseQuery += ` GROUP BY r.id, u.name, u.id, l.latitude, l.longitude, l.address, l.division, l.district, l.upazila`;
+    baseQuery += ` GROUP BY r.id, u.name, u.id, l.latitude, l.longitude, l.address, l.city, l.area`;
 
     // Sorting order logic
     let orderByClause = ` ORDER BY r.created_at DESC`;
     if (sortBy === 'oldest') {
       orderByClause = ` ORDER BY r.created_at ASC`;
     } else if (sortBy === 'most_confirmed') {
-      orderByClause = ` ORDER BY r.verification_count DESC, r.created_at DESC`;
+      orderByClause = ` ORDER BY COALESCE(r.confirmation_count, 0) DESC, r.created_at DESC`;
     } else if (sortBy === 'most_discussed') {
       orderByClause = ` ORDER BY comment_count DESC, r.created_at DESC`;
     }
@@ -414,7 +394,7 @@ class CivicProblemCommentModel {
         r.visibility,
         r.priority,
         r.is_anonymous,
-        r.verification_count,
+        COALESCE(r.confirmation_count, 0) as verification_count,
         r.created_at,
         r.updated_at,
         CASE 
@@ -428,9 +408,9 @@ class CivicProblemCommentModel {
         l.latitude,
         l.longitude,
         l.address,
-        l.division,
-        l.district,
-        l.upazila
+        COALESCE(l.city, 'Dhaka') as division,
+        COALESCE(l.area, l.city, 'General Area') as district,
+        COALESCE(l.area, 'Area') as upazila
       FROM reports r
       JOIN users u ON r.user_id = u.id
       LEFT JOIN locations l ON l.report_id = r.id

@@ -6,6 +6,7 @@
 
 const CivicProblemReportModel = require('../models/CivicProblemReportModel');
 const DuplicateReportLinkingService = require('./DuplicateReportLinkingService');
+const ImageContentSafetyModerationService = require('./ImageContentSafetyModerationService');
 
 class CivicProblemReportManagementService {
 
@@ -16,6 +17,28 @@ class CivicProblemReportManagementService {
   // ==========================================
   static async createReport(userId, data, files) {
     // Ei function report create korar shob steps eksathe manage kore
+
+    // 0. Content Safety Inspection on all uploaded evidence files
+    if (files && files.length > 0) {
+      for (const file of files) {
+        if (file.mimetype && file.mimetype.startsWith('image/')) {
+          const safetyCheck = await ImageContentSafetyModerationService.inspectImage(file.path, file.originalname);
+          if (!safetyCheck.isSafe) {
+            // Delete all uploaded files immediately to keep server clean
+            for (const f of files) {
+              ImageContentSafetyModerationService.safelyRemoveFile(f.path);
+            }
+            const safetyError = new Error(safetyCheck.reason || 'Uploaded image contains inappropriate or adult content.');
+            safetyError.statusCode = 400;
+            safetyError.isClientError = true;
+            safetyError.flagType = safetyCheck.flagType;
+            safetyError.reasonBn = safetyCheck.reasonBn;
+            throw safetyError;
+          }
+        }
+      }
+    }
+
     const isAnonymous = Boolean(
       data.isAnonymous === 'true' ||
       data.isAnonymous === true ||

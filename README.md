@@ -161,7 +161,10 @@ Copy `.env.example` to `backend/.env` and configure:
 | `EMAIL_USER` | Gmail address for Nodemailer |
 | `EMAIL_PASSWORD` | Gmail App Password |
 | `GEMINI_API_KEY` | Google Gemini API key (Phase 10) |
-| `SMS_PROVIDER` | SMS provider (use `mock` for dev) |
+| `SMS_PROVIDER` | SMS provider (`mimsms` for Bangladesh) |
+| `MIMSMS_API_KEY` | MiMSMS API Key (from https://mimsms.com > Utility > Developer) |
+| `MIMSMS_USERNAME` | MiMSMS Account Email |
+| `MIMSMS_SENDER_NAME` | MiMSMS Approved Sender Name (e.g., `JanaoBangla`) |
 
 ---
 

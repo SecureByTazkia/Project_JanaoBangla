@@ -21,7 +21,7 @@ class CivicProblemReportModel {
     const duplicateOfValue = duplicate_of_id ? parseInt(duplicate_of_id) : null;
 
     const reportId = await db.insert(
-      `INSERT INTO reports (user_id, title, description, category, visibility, is_anonymous, is_duplicate, duplicate_of_id, status, priority)
+      `INSERT INTO reports (user_id, title, description, category, visibility, is_anonymous, is_duplicate, duplicate_of, status, priority)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'submitted', 'medium')`,
       [user_id, title, description, category, visibility || 'public', anonymousValue, isDuplicateValue, duplicateOfValue]
     );

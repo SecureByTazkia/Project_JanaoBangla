@@ -31,6 +31,9 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import AdminReportManagementPage from './pages/AdminReportManagementPage';
 import AdminUserManagementPage from './pages/AdminUserManagementPage';
 import CommunityFeedPage from './pages/CommunityFeedPage';
+import WomenSafetyEmergencyPage from './pages/WomenSafetyEmergencyPage';
+import CivicReportSearchPage from './pages/CivicReportSearchPage';
+import CivicReportAnalyticsPage from './pages/CivicReportAnalyticsPage';
 
 // ==========================================
 // ComingSoonPage — Future phase placeholders
@@ -112,8 +115,15 @@ function App() {
           {/* Phase 5 — Community Feed & Discussion */}
           <Route path="/community" element={<CommunityFeedPage />} />
 
-          {/* Phase 7 — SOS (Future) */}
-          <Route path="/sos" element={<ComingSoonPage title="SOS Emergency" />} />
+          {/* Phase 7 — Women Safety & SOS Emergency */}
+          <Route
+            path="/sos"
+            element={
+              <ProtectedRoute>
+                <WomenSafetyEmergencyPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Phase 8 — Admin Login (Unprotected / Specialized Entry) */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -144,9 +154,9 @@ function App() {
             }
           />
 
-          {/* Phase 9 — Search & Analytics (Future) */}
-          <Route path="/search" element={<ComingSoonPage title="Search" />} />
-          <Route path="/analytics" element={<ComingSoonPage title="Analytics" />} />
+          {/* Phase 9 — Search & Analytics */}
+          <Route path="/search" element={<CivicReportSearchPage />} />
+          <Route path="/analytics" element={<CivicReportAnalyticsPage />} />
 
           {/* Static Pages */}
           <Route path="/about" element={<ComingSoonPage title="About" />} />

@@ -95,7 +95,7 @@ async function optionalAuthentication(req, res, next) {
 
 module.exports = {
   requireAuthentication,
-  authenticateToken: requireAuthentication, // Alias — porer branches e ei naam use kora hocche
+  authenticateToken: requireAuthentication, // Alias for requireAuthentication
   requireAdmin,
   optionalAuthentication
 };

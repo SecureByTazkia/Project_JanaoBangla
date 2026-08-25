@@ -28,7 +28,16 @@ class CivicProblemReportController {
         reportId: reportId
       });
     } catch (error) {
-      console.error('Error submitting report:', error.message, error.stack);
+      console.error('Error submitting report:', error.message);
+      if (error.statusCode || error.isClientError) {
+        return res.status(error.statusCode || 400).json({
+          success: false,
+          error: error.message,
+          messageBn: error.reasonBn,
+          flagType: error.flagType,
+          isUnsafe: Boolean(error.flagType)
+        });
+      }
       return res.status(500).json({
         error: 'Failed to submit report. Please try again.',
         debug: process.env.NODE_ENV === 'development' ? error.message : undefined

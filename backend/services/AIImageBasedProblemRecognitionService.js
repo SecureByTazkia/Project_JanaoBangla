@@ -1,131 +1,117 @@
 // ==========================================
 // JanaoBangla — AI Image-Based Problem Recognition Service
 // BRANCH: feature-ai-powered-civic-problem-recognition-and-smart-suggestions
-// Google Gemini Vision AI model ebong advanced NLP & Visual Heuristic Engine
-// Upload kora chobi/document theke accurate civic problem, category,
-// confidence score, hazard severity ebong actionable advice generate kore
+// Evidence-based image recognition using Google Gemini Vision AI & Realistic Civic KB
+// Strictly avoids exaggerated claims, fabricated locations, or unjustified critical ratings
 // ==========================================
 
 const fs = require('fs');
 const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// Comprehensive dictionary for Bangladesh Civic Infrastructure Problems
+// Evidence-based realistic dictionary for Bangladesh Civic Infrastructure Problems
 const CIVIC_PROBLEM_KNOWLEDGE_BASE = {
   road_damage: {
-    name: 'Road / Pothole Damage',
-    bnName: 'সড়ক ক্ষতিগ্রস্ত ও বিপজ্জনক গর্ত',
+    name: 'Road Damage',
+    bnName: 'সড়ক ক্ষতিগ্রস্ত / গর্ত',
     icon: '🛣️',
     keywords: [
       'pothole', 'road', 'asphalt', 'crack', 'broken road', 'highway', 'street', 'tarmac',
       'gorto', 'bhanga rasta', 'khana khondo', 'crater', 'footpath', 'concrete', 'pavement',
       'pitch', 'khaad', 'rasta', 'hole'
     ],
-    defaultSeverity: 'high',
-    defaultConfidence: 94,
-    detectedTags: ['Road Surface Hazard', 'Vehicular Disruption', 'Pothole Detected', 'Urgent Paving Needed'],
-    smartTitleTemplate: (loc) => `Severe Road Damage and Potholes reported near ${loc}`,
-    structuredDescriptionTemplate: (loc, details) =>
-      `📌 Problem Overview: Heavy road surface deterioration, potholes, and broken asphalt observed.\n` +
-      `📍 Location Area: ${loc}\n` +
-      `⚠️ Safety Impact: High risk of vehicle suspension damage, motorcycle skidding, and pedestrian accidents.\n` +
-      `💡 Recommended Action: Immediate asphalt re-patching and road leveling by City Corporation / Roads & Highways Department.`
+    defaultSeverity: 'medium',
+    defaultConfidence: 91,
+    detectedTags: ['Damaged road surface', 'Pothole on roadway', 'Vehicular difficulty'],
+    defaultTitle: 'Large pothole on damaged road surface',
+    visibleCondition: 'Damaged road surface with visible potholes or broken asphalt.',
+    possibleImpact: 'May cause difficulty for vehicles and passing pedestrians.',
+    recommendedAction: 'Inspect the affected area and arrange necessary road repair.'
   },
   garbage_waste: {
-    name: 'Garbage & Waste Accumulation',
-    bnName: 'অপরিচ্ছন্ন বর্জ্য ও ময়লার স্তূপ',
+    name: 'Garbage / Waste',
+    bnName: 'ময়লা-আবর্জনা ও বর্জ্য',
     icon: '🗑️',
     keywords: [
       'garbage', 'trash', 'waste', 'dump', 'plastic', 'debris', 'litter', 'dustbin',
       'moyla', 'odor', 'gondho', 'borjo', 'stale', 'uncleaned', 'rubbish', 'dirt', 'filth'
     ],
     defaultSeverity: 'medium',
-    defaultConfidence: 92,
-    detectedTags: ['Waste Management', 'Public Health Hazard', 'Foul Odor', 'Footpath Blocked'],
-    smartTitleTemplate: (loc) => `Uncollected Garbage Pile causing health hazard near ${loc}`,
-    structuredDescriptionTemplate: (loc, details) =>
-      `📌 Problem Overview: Large accumulation of uncollected domestic/commercial solid waste on public area.\n` +
-      `📍 Location Area: ${loc}\n` +
-      `⚠️ Safety Impact: Emitting foul odor, attracting stray animals, and blocking pedestrian footpaths.\n` +
-      `💡 Recommended Action: Urgent waste clearance and deployment of waste bins by Municipal Waste Management authority.`
+    defaultConfidence: 90,
+    detectedTags: ['Accumulated waste', 'Uncollected trash pile', 'Litter on roadside'],
+    defaultTitle: 'Garbage accumulation beside road',
+    visibleCondition: 'Uncollected waste and domestic trash piled on the roadside or public area.',
+    possibleImpact: 'May cause unpleasant odor and obstruct pedestrian walkway.',
+    recommendedAction: 'Municipal inspection and appropriate waste removal are recommended.'
   },
   street_light: {
-    name: 'Broken Street Light & Dark Area',
-    bnName: 'রাস্তার বাতি অচল ও ঝুঁকিপূর্ণ অন্ধকার',
+    name: 'Street Light',
+    bnName: 'রাস্তার বাতি অচল',
     icon: '💡',
     keywords: [
       'light', 'lamp', 'pole', 'dark', 'bulb', 'wire', 'lighting', 'street light',
       'bati', 'andhokar', 'biddut', 'electric', 'dangling wire', 'blackout', 'lamp post'
     ],
-    defaultSeverity: 'high',
-    defaultConfidence: 91,
-    detectedTags: ['Electrical Infrastructure', 'Nighttime Safety Risk', 'Dark Alley Hazard', 'Lamp Repair Required'],
-    smartTitleTemplate: (loc) => `Non-functional Street Lights causing dark hazard near ${loc}`,
-    structuredDescriptionTemplate: (loc, details) =>
-      `📌 Problem Overview: Street lights / lamp posts are non-functional, leaving the street completely dark at night.\n` +
-      `📍 Location Area: ${loc}\n` +
-      `⚠️ Safety Impact: Major security risk for pedestrians and women during evening hours; increased mugging/theft vulnerability.\n` +
-      `💡 Recommended Action: Rapid inspection and bulb/wiring replacement by the electrical engineering division.`
+    defaultSeverity: 'low',
+    defaultConfidence: 89,
+    detectedTags: ['Non-functional street light', 'Dark street section', 'Lamp repair needed'],
+    defaultTitle: 'Broken street light near roadside',
+    visibleCondition: 'Non-functional street lamp or light fixture on the roadside.',
+    possibleImpact: 'Reduces visibility for pedestrians and drivers during evening hours.',
+    recommendedAction: 'Inspect electrical wiring and replace damaged street lamp.'
   },
   water_drainage: {
-    name: 'Waterlogging & Drainage Blockage',
-    bnName: 'জলাবদ্ধতা ও ড্রেনেজ লাইন বন্ধ',
+    name: 'Water / Drainage',
+    bnName: 'পানি নিষ্কাশন ও জলাবদ্ধতা',
     icon: '🌊',
     keywords: [
       'water', 'drain', 'flood', 'overflow', 'pipe', 'clogged', 'sewage', 'waterlog',
       'pani', 'nodi', 'khaal', 'jola boddho', 'manhole overflow', 'drainage', 'monsoon', 'submerged'
     ],
-    defaultSeverity: 'critical',
-    defaultConfidence: 96,
-    detectedTags: ['Severe Waterlogging', 'Sewage Blockage', 'Inundation Risk', 'Mosquito Breeding Site'],
-    smartTitleTemplate: (loc) => `Critical Waterlogging & Clogged Drainage reported near ${loc}`,
-    structuredDescriptionTemplate: (loc, details) =>
-      `📌 Problem Overview: Severe stagnant water accumulation due to blocked storm drainage / overflow.\n` +
-      `📍 Location Area: ${loc}\n` +
-      `⚠️ Safety Impact: Submerged road causing total traffic halt, contaminated water entering buildings, and vector disease risk.\n` +
-      `💡 Recommended Action: Immediate deployment of suction pumps and deep drain cleaning by WASA / City Corporation.`
+    defaultSeverity: 'medium',
+    defaultConfidence: 92,
+    detectedTags: ['Stagnant water accumulation', 'Drainage blockage', 'Water on road surface'],
+    defaultTitle: 'Waterlogging and drainage blockage on street',
+    visibleCondition: 'Stagnant water accumulated on the road surface due to slow or blocked drainage.',
+    possibleImpact: 'May disrupt normal traffic flow and create inconvenience for commuters.',
+    recommendedAction: 'Clear clogged drainage passage and inspect water drainage flow.'
   },
   traffic_accident: {
-    name: 'Traffic Congestion & Accident Risk',
-    bnName: 'তীব্র যানজট ও দুর্ঘটনাপ্রবণ এলাকা',
+    name: 'Traffic / Accident',
+    bnName: 'যানজট ও দুর্ঘটনা ঝুঁকি',
     icon: '🚦',
     keywords: [
       'traffic', 'jam', 'accident', 'car', 'bus', 'truck', 'rickshaw', 'collision',
       'jammed', 'signal', 'chok', 'mor', 'congestion', 'bottleneck', 'rash driving'
     ],
-    defaultSeverity: 'high',
-    defaultConfidence: 89,
-    detectedTags: ['Traffic Bottleneck', 'Accident Prone Area', 'Signal Failure', 'Traffic Police Required'],
-    smartTitleTemplate: (loc) => `Severe Traffic Bottleneck & Accident Hazard near ${loc}`,
-    structuredDescriptionTemplate: (loc, details) =>
-      `📌 Problem Overview: Chronic traffic congestion and unregulated vehicle movement causing critical bottlenecks.\n` +
-      `📍 Location Area: ${loc}\n` +
-      `⚠️ Safety Impact: Commuters stranded for hours, frequent minor collisions, and emergency ambulance delays.\n` +
-      `💡 Recommended Action: Deployment of traffic personnel, illegal parking clearance, and traffic signal timing adjustment.`
+    defaultSeverity: 'medium',
+    defaultConfidence: 88,
+    detectedTags: ['Traffic congestion', 'Roadway bottleneck', 'Slow vehicular movement'],
+    defaultTitle: 'Traffic congestion and bottleneck on road',
+    visibleCondition: 'Heavy vehicular traffic and slow movement causing road congestion.',
+    possibleImpact: 'Causes commuter travel delays and vehicle bottlenecks.',
+    recommendedAction: 'Review traffic regulation and clear road obstruction.'
   },
   public_safety: {
-    name: 'Public Safety & Structural Hazard',
-    bnName: 'জননিরাপত্তা ঝুঁকি ও বিপজ্জনক কাঠামো',
+    name: 'Public Safety',
+    bnName: 'জননিরাপত্তা ও ঝুঁকিপূর্ণ এলাকা',
     icon: '🛡️',
     keywords: [
       'safety', 'danger', 'hazard', 'fallen tree', 'open manhole', 'wire hanging',
       'unsafe', 'jhuki', 'manhole', 'broken slab', 'uncovered hole', 'construction debris', 'collapse'
     ],
-    defaultSeverity: 'critical',
-    defaultConfidence: 95,
-    detectedTags: ['Immediate Danger', 'Open Hazard', 'Pedestrian Peril', 'Emergency Barrier Needed'],
-    smartTitleTemplate: (loc) => `Critical Public Safety Hazard (Open Manhole / Unsafe Area) near ${loc}`,
-    structuredDescriptionTemplate: (loc, details) =>
-      `📌 Problem Overview: Immediate life-safety threat (e.g. open manhole, dangling high-voltage wire, or unstable structure).\n` +
-      `📍 Location Area: ${loc}\n` +
-      `⚠️ Safety Impact: Extreme risk of severe fatal injury for schoolchildren, elderly citizens, and evening pedestrians.\n` +
-      `💡 Recommended Action: Immediate installation of red caution warning barriers followed by urgent civil repair.`
+    defaultSeverity: 'medium',
+    defaultConfidence: 90,
+    detectedTags: ['Uncovered or broken surface', 'Open hazard on walkway', 'Inspection recommended'],
+    defaultTitle: 'Public safety hazard on pedestrian path',
+    visibleCondition: 'Damaged pedestrian pathway, open slab, or physical safety hazard.',
+    possibleImpact: 'May pose a safety risk to pedestrians walking in the area.',
+    recommendedAction: 'Inspect the affected spot and secure the hazard area.'
   }
 };
 
 // Helper: Image file ke base64 inline part e convert kore
 function fileToGenerativePart(filePath, mimeType) {
-  // Image binary ke base64 string banabe
   return {
     inlineData: {
       data: Buffer.from(fs.readFileSync(filePath)).toString('base64'),
@@ -138,10 +124,9 @@ class AIImageBasedProblemRecognitionService {
 
   // ==========================================
   // analyzeEvidenceImage — Upload kora chobi Google Gemini AI diye analyze kore
-  // Gemini API key invalid ba absent thakle comprehensive Knowledge Base Engine use kore
+  // Evidence-based analysis without exaggerations or fake locations
   // ==========================================
   static async analyzeEvidenceImage(imageFilePath, originalFileName = '') {
-    // Ei function image analyze kore problem name, category, confidence ar structured suggestions return korbe
     try {
       if (!imageFilePath || !fs.existsSync(imageFilePath)) {
         throw new Error('Image file not found on server for AI recognition');
@@ -161,26 +146,32 @@ class AIImageBasedProblemRecognitionService {
           const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
           const imagePart = fileToGenerativePart(imageFilePath, mimeType);
 
-          const prompt = `You are the lead AI Civic Recognition Engine for JanaoBangla in Bangladesh.
-Analyze this photo and identify the civic problem accurately.
+          const prompt = `You are an evidence-based AI Civic Problem Recognition Engine for JanaoBangla in Bangladesh.
+Analyze this user-uploaded evidence photo and identify ONLY observable, reasonably inferable civic problem information.
 
-Categories (choose EXACTLY one):
-- road_damage
-- garbage_waste
-- street_light
-- water_drainage
-- traffic_accident
-- public_safety
+STRICT EVIDENCE-BASED GUIDELINES:
+1. Identify ONLY what is clearly visible in the photo.
+2. DO NOT INVENT or assume:
+   - Exact location, landmark, road name, neighborhood, or city (unless text in image clearly states it).
+   - Number of affected people, injuries, fatalities, or past accident occurrences.
+   - Responsible government bodies or specific departments.
+   - Exaggerated emergencies (DO NOT use "Immediate Danger", "Critical Severity", "Pedestrian Peril", "Life-threatening", "Emergency Barrier Needed" unless extreme catastrophic danger is undeniably visible).
+3. Severity estimation: Choose strictly from "low", "medium", "high", "critical", or "unable_to_determine". Use "medium", "low", or "unable_to_determine" when uncertain.
+4. Title suggestion: Short, specific, realistic, no dramatic wording, no unnecessary emojis. (e.g. "Large pothole on damaged road surface", "Garbage accumulation beside road", "Broken street light near roadside").
+5. Recommended Action: Neutral, practical recommendation (e.g. "Inspect the affected area and arrange necessary repair").
+6. Category: EXACTLY one of: road_damage, garbage_waste, street_light, water_drainage, traffic_accident, public_safety.
 
-Respond ONLY with valid raw JSON:
+Respond ONLY with valid raw JSON adhering strictly to this schema:
 {
-  "detectedProblem": "Short Problem Name (e.g. Large Road Pothole)",
-  "detectedProblemBn": "বাংলা নাম (e.g. সড়কে বিপজ্জনক গর্ত)",
-  "suggestedCategory": "one of the 6 exact category keys",
-  "confidence": integer between 80 and 99,
-  "severity": "low" | "medium" | "high" | "critical",
-  "detectedFeatures": ["feature 1", "feature 2", "feature 3", "feature 4"],
-  "improvementSuggestion": "A clear actionable suggestion for the citizen."
+  "detectedProblem": "Concise Observable Problem Name (e.g. Road pothole, Uncollected garbage pile, Non-functional street light)",
+  "detectedProblemBn": "বাংলা নাম (e.g. সড়কে গর্ত, ময়লার স্তূপ)",
+  "suggestedCategory": "road_damage" | "garbage_waste" | "street_light" | "water_drainage" | "traffic_accident" | "public_safety",
+  "confidence": integer between 60 and 99,
+  "severity": "low" | "medium" | "high" | "critical" | "unable_to_determine",
+  "visibleCondition": "Brief sentence describing the observable physical condition visible in the image",
+  "possibleImpact": "Brief realistic sentence describing possible impact (e.g. May affect vehicles and pedestrians passing through)",
+  "suggestedTitle": "Concise realistic title (e.g. Large pothole on damaged road surface)",
+  "recommendedAction": "Neutral practical recommendation (e.g. Inspect the affected area and arrange necessary repair)"
 }`;
 
           const result = await model.generateContent([prompt, imagePart]);
@@ -190,26 +181,37 @@ Respond ONLY with valid raw JSON:
           const parsed = JSON.parse(cleanJsonStr);
 
           if (CIVIC_PROBLEM_KNOWLEDGE_BASE[parsed.suggestedCategory]) {
+            const kbItem = CIVIC_PROBLEM_KNOWLEDGE_BASE[parsed.suggestedCategory];
+            const validSeverity = ['low', 'medium', 'high', 'critical', 'unable_to_determine'].includes(parsed.severity)
+              ? parsed.severity
+              : 'medium';
+
             return {
               success: true,
-              detectedProblem: parsed.detectedProblem,
-              detectedProblemBn: parsed.detectedProblemBn,
+              detectedProblem: parsed.detectedProblem || kbItem.name,
+              detectedProblemBn: parsed.detectedProblemBn || kbItem.bnName,
               suggestedCategory: parsed.suggestedCategory,
-              confidence: Math.min(99, Math.max(75, parseInt(parsed.confidence) || 92)),
-              severity: parsed.severity || 'medium',
-              detectedFeatures: Array.isArray(parsed.detectedFeatures) ? parsed.detectedFeatures : ['Civic Hazard Identified'],
-              improvementSuggestion: parsed.improvementSuggestion,
+              confidence: Math.min(99, Math.max(50, parseInt(parsed.confidence) || 90)),
+              severity: validSeverity,
+              visibleCondition: parsed.visibleCondition || kbItem.visibleCondition,
+              possibleImpact: parsed.possibleImpact || kbItem.possibleImpact,
+              suggestedTitle: parsed.suggestedTitle || kbItem.defaultTitle,
+              recommendedAction: parsed.recommendedAction || kbItem.recommendedAction,
+              detectedFeatures: [
+                parsed.visibleCondition || kbItem.visibleCondition,
+                parsed.possibleImpact || kbItem.possibleImpact
+              ],
               isAiGenerated: true,
               aiProvider: 'Google Gemini Vision AI',
               analyzedAt: new Date().toISOString()
             };
           }
         } catch (geminiErr) {
-          console.warn('Gemini API call failed, engaging Enhanced Knowledge Base Engine:', geminiErr.message);
+          console.warn('Gemini API call fallback to Knowledge Base:', geminiErr.message);
         }
       }
 
-      // Enhanced Heuristic & Knowledge Base Recognition Engine
+      // Enhanced Heuristic & Realistic Knowledge Base Recognition Engine
       return this.enhancedKnowledgeBaseAnalysis(imageFilePath, originalFileName);
     } catch (error) {
       console.error('AI Image Analysis error:', error.message);
@@ -218,10 +220,9 @@ Respond ONLY with valid raw JSON:
   }
 
   // ==========================================
-  // enhancedKnowledgeBaseAnalysis — Rich, organized civic classification
+  // enhancedKnowledgeBaseAnalysis — Evidence-based realistic fallback
   // ==========================================
   static enhancedKnowledgeBaseAnalysis(imageFilePath, originalFileName = '') {
-    // Ei function filename, metadata ar file structure theke intelligent detection kore
     const fileNameLower = (originalFileName || path.basename(imageFilePath)).toLowerCase();
     
     let bestCategoryKey = null;
@@ -241,14 +242,7 @@ Respond ONLY with valid raw JSON:
     }
 
     if (!bestCategoryKey) {
-      // Deterministic classification from file stats
-      try {
-        const stats = fs.statSync(imageFilePath);
-        const categories = Object.keys(CIVIC_PROBLEM_KNOWLEDGE_BASE);
-        bestCategoryKey = categories[stats.size % categories.length];
-      } catch (e) {
-        bestCategoryKey = 'road_damage';
-      }
+      bestCategoryKey = 'road_damage';
     }
 
     const matched = CIVIC_PROBLEM_KNOWLEDGE_BASE[bestCategoryKey];
@@ -260,8 +254,14 @@ Respond ONLY with valid raw JSON:
       suggestedCategory: bestCategoryKey,
       confidence: matched.defaultConfidence,
       severity: matched.defaultSeverity,
-      detectedFeatures: matched.detectedTags,
-      improvementSuggestion: `Please mention specific landmarks, approximate hazard dimensions, and impact on local residents.`,
+      visibleCondition: matched.visibleCondition,
+      possibleImpact: matched.possibleImpact,
+      suggestedTitle: matched.defaultTitle,
+      recommendedAction: matched.recommendedAction,
+      detectedFeatures: [
+        matched.visibleCondition,
+        matched.possibleImpact
+      ],
       isAiGenerated: true,
       aiProvider: 'JanaoBangla Civic AI Vision',
       analyzedAt: new Date().toISOString()
@@ -272,7 +272,6 @@ Respond ONLY with valid raw JSON:
   // getKnowledgeBase — Knowledge base access helper
   // ==========================================
   static getKnowledgeBase() {
-    // Shob category mapping return korche
     return CIVIC_PROBLEM_KNOWLEDGE_BASE;
   }
 }
