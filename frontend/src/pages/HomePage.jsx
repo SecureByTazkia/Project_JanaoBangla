@@ -41,6 +41,18 @@ const FEATURES = [
 
 
   {
+    icon:  '🛡️',
+    title: 'Admin Moderation',
+    desc:  'Dedicated admin workflow to review, verify, update report statuses, and moderate community content.',
+    color: '#FFF8E1'
+  },
+  {
+    icon:  '🤖',
+    title: 'AI Content Safety',
+    desc:  'Automated AI safety guard scans uploaded images to prevent nudity and inappropriate adult content.',
+    color: '#E0F7FA'
+  },
+  {
     icon:  '🆘',
     title: 'Women Safety SOS',
     desc:  'One-tap emergency alert. Instantly notifies your contacts with your GPS location.',
