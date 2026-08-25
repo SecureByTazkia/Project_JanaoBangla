@@ -251,13 +251,10 @@ const CreateCivicProblemReportForm = () => {
           {files.length > 0 && (
             <div className="d-flex justify-content-between align-items-center mt-2">
               <small className="text-success fw-semibold">
-                ✓ {files.length} file(s) attached & verified clean by AI
+                ✓ {files.length} file(s) attached
               </small>
             </div>
           )}
-          <div className="mt-2 text-muted" style={{ fontSize: '0.78rem' }}>
-            🤖 <strong>AI Safety Guard Active:</strong> Nudity & adult content are automatically detected. Unsafe uploads are instantly canceled.
-          </div>
         </div>
 
         {/* Problem Title */}

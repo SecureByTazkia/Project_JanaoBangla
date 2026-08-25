@@ -38,12 +38,7 @@ const FEATURES = [
     desc:  'Pin-point civic problems on an interactive map. See what is happening in your area.',
     color: '#E8EAF6'
   },
-  {
-    icon:  '🔍',
-    title: 'Duplicate Detection',
-    desc:  'Smart similarity detection prevents duplicate reports and keeps the system clean.',
-    color: '#FFF8E1'
-  },
+
 
   {
     icon:  '🆘',
