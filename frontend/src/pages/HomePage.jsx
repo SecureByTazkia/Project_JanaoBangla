@@ -216,7 +216,7 @@ function HomePage() {
             }}
           >
             <Link
-              to="/report"
+              to="/report-problem"
               id="hero-report-btn"
               style={{
                 display:       'inline-flex',

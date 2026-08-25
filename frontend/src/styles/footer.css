@@ -41,7 +41,10 @@
 /* ==========================================
    FOOTER BRAND — Logo ar tagline
    ========================================== */
-.jb-footer-brand {}
+.jb-footer-brand {
+  display: flex;
+  flex-direction: column;
+}
 
 .jb-footer-logo {
   display:     flex;

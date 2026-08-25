@@ -9,6 +9,7 @@ import CivicProblemReportService from '../services/CivicProblemReportService';
 import ErrorMessage from './ErrorMessage';
 import SuccessMessage from './SuccessMessage';
 import LoadingSpinner from './LoadingSpinner';
+import LocationMapPicker from './LocationMapPicker';
 import { useNavigate } from 'react-router-dom';
 
 const CreateCivicProblemReportForm = () => {
@@ -266,31 +267,30 @@ const CreateCivicProblemReportForm = () => {
           )}
         </div>
 
-        <div className="card bg-light mb-4 p-3 border-0">
-          <label className="form-label">Location Data</label>
-          <div className="d-flex align-items-center mb-2">
-            <button 
-              type="button" 
-              className="btn btn-outline-primary me-3" 
-              onClick={getLocation}
-              disabled={locationLoading}
-            >
-              {locationLoading ? 'Getting Location...' : 'Get Current Location via GPS'}
-            </button>
-            {(formData.latitude && formData.longitude) && (
-              <span className="text-success fw-bold">
-                Location captured! (Lat: {parseFloat(formData.latitude).toFixed(4)}, Lng: {parseFloat(formData.longitude).toFixed(4)})
-              </span>
-            )}
-          </div>
-          <input
-            type="text"
-            className="form-control"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            placeholder="Or type address manually (e.g., Banani, Road 11)"
+        <div className="mb-4">
+          <label className="form-label fw-bold">Report Location Data *</label>
+          <LocationMapPicker
+            initialLat={formData.latitude}
+            initialLng={formData.longitude}
+            onLocationSelect={({ latitude, longitude, address }) => {
+              setFormData((prev) => ({
+                ...prev,
+                latitude,
+                longitude,
+                address: address || prev.address
+              }));
+            }}
           />
+          <div className="mt-2">
+            <input
+              type="text"
+              className="form-control"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              placeholder="Detailed location/street address (e.g. Mirpur-10 Circle, Dhaka)"
+            />
+          </div>
         </div>
 
         <button type="submit" className="btn btn-primary w-100" disabled={loading}>

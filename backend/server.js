@@ -21,6 +21,7 @@ const userAuthenticationRoutes   = require('./routes/UserAuthenticationRoutes');
 const notFoundMiddleware         = require('./middleware/NotFoundMiddleware');
 const errorHandlingMiddleware    = require('./middleware/ErrorHandlingMiddleware');
 const civicProblemReportRoutes   = require('./routes/CivicProblemReportRoutes'); // Phase 3
+const locationRoutes             = require('./routes/LocationRoutes');           // Phase 4
 
 // ==========================================
 // Express app create kora hocche
@@ -82,7 +83,7 @@ app.use('/uploads', express.static(uploadDir));
 app.use('/api/health', healthCheckRoutes);
 app.use('/api/auth',   userAuthenticationRoutes); // Phase 2 — User Authentication & Security
 app.use('/api/reports',       civicProblemReportRoutes);         // Phase 3
-// app.use('/api/location',      locationRoutes);       // Phase 4
+app.use('/api/location',      locationRoutes);                   // Phase 4 — Location & Civic Map
 // app.use('/api/community',     communityRoutes);      // Phase 5
 // app.use('/api/duplicates',    duplicateRoutes);      // Phase 6
 // app.use('/api/sos',           sosRoutes);            // Phase 7
