@@ -282,57 +282,7 @@ function HomePage() {
         </div>
       </section>
 
-      {/* ==========================================
-          STATISTICS STRIP
-          Platform er key numbers
-      ========================================== */}
-      <section aria-label="Platform statistics" style={{ background: 'white', borderBottom: '1px solid #E2E8F0' }}>
-        <div className="jb-container">
-          <div
-            className="stats-grid"
-            style={{
-              display:             'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap:                 '0',
-              padding:             '0'
-            }}
-          >
-            {[
-              { value: '10+',  label: 'Civic Categories',   icon: '📂' },
-              { value: '6',    label: 'Problem Types',       icon: '🔖' },
-              { value: '64',   label: 'Districts Covered',   icon: '🗺️' },
-              { value: '100%', label: 'Open Source',         icon: '💚' }
-            ].map((stat, i) => (
-              <div
-                key={i}
-                style={{
-                  textAlign:   'center',
-                  padding:     '28px 16px',
-                  borderRight: i < 3 ? '1px solid #E2E8F0' : 'none'
-                }}
-              >
-                <div style={{ fontSize: '1.5rem', marginBottom: '6px' }}>{stat.icon}</div>
-                <div style={{
-                  fontSize:    '2rem',
-                  fontWeight:  800,
-                  color:       '#006A4E',
-                  lineHeight:  1
-                }}>
-                  {stat.value}
-                </div>
-                <div style={{
-                  fontSize:  '0.8rem',
-                  color:     '#64748B',
-                  marginTop: '4px',
-                  fontWeight: 500
-                }}>
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ==========================================
           FEATURES SECTION
