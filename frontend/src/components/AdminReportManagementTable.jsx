@@ -23,9 +23,10 @@ const CATEGORY_LABELS = {
 
 // Status label formatting helper
 const STATUS_LABELS = {
-  submitted: 'Pending Review',
-  processing: 'Processing',
-  solved: 'Solved'
+  submitted: 'Pending (অভিযোগ জমা হয়েছে)',
+  under_review: 'Under Review (যাচাই চলছে)',
+  processing: 'Action Taken (ব্যবস্থা নেওয়া হয়েছে)',
+  solved: 'Resolved (নিষ্পত্তি হয়েছে)'
 };
 
 // Date formatter
@@ -121,9 +122,10 @@ function AdminReportManagementTable({ showToast }) {
             onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
           >
             <option value="all">All Status</option>
-            <option value="submitted">Pending Review (Submitted)</option>
-            <option value="processing">Processing (Published)</option>
-            <option value="solved">Solved (Published)</option>
+            <option value="submitted">⏳ Pending (অভিযোগ জমা হয়েছে)</option>
+            <option value="under_review">🔍 Under Review (যাচাই চলছে)</option>
+            <option value="processing">⚙️ Action Taken (ব্যবস্থা নেওয়া হয়েছে)</option>
+            <option value="solved">✅ Resolved (নিষ্পত্তি হয়েছে)</option>
           </select>
           <select
             className="admin-filter-select"
@@ -197,9 +199,10 @@ function AdminReportManagementTable({ showToast }) {
                         onChange={e => handleStatusChange(report.id, e.target.value)}
                         disabled={actionLoading === `status-${report.id}`}
                       >
-                        <option value="submitted">⏳ Pending Review</option>
-                        <option value="processing">⚙️ Processing (Published)</option>
-                        <option value="solved">✅ Solved (Published)</option>
+                        <option value="submitted">⏳ Pending (অভিযোগ জমা হয়েছে)</option>
+                        <option value="under_review">🔍 Under Review (যাচাই চলছে)</option>
+                        <option value="processing">⚙️ Action Taken (ব্যবস্থা নেওয়া হয়েছে)</option>
+                        <option value="solved">✅ Resolved (নিষ্পত্তি হয়েছে)</option>
                       </select>
                     </td>
                     <td>
