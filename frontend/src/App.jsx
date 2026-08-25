@@ -127,6 +127,7 @@ function App() {
 
           {/* Phase 8 — Admin Login (Unprotected / Specialized Entry) */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin-login" element={<AdminLoginPage />} />
 
           {/* Phase 8 — Protected Admin Routes (Requires role === 'admin') */}
           <Route

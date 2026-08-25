@@ -20,7 +20,7 @@ VALUES (
   'JanaoBangla Admin',
   'admin@janaobangla.com',
   '+8801700000000',
-  '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMYJZNiEIxvSIl5qGEYlHbJMSG',
+  '$2b$12$7xYkf0TZW7P0/.D4TseEhOJfKbCwYWWCOL0.rjmvZz34EVV17gXTm',
   'admin',
   1,
   1
@@ -36,7 +36,7 @@ VALUES
     'Rahim Uddin',
     'rahim@example.com',
     '+8801711111111',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMYJZNiEIxvSIl5qGEYlHbJMSG',
+    '$2b$12$7xYkf0TZW7P0/.D4TseEhOJfKbCwYWWCOL0.rjmvZz34EVV17gXTm',
     'citizen',
     1,
     1
@@ -45,7 +45,7 @@ VALUES
     'Fatema Khatun',
     'fatema@example.com',
     '+8801722222222',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMYJZNiEIxvSIl5qGEYlHbJMSG',
+    '$2b$12$7xYkf0TZW7P0/.D4TseEhOJfKbCwYWWCOL0.rjmvZz34EVV17gXTm',
     'citizen',
     1,
     1
@@ -54,7 +54,7 @@ VALUES
     'Karim Hossain',
     'karim@example.com',
     '+8801733333333',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMYJZNiEIxvSIl5qGEYlHbJMSG',
+    '$2b$12$7xYkf0TZW7P0/.D4TseEhOJfKbCwYWWCOL0.rjmvZz34EVV17gXTm',
     'citizen',
     0,
     1
