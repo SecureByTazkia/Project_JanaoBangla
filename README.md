@@ -84,12 +84,11 @@ In upcoming phases, direct integration with relevant government bodies, law enfo
 - Geocoding and reverse geocoding for automated address filling.
 
 ### 5. Women Safety SOS and Emergency Response System
-- One-Click Emergency Trigger: Instant SOS activation with real-time GPS coordinates.
-- Trusted Guardians Network: Add, edit, and manage emergency contacts.
-- Emergency Alert Dispatch: Sends distress alerts via email and in-app notifications.
-  - *Note on SMS Gateway:* Direct SMS delivery via MiMSMS is currently in progress and will be activated once provider gateway onboarding is complete.
-- Acoustic Distress Siren and visual alert for immediate danger.
-- Quick-dial access to national emergency contact numbers.
+- Emergency Contacts Management: Users can add and manage up to 5 trusted emergency contacts (guardians/family members with names, phone numbers, email addresses, and relationships).
+- One-Click Emergency Trigger: With a single click on the SOS button, real-time GPS location coordinates are captured.
+- Instant Location Email Dispatch: Sends emergency distress emails containing the exact live GPS coordinates and a clickable Google Maps link to all saved emergency contacts.
+- In-App Alert Logs: Records all triggered SOS events with location and timestamp history.
+- Note on SMS Gateway: Direct SMS broadcast integration via MiMSMS is currently in progress.
 
 ### 6. Community Feed and Civic Discussion
 - Public community feed showcasing citizen-submitted issues.
