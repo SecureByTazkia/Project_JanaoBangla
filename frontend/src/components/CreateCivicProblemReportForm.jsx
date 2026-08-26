@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import CivicProblemReportService from '../services/CivicProblemReportService';
 import AICivicProblemService from '../services/AICivicProblemService';
-import DuplicateReportDetectionService from '../services/DuplicateReportDetectionService';
 import ErrorMessage from './ErrorMessage';
 import SuccessMessage from './SuccessMessage';
 import LoadingSpinner from './LoadingSpinner';
 import LocationMapPicker from './LocationMapPicker';
 import AIProblemRecognitionResult from './AIProblemRecognitionResult';
 import SmartReportSuggestion from './SmartReportSuggestion';
-import DuplicateReportWarning from './DuplicateReportWarning';
 import { useNavigate } from 'react-router-dom';
 
 const CreateCivicProblemReportForm = () => {
@@ -28,14 +26,10 @@ const CreateCivicProblemReportForm = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // AI & Duplicate states
+  // AI states
   const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
   const [aiRecognition, setAiRecognition] = useState(null);
   const [aiSuggestions, setAiSuggestions] = useState(null);
-  const [duplicateData, setDuplicateData] = useState(null);
-  const [selectedDuplicate, setSelectedDuplicate] = useState(null);
-  const [duplicateDismissed, setDuplicateDismissed] = useState(false);
-  const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
 
   const navigate = useNavigate();
 
@@ -120,9 +114,6 @@ const CreateCivicProblemReportForm = () => {
         if (result.suggestions) {
           setAiSuggestions(result.suggestions);
         }
-        if (result.duplicates && result.duplicates.similarReports?.length > 0) {
-          setDuplicateData(result.duplicates);
-        }
       }
     } catch (err) {
       console.error('AI Analysis failed:', err);
@@ -130,36 +121,6 @@ const CreateCivicProblemReportForm = () => {
       setError(errMsg);
     } finally {
       setIsAiAnalyzing(false);
-    }
-  };
-
-  // Check for duplicate reports manually or triggered
-  const handleCheckDuplicates = async () => {
-    if (!formData.title && !formData.description) {
-      setError('Please provide at least a title or description to check for duplicates.');
-      return;
-    }
-
-    setIsCheckingDuplicates(true);
-    try {
-      const res = await DuplicateReportDetectionService.checkDuplicates({
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        latitude: formData.latitude,
-        longitude: formData.longitude
-      });
-
-      if (res.success && res.similarReports?.length > 0) {
-        setDuplicateData(res);
-        setDuplicateDismissed(false);
-      } else {
-        setDuplicateData(null);
-      }
-    } catch (err) {
-      console.warn('Duplicate check error:', err);
-    } finally {
-      setIsCheckingDuplicates(false);
     }
   };
 
@@ -191,11 +152,6 @@ const CreateCivicProblemReportForm = () => {
       data.append('longitude', formData.longitude);
       if (formData.address) data.append('address', formData.address);
 
-      if (selectedDuplicate) {
-        data.append('duplicateOfId', selectedDuplicate.reportId);
-        data.append('similarityScore', selectedDuplicate.similarityPercentage || 80);
-      }
-
       files.forEach(file => {
         data.append('evidence', file);
       });
@@ -224,19 +180,6 @@ const CreateCivicProblemReportForm = () => {
 
       {error && <ErrorMessage message={error} />}
       {success && <SuccessMessage message={success} />}
-
-      {/* Duplicate Warning Box if detected */}
-      {duplicateData && !duplicateDismissed && (
-        <DuplicateReportWarning
-          duplicateData={duplicateData}
-          selectedDuplicate={selectedDuplicate}
-          onSelectDuplicateForLink={(rep) => setSelectedDuplicate(rep)}
-          onSubmitWithLink={() => handleSubmit()}
-          onSubmitAnyway={() => { setSelectedDuplicate(null); setDuplicateDismissed(true); }}
-          onViewExistingReport={(id) => window.open(`/reports/${id}`, '_blank')}
-          onDismiss={() => setDuplicateDismissed(true)}
-        />
-      )}
 
       <form onSubmit={handleSubmit} className="mt-3">
         {/* Evidence upload with Automatic AI Nudity & Adult Content Protection */}
@@ -269,20 +212,7 @@ const CreateCivicProblemReportForm = () => {
 
         {/* Problem Title */}
         <div className="mb-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <label className="form-label fw-semibold">Problem Title *</label>
-            {formData.title && (
-              <button
-                type="button"
-                className="btn btn-sm btn-link text-decoration-none p-0"
-                style={{ fontSize: '0.82rem' }}
-                onClick={handleCheckDuplicates}
-                disabled={isCheckingDuplicates}
-              >
-                {isCheckingDuplicates ? 'Checking...' : '🔍 Check Duplicates'}
-              </button>
-            )}
-          </div>
+          <label className="form-label fw-semibold">Problem Title *</label>
           <input
             type="text"
             className="form-control"
@@ -448,7 +378,7 @@ const CreateCivicProblemReportForm = () => {
           disabled={loading || isAiAnalyzing}
           style={{ fontSize: '1rem' }}
         >
-          {loading ? <LoadingSpinner size="sm" /> : (selectedDuplicate ? '🔗 Link as Duplicate & Submit' : '🚀 Submit Civic Report')}
+          {loading ? <LoadingSpinner size="sm" /> : '🚀 Submit Civic Report'}
         </button>
       </form>
     </div>

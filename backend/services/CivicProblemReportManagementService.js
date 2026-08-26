@@ -5,15 +5,13 @@
 // ==========================================
 
 const CivicProblemReportModel = require('../models/CivicProblemReportModel');
-const DuplicateReportLinkingService = require('./DuplicateReportLinkingService');
 const ImageContentSafetyModerationService = require('./ImageContentSafetyModerationService');
 
 class CivicProblemReportManagementService {
 
   // ==========================================
-  // createReport — Report create kore, location save kore, evidence save kore ebong duplicate link handle kore
+  // createReport — Report create kore, location save kore, ebong evidence save kore
   // User anonymous choose korle is_anonymous flag true (1) set hobe
-  // User duplicate link choose korle duplicate_links table e link hobe
   // ==========================================
   static async createReport(userId, data, files) {
     // Ei function report create korar shob steps eksathe manage kore
@@ -47,8 +45,6 @@ class CivicProblemReportManagementService {
       data.is_anonymous === 1
     );
 
-    const duplicateOfId = data.duplicateOfId || data.duplicate_of_id || null;
-    const similarityScore = data.similarityScore || data.similarity_score || null;
     const harassmentType = (data.category === 'women_harassment' && (data.harassment_type || data.harassmentType))
       ? (data.harassment_type || data.harassmentType)
       : null;
@@ -60,23 +56,8 @@ class CivicProblemReportManagementService {
       category: data.category,
       harassment_type: harassmentType,
       visibility: data.visibility || 'public',
-      is_anonymous: isAnonymous ? 1 : 0,
-      is_duplicate: duplicateOfId ? 1 : 0,
-      duplicate_of_id: duplicateOfId
+      is_anonymous: isAnonymous ? 1 : 0
     });
-
-    // Jodi duplicate_of_id dewa thake, duplicate_links table e automatically link korbo
-    if (duplicateOfId) {
-      try {
-        await DuplicateReportLinkingService.linkReports({
-          originalId: duplicateOfId,
-          duplicateId: reportId,
-          similarityScore: similarityScore ? parseFloat(similarityScore) : null
-        });
-      } catch (linkErr) {
-        console.warn('Auto duplicate link failed on creation:', linkErr.message);
-      }
-    }
 
     // Location data save kora hocche (GPS coordinates or fallback center)
     const reportLat = (data.latitude && !isNaN(parseFloat(data.latitude))) ? parseFloat(data.latitude) : 23.8103;

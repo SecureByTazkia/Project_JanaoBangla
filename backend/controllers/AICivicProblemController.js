@@ -6,7 +6,6 @@
 
 const AIImageBasedProblemRecognitionService = require('../services/AIImageBasedProblemRecognitionService');
 const AIProblemCategorySuggestionService = require('../services/AIProblemCategorySuggestionService');
-const SimilarReportDetectionService = require('../services/SimilarReportDetectionService');
 const ImageContentSafetyModerationService = require('../services/ImageContentSafetyModerationService');
 
 class AICivicProblemController {
@@ -86,23 +85,10 @@ class AICivicProblemController {
         recognition: recognitionResult
       });
 
-      // 3. Run Duplicate check if coordinates/title present
-      let duplicateResult = null;
-      if (req.body.latitude && req.body.longitude) {
-        duplicateResult = await SimilarReportDetectionService.findSimilarReports({
-          title: smartContent.smartTitle,
-          description: smartContent.smartDescription,
-          category: recognitionResult.suggestedCategory,
-          latitude: req.body.latitude,
-          longitude: req.body.longitude
-        });
-      }
-
       return res.status(200).json({
         success: true,
         recognition: recognitionResult,
         suggestions: smartContent,
-        duplicates: duplicateResult,
         fileInfo: {
           filename: req.file.filename,
           size: req.file.size,
@@ -139,31 +125,6 @@ class AICivicProblemController {
         success: true,
         categorySuggestion,
         smartContent
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // ==========================================
-  // detectDuplicates — Notun report submit korar age existing database reports er sathe similarity check kore
-  // ==========================================
-  static async detectDuplicates(req, res, next) {
-    // Ei function report submit er age duplicate alert dibe
-    try {
-      const { title, description, category, latitude, longitude } = req.body;
-
-      const result = await SimilarReportDetectionService.findSimilarReports({
-        title,
-        description,
-        category,
-        latitude,
-        longitude
-      });
-
-      return res.status(200).json({
-        success: true,
-        ...result
       });
     } catch (error) {
       next(error);

@@ -9,15 +9,13 @@ import '../styles/ai.css';
 
 function SmartReportSuggestion({
   suggestions,
-  duplicates,
   onApplyTitle,
   onApplyDescription,
-  onApplyAll,
-  onViewExistingReport
+  onApplyAll
 }) {
   const [appliedBadge, setAppliedBadge] = useState(null);
 
-  if (!suggestions && !duplicates) return null;
+  if (!suggestions) return null;
 
   const {
     smartTitle,
@@ -25,12 +23,6 @@ function SmartReportSuggestion({
     recommendedAction,
     disclaimer = 'AI-generated suggestions are based on the provided evidence and information. Please review and verify the suggestions before submitting your report.'
   } = suggestions || {};
-
-  const {
-    hasDuplicate,
-    maxSimilarity = 0,
-    similarReports = []
-  } = duplicates || {};
 
   const handleApplyAllClick = () => {
     if (onApplyAll) onApplyAll({ smartTitle, smartDescription });
@@ -52,46 +44,7 @@ function SmartReportSuggestion({
 
   return (
     <div className="mt-3 mb-3">
-      {/* 1. Duplicate Warning Banner if high similarity detected */}
-      {hasDuplicate && similarReports.length > 0 && (
-        <div className="ai-duplicate-warning mb-3">
-          <div className="ai-duplicate-header">
-            <span>⚠️ Similar Civic Problem Found in this Area ({maxSimilarity}% Match)</span>
-          </div>
-          <p style={{ fontSize: '0.85rem', color: '#92400E', marginBottom: '8px' }}>
-            A similar issue has already been reported near this location. You can view the existing report to support it, or proceed if this is a separate issue.
-          </p>
-
-          <ul className="ai-duplicate-list">
-            {similarReports.map((report) => (
-              <li key={report.reportId} className="ai-duplicate-item">
-                <div>
-                  <strong>{report.title}</strong>
-                  <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                    📍 {report.address || 'Reported location'} • Status: <span className="badge bg-secondary">{report.status}</span>
-                  </div>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                  <span className="ai-duplicate-match-badge">
-                    {report.similarityPercentage}% Match
-                  </span>
-                  {onViewExistingReport && (
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-dark"
-                      onClick={() => onViewExistingReport(report.reportId)}
-                    >
-                      View Report
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* 2. Evidence-Based Smart Report Enhancements */}
+      {/* Evidence-Based Smart Report Enhancements */}
       {suggestions && (
         <div className="ai-widget-card" style={{ borderLeftColor: '#2563EB', background: '#FFFFFF' }}>
           <div className="ai-widget-header pb-2 border-bottom d-flex justify-content-between align-items-center">

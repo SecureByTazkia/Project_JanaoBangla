@@ -22,7 +22,4 @@ router.post('/analyze-image', upload.single('image'), AICivicProblemController.a
 // 3. Category Suggestion & Smart Improvements
 router.post('/suggest-content', AICivicProblemController.suggestCategoryAndImprovement);
 
-// 4. AI Duplicate Detection
-router.post('/detect-duplicates', AICivicProblemController.detectDuplicates);
-
 module.exports = router;
