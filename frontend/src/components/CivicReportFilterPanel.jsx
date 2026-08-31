@@ -8,30 +8,30 @@ import { useState } from 'react';
 
 const CATEGORIES = [
   { value: 'all', label: 'All Categories' },
-  { value: 'road_damage', label: '🛣️ Road Damage' },
-  { value: 'garbage_waste', label: '🗑️ Garbage / Waste' },
-  { value: 'street_light', label: '💡 Street Light' },
-  { value: 'water_drainage', label: '💧 Water / Drainage' },
-  { value: 'traffic_accident', label: '🚦 Traffic / Accident' },
-  { value: 'public_safety', label: '🛡️ Public Safety' },
-  { value: 'women_harassment', label: '🚨 Women Harassment' },
-  { value: 'extortion_chanda', label: '💰 Illegal Money Collection / চাঁদাবাজি' }
+  { value: 'road_damage', label: 'Road Damage' },
+  { value: 'garbage_waste', label: 'Garbage / Waste' },
+  { value: 'street_light', label: 'Street Light' },
+  { value: 'water_drainage', label: 'Water / Drainage' },
+  { value: 'traffic_accident', label: 'Traffic / Accident' },
+  { value: 'public_safety', label: 'Public Safety' },
+  { value: 'women_harassment', label: 'Women Harassment' },
+  { value: 'extortion_chanda', label: 'Illegal Money Collection / চাঁদাবাজি' }
 ];
 
 const STATUSES = [
   { value: 'all', label: 'All Statuses' },
-  { value: 'submitted', label: '📝 Submitted' },
-  { value: 'under_review', label: '🔍 Under Review' },
-  { value: 'processing', label: '⚙️ Processing' },
-  { value: 'solved', label: '✅ Solved' }
+  { value: 'submitted', label: 'Submitted' },
+  { value: 'under_review', label: 'Under Review' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'solved', label: 'Solved' }
 ];
 
 const PRIORITIES = [
   { value: 'all', label: 'All Priorities' },
-  { value: 'low', label: '🟢 Low' },
-  { value: 'medium', label: '🟡 Medium' },
-  { value: 'high', label: '🟠 High' },
-  { value: 'critical', label: '🔴 Critical' }
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+  { value: 'critical', label: 'Critical' }
 ];
 
 const DIVISIONS = [
@@ -83,7 +83,6 @@ function CivicReportFilterPanel({ filters = {}, onFilterChange, onResetFilters }
       {/* Header bar */}
       <div className="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div className="d-flex align-items-center gap-2">
-          <span className="fs-5">🎛️</span>
           <h6 className="fw-bold mb-0 text-dark">Filter Civic Reports</h6>
           {activeCount > 0 && (
             <span className="badge bg-success rounded-pill px-2 py-1 small">

@@ -47,8 +47,12 @@ function UserRegistrationForm() {
     if (!formData.fullName.trim()) {
       return setErrorMsg('Full name is required.');
     }
-    if (!formData.email.trim()) {
-      return setErrorMsg('Valid email is required.');
+    const inputEmail = formData.email.trim().toLowerCase();
+    if (!inputEmail || !/^\S+@\S+\.\S+$/.test(inputEmail)) {
+      return setErrorMsg('Valid email address is required.');
+    }
+    if (/@(gmai|gmal|gamil|gmaill)\.com$/.test(inputEmail)) {
+      return setErrorMsg('Did you mean @gmail.com? Please check your email spelling.');
     }
     if (!formData.password) {
       return setErrorMsg('Password is required.');

@@ -8,11 +8,11 @@
 import { useState } from 'react';
 
 const SORT_OPTIONS = [
-  { value: 'newest', label: '🕒 Newest First' },
-  { value: 'oldest', label: '📅 Oldest First' },
-  { value: 'most_confirmed', label: '🔥 Most Confirmed' },
-  { value: 'highest_priority', label: '🚨 Highest Priority' },
-  { value: 'nearest', label: '📍 Nearest to Me' }
+  { value: 'newest', label: 'Newest First' },
+  { value: 'oldest', label: 'Oldest First' },
+  { value: 'most_confirmed', label: 'Most Confirmed' },
+  { value: 'highest_priority', label: 'Highest Priority' },
+  { value: 'nearest', label: 'Nearest to Me' }
 ];
 
 function CivicReportSortOptions({ currentSort = 'newest', totalResults = 0, onSortChange }) {
@@ -91,7 +91,7 @@ function CivicReportSortOptions({ currentSort = 'newest', totalResults = 0, onSo
 
       {gpsError && (
         <div className="w-100 text-end text-danger small mt-1">
-          ⚠️ {gpsError}
+          {gpsError}
         </div>
       )}
     </div>

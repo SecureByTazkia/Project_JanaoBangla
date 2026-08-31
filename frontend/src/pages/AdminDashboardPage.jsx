@@ -21,14 +21,14 @@ import '../styles/admin.css';
 
 // Category label formatting helper
 const CATEGORY_LABELS = {
-  road_damage: '🛣️ Road Damage',
-  garbage_waste: '🗑️ Garbage / Waste',
-  street_light: '💡 Street Light',
-  water_drainage: '💧 Water / Drainage',
-  traffic_accident: '🚗 Traffic / Accident',
-  public_safety: '🛡️ Public Safety',
-  women_harassment: '🚨 Women Harassment',
-  extortion_chanda: '💰 Illegal Money Collection / চাঁদাবাজি'
+  road_damage: 'Road Damage',
+  garbage_waste: 'Garbage / Waste',
+  street_light: 'Street Light',
+  water_drainage: 'Water / Drainage',
+  traffic_accident: 'Traffic / Accident',
+  public_safety: 'Public Safety',
+  women_harassment: 'Women Harassment',
+  extortion_chanda: 'Illegal Money Collection / চাঁদাবাজি'
 };
 
 // ==========================================

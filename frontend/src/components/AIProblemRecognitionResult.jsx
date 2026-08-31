@@ -8,12 +8,12 @@ import React from 'react';
 import '../styles/ai.css';
 
 const CATEGORY_NAMES = {
-  road_damage: { label: 'Road Damage', icon: '🛣️' },
-  garbage_waste: { label: 'Garbage / Waste', icon: '🗑️' },
-  street_light: { label: 'Street Light', icon: '💡' },
-  water_drainage: { label: 'Water / Drainage', icon: '🌊' },
-  traffic_accident: { label: 'Traffic / Accident', icon: '🚦' },
-  public_safety: { label: 'Public Safety', icon: '🛡️' }
+  road_damage: { label: 'Road Damage', icon: '' },
+  garbage_waste: { label: 'Garbage / Waste', icon: '' },
+  street_light: { label: 'Street Light', icon: '' },
+  water_drainage: { label: 'Water / Drainage', icon: '' },
+  traffic_accident: { label: 'Traffic / Accident', icon: '' },
+  public_safety: { label: 'Public Safety', icon: '' }
 };
 
 function formatSeverity(sev) {
@@ -31,7 +31,7 @@ function AIProblemRecognitionResult({ recognition, isAnalyzing }) {
           <span className="visually-hidden">Analyzing image...</span>
         </div>
         <div className="fw-bold" style={{ color: '#004D3A', fontSize: '1.05rem' }}>
-          🤖 AI is analyzing evidence photo...
+          AI is analyzing evidence photo...
         </div>
         <small className="text-muted">
           Identifying observable civic problem characteristics and evidence-based suggestions.
@@ -51,7 +51,7 @@ function AIProblemRecognitionResult({ recognition, isAnalyzing }) {
     detectedFeatures = []
   } = recognition;
 
-  const catMeta = CATEGORY_NAMES[suggestedCategory] || { label: suggestedCategory || 'Road Damage', icon: '📌' };
+  const catMeta = CATEGORY_NAMES[suggestedCategory] || { label: suggestedCategory || 'Road Damage', icon: '' };
   const formattedSeverity = formatSeverity(severity);
 
   const severityBadgeClass =
@@ -65,7 +65,7 @@ function AIProblemRecognitionResult({ recognition, isAnalyzing }) {
     <div className="ai-widget-card mb-3" style={{ borderLeftColor: '#004D3A' }}>
       <div className="ai-widget-header pb-2 border-bottom">
         <div className="ai-badge" style={{ backgroundColor: '#E6F4EA', color: '#004D3A', fontWeight: 700 }}>
-          ✨ AI Evidence Analysis
+          AI Evidence Analysis
         </div>
         <div className="d-flex align-items-center gap-2">
           <span className="text-muted" style={{ fontSize: '0.8rem' }}>Confidence:</span>
@@ -82,11 +82,11 @@ function AIProblemRecognitionResult({ recognition, isAnalyzing }) {
               Detected Issue
             </span>
             <div className="fw-bold text-dark mt-1" style={{ fontSize: '0.95rem' }}>
-              🔍 {detectedProblem}
+              {detectedProblem}
             </div>
             {detectedProblemBn && (
               <small className="text-success d-block mt-1 fw-semibold">
-                🇧🇩 {detectedProblemBn}
+                {detectedProblemBn}
               </small>
             )}
           </div>
@@ -99,7 +99,7 @@ function AIProblemRecognitionResult({ recognition, isAnalyzing }) {
             </span>
             <div className="d-flex align-items-center justify-content-between mt-1">
               <span className="fw-bold text-dark" style={{ fontSize: '0.92rem' }}>
-                {catMeta.icon} {catMeta.label}
+                {catMeta.label}
               </span>
               <span className={`badge ${severityBadgeClass}`} style={{ fontSize: '0.78rem', padding: '4px 8px' }}>
                 {formattedSeverity}

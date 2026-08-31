@@ -117,7 +117,7 @@ const CivicProblemMapPage = () => {
         {/* Page Header */}
         <div className="d-flex flex-wrap align-items-center justify-content-between mb-3 bg-white p-3 rounded shadow-sm border">
           <div>
-            <h2 className="h4 fw-bold text-primary-dark mb-1">🗺️ Interactive Civic Problem Map</h2>
+            <h2 className="h4 fw-bold text-primary-dark mb-1">Interactive Civic Problem Map</h2>
             <p className="text-muted small mb-0">
               Explore reported civic and public safety issues across Bangladesh in real-time.
             </p>
@@ -128,7 +128,7 @@ const CivicProblemMapPage = () => {
               onClick={handleEnableGPS}
               disabled={gpsLoading}
             >
-              {gpsLoading ? 'Locating...' : '🎯 My GPS Location'}
+              {gpsLoading ? 'Locating...' : 'My GPS Location'}
             </button>
             <Link to="/report-problem" className="btn btn-primary btn-sm fw-semibold">
               + Report New Problem
@@ -148,14 +148,14 @@ const CivicProblemMapPage = () => {
                   onChange={(e) => setCategoryFilter(e.target.value)}
                 >
                   <option value="all">All Categories</option>
-                  <option value="road_damage">🛣️ Road Damage</option>
-                  <option value="garbage_waste">🗑️ Garbage / Waste</option>
-                  <option value="street_light">💡 Street Light</option>
-                  <option value="water_drainage">🌊 Water / Drainage</option>
-                  <option value="traffic_accident">🚦 Traffic / Accident</option>
-                  <option value="public_safety">🛡️ Public Safety</option>
-                  <option value="women_harassment">🚨 Women Harassment</option>
-                  <option value="extortion_chanda">💰 Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
+                  <option value="road_damage">Road Damage</option>
+                  <option value="garbage_waste">Garbage / Waste</option>
+                  <option value="street_light">Street Light</option>
+                  <option value="water_drainage">Water / Drainage</option>
+                  <option value="traffic_accident">Traffic / Accident</option>
+                  <option value="public_safety">Public Safety</option>
+                  <option value="women_harassment">Women Harassment</option>
+                  <option value="extortion_chanda">Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
                 </select>
               </div>
 
@@ -273,12 +273,12 @@ const CivicProblemMapPage = () => {
                         </h6>
                         {report.address && (
                           <p className="text-muted small mb-1" style={{ fontSize: '0.82rem' }}>
-                            📍 {report.address}
+                            {report.address}
                           </p>
                         )}
                         {report.distance_km !== undefined && (
                           <div className="text-primary small fw-semibold">
-                            📏 {report.distance_km} km away
+                            {report.distance_km} km away
                           </div>
                         )}
                         <div className="mt-2 text-end">

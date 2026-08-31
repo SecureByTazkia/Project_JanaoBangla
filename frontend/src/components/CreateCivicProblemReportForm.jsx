@@ -59,7 +59,7 @@ const CreateCivicProblemReportForm = () => {
         for (const imgFile of imageFiles) {
           const modRes = await AICivicProblemService.moderateUploadedImage(imgFile);
           if (modRes && modRes.isSafe === false) {
-            const dangerMsg = `🚨 AI Content Safety Alert: ${modRes.reasonBn || modRes.reason || 'Adult content or nudity detected.'} (আপলোড করা ছবিতে নগ্নতা বা অনৈতিক কন্টেন্ট পাওয়ায় তা বাতিল করা হয়েছে)`;
+            const dangerMsg = `AI Content Safety Alert: ${modRes.reasonBn || modRes.reason || 'Adult content or nudity detected.'} (আপলোড করা ছবিতে নগ্নতা বা অনৈতিক কন্টেন্ট পাওয়ায় তা বাতিল করা হয়েছে)`;
             setError(dangerMsg);
             setFiles([]);
             e.target.value = ''; // Clear file input
@@ -134,7 +134,7 @@ const CreateCivicProblemReportForm = () => {
     try {
       // Location mandatory check
       if (!formData.latitude || !formData.longitude) {
-        setError('📍 Location is required. Please use "My GPS Location" button or click on the map to select your location.');
+        setError('Location is required. Please use "My GPS Location" button or click on the map to select your location.');
         setLoading(false);
         return;
       }
@@ -172,9 +172,9 @@ const CreateCivicProblemReportForm = () => {
   return (
     <div className="card shadow-sm p-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3 className="text-primary-dark mb-0">📋 Report a Civic Problem</h3>
+        <h3 className="text-primary-dark mb-0">Report a Civic Problem</h3>
         <span className="badge bg-light text-dark border px-3 py-2">
-          🇧🇩 JanaoBangla Civic Portal
+          JanaoBangla Civic Portal
         </span>
       </div>
 
@@ -185,7 +185,7 @@ const CreateCivicProblemReportForm = () => {
         {/* Evidence upload with Automatic AI Nudity & Adult Content Protection */}
         <div className="mb-3 p-3 bg-light rounded border" style={{ borderColor: '#E2E8F0' }}>
           <label className="form-label fw-bold d-flex justify-content-between align-items-center">
-            <span>📸 Evidence (Images / Videos)</span>
+            <span>Evidence (Images / Videos)</span>
             <small className="text-muted">Max 5 files</small>
           </label>
           <div className="input-group">
@@ -206,7 +206,7 @@ const CreateCivicProblemReportForm = () => {
             </div>
           )}
           <small className="text-muted d-block mt-2" style={{ fontSize: '0.78rem' }}>
-            🚫 Nudity, adult, or inappropriate content is strictly prohibited. AI will automatically detect & block.
+            Nudity, adult, or inappropriate content is strictly prohibited. AI will automatically detect & block.
           </small>
         </div>
 
@@ -255,14 +255,14 @@ const CreateCivicProblemReportForm = () => {
                 }));
               }}
             >
-              <option value="road_damage">🛣️ Road Damage</option>
-              <option value="garbage_waste">🗑️ Garbage / Waste</option>
-              <option value="street_light">💡 Street Light</option>
-              <option value="water_drainage">🌊 Water / Drainage</option>
-              <option value="traffic_accident">🚦 Traffic / Accident</option>
-              <option value="public_safety">🛡️ Public Safety</option>
-              <option value="women_harassment">🚨 Women Harassment</option>
-              <option value="extortion_chanda">💰 Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
+              <option value="road_damage">Road Damage</option>
+              <option value="garbage_waste">Garbage / Waste</option>
+              <option value="street_light">Street Light</option>
+              <option value="water_drainage">Water / Drainage</option>
+              <option value="traffic_accident">Traffic / Accident</option>
+              <option value="public_safety">Public Safety</option>
+              <option value="women_harassment">Women Harassment</option>
+              <option value="extortion_chanda">Illegal Money Collection Report/চাঁদাবাজির অভিযোগ</option>
             </select>
           </div>
 
@@ -274,8 +274,8 @@ const CreateCivicProblemReportForm = () => {
               value={formData.visibility}
               onChange={handleChange}
             >
-              <option value="public">🌐 Public (Visible to Community & Feed)</option>
-              <option value="private">🔒 Private (Only Admins)</option>
+              <option value="public">Public (Visible to Community & Feed)</option>
+              <option value="private">Private (Only Admins)</option>
             </select>
             <small className="text-muted">Private reports won't appear on the public map or feed.</small>
           </div>
@@ -285,7 +285,7 @@ const CreateCivicProblemReportForm = () => {
         {formData.category === 'women_harassment' && (
           <div className="mb-3 p-3 rounded border" style={{ backgroundColor: '#FFF5F5', borderColor: '#FEB2B2' }}>
             <label className="form-label fw-bold text-danger d-block mb-1">
-              🚨 Harassment Type (হয়রানির ধরন) *
+              Harassment Type (হয়রানির ধরন) *
             </label>
             <div className="d-flex gap-4 mt-2">
               <div className="form-check">
@@ -300,7 +300,7 @@ const CreateCivicProblemReportForm = () => {
                   required
                 />
                 <label className="form-check-label fw-semibold" htmlFor="harassmentOnline">
-                  🌐 Online Harassment (সোশ্যাল মিডিয়া, মেসেজিং বা অনলাইনে হয়রানি)
+                  Online Harassment (সোশ্যাল মিডিয়া, মেসেজিং বা অনলাইনে হয়রানি)
                 </label>
               </div>
               <div className="form-check">
@@ -315,7 +315,7 @@ const CreateCivicProblemReportForm = () => {
                   required
                 />
                 <label className="form-check-label fw-semibold" htmlFor="harassmentOffline">
-                  🚶 Offline / Physical Harassment (রাস্তায়, কর্মস্থলে বা প্রত্যক্ষ হয়রানি)
+                  Offline / Physical Harassment (রাস্তায়, কর্মস্থলে বা প্রত্যক্ষ হয়রানি)
                 </label>
               </div>
             </div>
@@ -337,7 +337,7 @@ const CreateCivicProblemReportForm = () => {
               onChange={handleChange}
             />
             <label className="form-check-label fw-semibold" htmlFor="isAnonymous">
-              🎭 Report Anonymously (আপনার নাম ও প্রোফাইল অন্য নাগরিকদের কাছে গোপন থাকবে)
+              Report Anonymously (আপনার নাম ও প্রোফাইল অন্য নাগরিকদের কাছে গোপন থাকবে)
             </label>
           </div>
           <small className="text-muted d-block ps-4">
@@ -347,7 +347,7 @@ const CreateCivicProblemReportForm = () => {
 
         {/* Location Map Picker */}
         <div className="mb-4">
-          <label className="form-label fw-bold">📍 Report Location Data <span className="text-danger">*</span></label>
+          <label className="form-label fw-bold">Report Location Data <span className="text-danger">*</span></label>
           <LocationMapPicker
             initialLat={formData.latitude}
             initialLng={formData.longitude}
@@ -378,7 +378,7 @@ const CreateCivicProblemReportForm = () => {
           disabled={loading || isAiAnalyzing}
           style={{ fontSize: '1rem' }}
         >
-          {loading ? <LoadingSpinner size="sm" /> : '🚀 Submit Civic Report'}
+          {loading ? <LoadingSpinner size="sm" /> : 'Submit Civic Report'}
         </button>
       </form>
     </div>

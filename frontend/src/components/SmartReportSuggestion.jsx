@@ -26,19 +26,19 @@ function SmartReportSuggestion({
 
   const handleApplyAllClick = () => {
     if (onApplyAll) onApplyAll({ smartTitle, smartDescription });
-    setAppliedBadge('All AI suggestions applied! ✨');
+    setAppliedBadge('All AI suggestions applied!');
     setTimeout(() => setAppliedBadge(null), 3000);
   };
 
   const handleApplyTitleClick = () => {
     if (onApplyTitle) onApplyTitle(smartTitle);
-    setAppliedBadge('Title applied! 🎯');
+    setAppliedBadge('Title applied!');
     setTimeout(() => setAppliedBadge(null), 3000);
   };
 
   const handleApplyDescClick = () => {
     if (onApplyDescription) onApplyDescription(smartDescription);
-    setAppliedBadge('Description applied! 📝');
+    setAppliedBadge('Description applied!');
     setTimeout(() => setAppliedBadge(null), 3000);
   };
 
@@ -49,7 +49,7 @@ function SmartReportSuggestion({
         <div className="ai-widget-card" style={{ borderLeftColor: '#2563EB', background: '#FFFFFF' }}>
           <div className="ai-widget-header pb-2 border-bottom d-flex justify-content-between align-items-center">
             <div className="ai-badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8', fontWeight: 700 }}>
-              ✨ AI Report Quality Assistant
+              AI Report Quality Assistant
             </div>
             <div className="d-flex align-items-center gap-2">
               {appliedBadge && (
@@ -63,7 +63,7 @@ function SmartReportSuggestion({
                 onClick={handleApplyAllClick}
                 style={{ fontSize: '0.8rem', padding: '4px 10px' }}
               >
-                ✨ Apply All Suggestions
+                Apply All Suggestions
               </button>
             </div>
           </div>
@@ -74,7 +74,7 @@ function SmartReportSuggestion({
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-1">
                   <span style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
-                    ✨ Suggested Title
+                    Suggested Title
                   </span>
                   <button
                     type="button"
@@ -96,7 +96,7 @@ function SmartReportSuggestion({
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-1">
                   <span style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
-                    ✨ Suggested Description
+                    Suggested Description
                   </span>
                   <button
                     type="button"
@@ -125,7 +125,7 @@ function SmartReportSuggestion({
             {recommendedAction && (
               <div className="p-2 rounded bg-white border" style={{ borderColor: '#CBD5E1', borderLeft: '4px solid #10B981' }}>
                 <span className="text-muted d-block" style={{ fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase' }}>
-                  💡 Recommended Action
+                  Recommended Action
                 </span>
                 <p className="mb-0 text-dark mt-1" style={{ fontSize: '0.84rem' }}>
                   {recommendedAction}
@@ -137,7 +137,7 @@ function SmartReportSuggestion({
           {/* AI Disclaimer */}
           <div className="px-2 pt-1">
             <small className="text-muted d-block" style={{ fontSize: '0.76rem', lineHeight: '1.4' }}>
-              ⚠️ <strong>AI Disclaimer:</strong> {disclaimer}
+              <strong>AI Disclaimer:</strong> {disclaimer}
             </small>
           </div>
         </div>

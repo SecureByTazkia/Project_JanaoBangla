@@ -33,7 +33,7 @@ function AdminReportManagementPage() {
           <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
             <Link to="/admin" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>Admin Dashboard</Link> / Reports Management
           </div>
-          <h1>📋 Civic Problem Reports Management</h1>
+          <h1>Civic Problem Reports Management</h1>
           <p>Review, update progress status, and moderate all citizen-submitted civic reports</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>

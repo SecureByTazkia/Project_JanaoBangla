@@ -11,14 +11,14 @@ import ErrorMessage from './ErrorMessage';
 
 // Category label formatting helper
 const CATEGORY_LABELS = {
-  road_damage: '🛣️ Road Damage',
-  garbage_waste: '🗑️ Garbage / Waste',
-  street_light: '💡 Street Light',
-  water_drainage: '💧 Water / Drainage',
-  traffic_accident: '🚗 Traffic / Accident',
-  public_safety: '🛡️ Public Safety',
-  women_harassment: '🚨 Women Harassment',
-  extortion_chanda: '💰 Illegal Money Collection Report/চাঁদাবাজির অভিযোগ'
+  road_damage: 'Road Damage',
+  garbage_waste: 'Garbage / Waste',
+  street_light: 'Street Light',
+  water_drainage: 'Water / Drainage',
+  traffic_accident: 'Traffic / Accident',
+  public_safety: 'Public Safety',
+  women_harassment: 'Women Harassment',
+  extortion_chanda: 'Illegal Money Collection Report/চাঁদাবাজির অভিযোগ'
 };
 
 // Status label formatting helper
@@ -79,7 +79,7 @@ function AdminReportManagementTable({ showToast }) {
     try {
       await AdminDashboardService.updateReportStatus(reportId, newStatus);
       if (showToast) {
-        showToast(`Report #${reportId} published & status updated to: ${STATUS_LABELS[newStatus] || newStatus} 📢`, 'success');
+        showToast(`Report #${reportId} published & status updated to: ${STATUS_LABELS[newStatus] || newStatus}`, 'success');
       }
       fetchReports();
     } catch (err) {
@@ -95,7 +95,7 @@ function AdminReportManagementTable({ showToast }) {
     setActionLoading(`delete-${confirmDelete}`);
     try {
       await AdminDashboardService.deleteReport(confirmDelete);
-      if (showToast) showToast('Report deleted successfully ✅', 'success');
+      if (showToast) showToast('Report deleted successfully', 'success');
       setConfirmDelete(null);
       fetchReports();
     } catch (err) {
@@ -110,7 +110,7 @@ function AdminReportManagementTable({ showToast }) {
   return (
     <div className="admin-section">
       <div className="admin-section-header">
-        <h3 className="admin-section-title">📋 Civic Problem Reports Management</h3>
+        <h3 className="admin-section-title">Civic Problem Reports Management</h3>
         <div className="admin-filter-row">
           <select
             className="admin-filter-select"
@@ -118,10 +118,10 @@ function AdminReportManagementTable({ showToast }) {
             onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
           >
             <option value="all">All Status</option>
-            <option value="submitted">⏳ Pending (অভিযোগ জমা হয়েছে)</option>
-            <option value="under_review">🔍 Under Review (যাচাই চলছে)</option>
-            <option value="processing">⚙️ Action Taken (ব্যবস্থা নেওয়া হয়েছে)</option>
-            <option value="solved">✅ Resolved (নিষ্পত্তি হয়েছে)</option>
+            <option value="submitted">Pending (অভিযোগ জমা হয়েছে)</option>
+            <option value="under_review">Under Review (যাচাই চলছে)</option>
+            <option value="processing">Action Taken (ব্যবস্থা নেওয়া হয়েছে)</option>
+            <option value="solved">Resolved (নিষ্পত্তি হয়েছে)</option>
           </select>
           <select
             className="admin-filter-select"
@@ -151,7 +151,6 @@ function AdminReportManagementTable({ showToast }) {
         </div>
       ) : reports.length === 0 ? (
         <div className="admin-empty-state">
-          <div className="admin-empty-icon">📋</div>
           <div className="admin-empty-text">No reports found matching the criteria.</div>
         </div>
       ) : (
@@ -195,15 +194,15 @@ function AdminReportManagementTable({ showToast }) {
                         onChange={e => handleStatusChange(report.id, e.target.value)}
                         disabled={actionLoading === `status-${report.id}`}
                       >
-                        <option value="submitted">⏳ Pending (অভিযোগটি জমা হয়েছে)</option>
-                        <option value="under_review">🔍 Under Review (যাচাই চলছে)</option>
-                        <option value="processing">⚙️ Action Taken (ব্যবস্থা নেওয়া হয়েছে)</option>
-                        <option value="solved">✅ Resolved (নিষ্পত্তি হয়েছে)</option>
+                        <option value="submitted">Pending (অভিযোগটি জমা হয়েছে)</option>
+                        <option value="under_review">Under Review (যাচাই চলছে)</option>
+                        <option value="processing">Action Taken (ব্যবস্থা নেওয়া হয়েছে)</option>
+                        <option value="solved">Resolved (নিষ্পত্তি হয়েছে)</option>
                       </select>
                     </td>
                     <td>
                       <span className={`admin-badge badge-${report.visibility}`}>
-                        {report.visibility === 'public' ? '🌐 Public' : '🔒 Private'}
+                        {report.visibility === 'public' ? 'Public' : 'Private'}
                       </span>
                     </td>
                     <td style={{ fontSize: '0.8rem' }}>{formatDate(report.created_at)}</td>
@@ -217,7 +216,7 @@ function AdminReportManagementTable({ showToast }) {
                             title="Publish report to public feed as submitted (Pending / অভিযোগটি জমা হয়েছে)"
                             style={{ background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap' }}
                           >
-                            📢 Publish to Feed
+                            Publish to Feed
                           </button>
                         ) : (
                           <span style={{ fontSize: '0.75rem', color: '#2e7d32', fontWeight: 600, padding: '2px 6px', background: '#e8f5e9', borderRadius: '4px' }}>
@@ -230,7 +229,7 @@ function AdminReportManagementTable({ showToast }) {
                           disabled={actionLoading === `delete-${report.id}`}
                           title="Delete report"
                         >
-                          🗑️ Delete
+                          Delete
                         </button>
                       </div>
                     </td>

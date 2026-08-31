@@ -25,15 +25,15 @@ function CommunityFeedPage() {
   const [totalReports, setTotalReports]         = useState(0);
 
   const categories = [
-    { id: 'all',              label: 'All Problems',                 icon: '🌐' },
-    { id: 'road_damage',      label: 'Road Damage',                  icon: '🚧' },
-    { id: 'garbage_waste',    label: 'Garbage & Waste',              icon: '🗑️' },
-    { id: 'street_light',     label: 'Street Light',                 icon: '💡' },
-    { id: 'water_drainage',   label: 'Water & Drainage',             icon: '🚰' },
-    { id: 'traffic_accident', label: 'Traffic Safety',               icon: '🚦' },
-    { id: 'public_safety',    label: 'Public Safety',                icon: '🛡️' },
-    { id: 'women_harassment', label: 'Women Harassment',             icon: '🚨' },
-    { id: 'extortion_chanda', label: 'Illegal Money Collection/চাঁদা', icon: '💰' }
+    { id: 'all',              label: 'All Problems',                 icon: '' },
+    { id: 'road_damage',      label: 'Road Damage',                  icon: '' },
+    { id: 'garbage_waste',    label: 'Garbage & Waste',              icon: '' },
+    { id: 'street_light',     label: 'Street Light',                 icon: '' },
+    { id: 'water_drainage',   label: 'Water & Drainage',             icon: '' },
+    { id: 'traffic_accident', label: 'Traffic Safety',               icon: '' },
+    { id: 'public_safety',    label: 'Public Safety',                icon: '' },
+    { id: 'women_harassment', label: 'Women Harassment',             icon: '' },
+    { id: 'extortion_chanda', label: 'Illegal Money Collection/চাঁদা', icon: '' }
   ];
 
   // ==========================================
@@ -99,7 +99,6 @@ function CommunityFeedPage() {
       <section className="community-hero">
         <div className="community-hero-content">
           <div className="community-hero-badge">
-            <span>👥</span>
             <span>PUBLIC CIVIC COMMUNITY & DISCUSSION</span>
           </div>
           <h1>Citizen Voice & Community Action</h1>
@@ -117,7 +116,6 @@ function CommunityFeedPage() {
           <div className="d-flex flex-column flex-md-row gap-3 align-items-stretch align-items-md-center">
             {/* Search Input */}
             <form onSubmit={handleSearchSubmit} className="community-search-box">
-              <span className="community-search-icon" aria-hidden="true">🔍</span>
               <input
                 type="text"
                 placeholder="Search reports by title, description, or location (e.g. Dhanmondi, Mirpur)..."
@@ -139,10 +137,10 @@ function CommunityFeedPage() {
                 aria-label="Filter by problem status"
               >
                 <option value="all">All Statuses</option>
-                <option value="submitted">📝 Submitted</option>
-                <option value="under_review">🔍 Under Review</option>
-                <option value="processing">⚙️ Processing</option>
-                <option value="solved">✅ Solved</option>
+                <option value="submitted">Submitted</option>
+                <option value="under_review">Under Review</option>
+                <option value="processing">Processing</option>
+                <option value="solved">Solved</option>
               </select>
             </div>
 
@@ -158,10 +156,10 @@ function CommunityFeedPage() {
                 style={{ borderRadius: '10px', fontSize: '0.9rem', padding: '11px 14px' }}
                 aria-label="Sort reports"
               >
-                <option value="newest">🕒 Newest First</option>
-                <option value="most_confirmed">🤝 Most Confirmed</option>
-                <option value="most_discussed">💬 Most Discussed</option>
-                <option value="oldest">⌛ Oldest First</option>
+                <option value="newest">Newest First</option>
+                <option value="most_confirmed">Most Confirmed</option>
+                <option value="most_discussed">Most Discussed</option>
+                <option value="oldest">Oldest First</option>
               </select>
             </div>
           </div>
@@ -177,7 +175,7 @@ function CommunityFeedPage() {
                 role="tab"
                 aria-selected={selectedCategory === cat.id}
               >
-                <span>{cat.icon}</span>
+                {cat.icon && <span>{cat.icon}</span>}
                 <span>{cat.label}</span>
               </button>
             ))}
@@ -195,7 +193,6 @@ function CommunityFeedPage() {
             className="btn-primary-jb"
             style={{ padding: '6px 14px', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
-            <span>➕</span>
             <span>Report Problem</span>
           </Link>
         </div>
@@ -203,7 +200,7 @@ function CommunityFeedPage() {
         {/* Error Alert */}
         {error && (
           <div className="alert alert-danger py-3 px-4 rounded-3 mb-4">
-            ⚠️ {error}
+            {error}
           </div>
         )}
 

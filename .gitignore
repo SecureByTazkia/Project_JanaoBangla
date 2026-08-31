@@ -41,6 +41,7 @@ backend/uploads/
 # Temporary files
 *.tmp
 *.temp
+*.sql
 
 # Coverage reports
 coverage/

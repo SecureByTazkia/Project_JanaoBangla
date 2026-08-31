@@ -26,23 +26,23 @@ function PublicCivicProblemFeed({
   const getCategoryMeta = (cat) => {
     switch (cat) {
       case 'road_damage':
-        return { label: 'Road Damage', icon: '🚧', color: '#E65100', bg: '#FFF3E0' };
+        return { label: 'Road Damage', icon: '', color: '#E65100', bg: '#FFF3E0' };
       case 'garbage_waste':
-        return { label: 'Garbage / Waste', icon: '🗑️', color: '#2E7D32', bg: '#E8F5E9' };
+        return { label: 'Garbage / Waste', icon: '', color: '#2E7D32', bg: '#E8F5E9' };
       case 'street_light':
-        return { label: 'Street Light', icon: '💡', color: '#F57F17', bg: '#FFFDE7' };
+        return { label: 'Street Light', icon: '', color: '#F57F17', bg: '#FFFDE7' };
       case 'water_drainage':
-        return { label: 'Water / Drainage', icon: '🚰', color: '#0277BD', bg: '#E1F5FE' };
+        return { label: 'Water / Drainage', icon: '', color: '#0277BD', bg: '#E1F5FE' };
       case 'traffic_accident':
-        return { label: 'Traffic / Accident', icon: '🚦', color: '#C62828', bg: '#FFEBEE' };
+        return { label: 'Traffic / Accident', icon: '', color: '#C62828', bg: '#FFEBEE' };
       case 'public_safety':
-        return { label: 'Public Safety', icon: '🛡️', color: '#4A148C', bg: '#F3E5F5' };
+        return { label: 'Public Safety', icon: '', color: '#4A148C', bg: '#F3E5F5' };
       case 'women_harassment':
-        return { label: 'Women Harassment', icon: '🚨', color: '#D81B60', bg: '#FCE4EC' };
+        return { label: 'Women Harassment', icon: '', color: '#D81B60', bg: '#FCE4EC' };
       case 'extortion_chanda':
-        return { label: 'Illegal Money Collection / চাঁদাবাজি', icon: '💰', color: '#B71C1C', bg: '#FFEBEE' };
+        return { label: 'Illegal Money Collection / চাঁদাবাজি', icon: '', color: '#B71C1C', bg: '#FFEBEE' };
       default:
-        return { label: 'Civic Issue', icon: '📋', color: '#374151', bg: '#F3F4F6' };
+        return { label: 'Civic Issue', icon: '', color: '#374151', bg: '#F3F4F6' };
     }
   };
 
@@ -50,14 +50,14 @@ function PublicCivicProblemFeed({
   const getStatusBadge = (status) => {
     switch (status) {
       case 'solved':
-        return <span className="badge" style={{ backgroundColor: '#2E7D32', color: '#FFF' }}>✅ Resolved (নিষ্পত্তি হয়েছে)</span>;
+        return <span className="badge" style={{ backgroundColor: '#2E7D32', color: '#FFF' }}>Resolved (নিষ্পত্তি হয়েছে)</span>;
       case 'processing':
-        return <span className="badge" style={{ backgroundColor: '#0288D1', color: '#FFF' }}>⚙️ Action Taken (ব্যবস্থা নেওয়া হয়েছে)</span>;
+        return <span className="badge" style={{ backgroundColor: '#0288D1', color: '#FFF' }}>Action Taken (ব্যবস্থা নেওয়া হয়েছে)</span>;
       case 'under_review':
-        return <span className="badge" style={{ backgroundColor: '#F57F17', color: '#FFF' }}>🔍 Under Review (যাচাই চলছে)</span>;
+        return <span className="badge" style={{ backgroundColor: '#F57F17', color: '#FFF' }}>Under Review (যাচাই চলছে)</span>;
       case 'submitted':
       default:
-        return <span className="badge" style={{ backgroundColor: '#64748B', color: '#FFF' }}>📝 Pending (অভিযোগটি জমা হয়েছে)</span>;
+        return <span className="badge" style={{ backgroundColor: '#64748B', color: '#FFF' }}>Pending (অভিযোগটি জমা হয়েছে)</span>;
     }
   };
 
@@ -128,7 +128,6 @@ function PublicCivicProblemFeed({
   if (!reports || reports.length === 0) {
     return (
       <div className="community-card text-center py-5">
-        <div style={{ fontSize: '3rem', marginBottom: '12px' }}>📋</div>
         <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1F2937' }}>
           No Civic Reports Yet
         </h3>
@@ -136,7 +135,7 @@ function PublicCivicProblemFeed({
           No problems have been reported yet. Be the first to report an issue in your community.
         </p>
         <Link to="/report-problem" className="btn-primary-jb" style={{ padding: '8px 20px', textDecoration: 'none', display: 'inline-block' }}>
-          📋 Report Problem
+          Report Problem
         </Link>
       </div>
     );
@@ -160,7 +159,7 @@ function PublicCivicProblemFeed({
             <div className="community-card-header">
               <div className="community-reporter-info">
                 <div className={`community-avatar ${isAnonymous ? 'anonymous' : ''}`}>
-                  {isAnonymous ? '🎭' : (report.reporter_name?.charAt(0)?.toUpperCase() || 'U')}
+                  {isAnonymous ? 'A' : (report.reporter_name?.charAt(0)?.toUpperCase() || 'U')}
                 </div>
                 <div className="community-reporter-meta">
                   <h4>
@@ -183,7 +182,7 @@ function PublicCivicProblemFeed({
                     fontWeight: 600
                   }}
                 >
-                  {catMeta.icon} {catMeta.label}
+                  {catMeta.label}
                 </span>
                 {report.category === 'women_harassment' && report.harassment_type && (
                   <span
@@ -196,7 +195,7 @@ function PublicCivicProblemFeed({
                       fontSize: '0.75rem'
                     }}
                   >
-                    {report.harassment_type === 'online' ? '🌐 Online' : '🚶 Offline'}
+                    {report.harassment_type === 'online' ? 'Online' : 'Offline'}
                   </span>
                 )}
                 {getStatusBadge(report.status)}
@@ -217,7 +216,6 @@ function PublicCivicProblemFeed({
             {/* Location Tag */}
             {(report.address || report.district) && (
               <div className="community-location-tag">
-                <span>📍</span>
                 <span>{report.address || `${report.upazila ? report.upazila + ', ' : ''}${report.district}`}</span>
               </div>
             )}
@@ -248,7 +246,7 @@ function PublicCivicProblemFeed({
                   disabled={verifyingReportId === report.id}
                   title={hasVerified ? 'Click to unconfirm' : 'Click to confirm this civic issue'}
                 >
-                  <span>{hasVerified ? '✅ Confirmed' : '🤝 Confirm Problem'}</span>
+                  <span>{hasVerified ? 'Confirmed' : 'Confirm Problem'}</span>
                   <span className="badge bg-white text-dark rounded-pill px-2" style={{ fontSize: '0.75rem' }}>
                     {verificationCount}
                   </span>
@@ -260,7 +258,7 @@ function PublicCivicProblemFeed({
                   className="community-btn-comment-toggle"
                   onClick={() => toggleDiscussion(report.id)}
                 >
-                  <span>💬 {isExpanded ? 'Hide Discussion' : 'Discussion'}</span>
+                  <span>{isExpanded ? 'Hide Discussion' : 'Discussion'}</span>
                   <span className="badge bg-secondary rounded-pill text-white ms-1" style={{ fontSize: '0.75rem' }}>
                     {report.comment_count || 0}
                   </span>

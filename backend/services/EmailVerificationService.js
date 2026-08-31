@@ -2,50 +2,60 @@
 // JanaoBangla — Email Verification Service
 // BRANCH: feature-user-authentication-and-security
 // Registration er pore email verify korar jonno OTP pathabe
-// Gmail SMTP diye Nodemailer use kora hobe, dev mode fallback shohishnu
+// Gmail SMTP (Port 465 SSL pooled connection)
 // ==========================================
 
 const nodemailer = require('nodemailer');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
+let cachedTransporter = null;
+
 // ==========================================
-// createEmailTransporter — Nodemailer transporter create korbe
-// .env theke SMTP credentials (host, port, secure, user, pass) load kora hocche
-// Whitespace ebong spaces remove kora hoy jate Google App Password thikmoto parse hoy
+// getEmailTransporter — Singleton pooled Nodemailer transporter
+// Connection pool reuse korle mail instant send hoy (1-2 sec)
 // ==========================================
-function createEmailTransporter() {
+function getEmailTransporter() {
+  if (cachedTransporter) return cachedTransporter;
+
   const host   = process.env.EMAIL_HOST || 'smtp.gmail.com';
-  const port   = parseInt(process.env.EMAIL_PORT, 10) || 587;
+  const port   = parseInt(process.env.EMAIL_PORT, 10) || 465;
   const secure = process.env.EMAIL_SECURE === 'true' || port === 465;
   const user   = (process.env.EMAIL_USER || '').trim();
   const pass   = (process.env.EMAIL_PASSWORD || '').trim().replace(/\s+/g, '');
 
-  return nodemailer.createTransport({
+  cachedTransporter = nodemailer.createTransport({
     host,
     port,
     secure,
     auth: {
       user,
       pass
-    }
+    },
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 100,
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 15000,
+    greetingTimeout:   15000,
+    socketTimeout:     30000
   });
+
+  return cachedTransporter;
 }
 
 // ==========================================
 // sendEmailVerificationOTP — Registration er pore OTP email pathabe
-// Jodi SMTP auth thik thake, tobe real email Gmail inbox-e jabe
-// Jodi SMTP fail kore ba configured na thake, tobe development fallback OTP console-e log hobe
 // ==========================================
 async function sendEmailVerificationOTP(userEmail, userName, otp) {
-  // Email credentials properly set ache kina check kora hocche
   const isEmailConfigured = process.env.EMAIL_USER &&
                             process.env.EMAIL_PASSWORD &&
                             !process.env.EMAIL_USER.includes('your_gmail') &&
                             !process.env.EMAIL_USER.includes('example.com');
 
   if (!isEmailConfigured) {
-    // Development mode simulation: email credentials set na thakle console-e print hobe
     console.log(`📧 [DEV MODE - EMAIL SIMULATION]`);
     console.log(`   To: ${userEmail} (${userName})`);
     console.log(`   Subject: JanaoBangla — Verify Your Email Address`);
@@ -54,13 +64,8 @@ async function sendEmailVerificationOTP(userEmail, userName, otp) {
   }
 
   try {
-    const transporter = createEmailTransporter();
+    const transporter = getEmailTransporter();
 
-    // SMTP server connection ar authentication check kora hocche
-    await transporter.verify();
-    console.log('✅ SMTP connection verified, sending OTP email...');
-
-    // HTML email template
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -107,31 +112,17 @@ async function sendEmailVerificationOTP(userEmail, userName, otp) {
       html:    htmlContent
     });
 
-    // Full SMTP response log — delivery debug er jonno
     console.log(`✅ Verification OTP email sent!`);
     console.log(`   → To       : ${userEmail}`);
     console.log(`   → messageId: ${info.messageId}`);
     console.log(`   → accepted : ${JSON.stringify(info.accepted)}`);
-    console.log(`   → rejected : ${JSON.stringify(info.rejected)}`);
     console.log(`   → response : ${info.response}`);
-
-    if (info.rejected && info.rejected.length > 0) {
-      console.warn(`⚠️ Recipient rejected by SMTP: ${info.rejected}`);
-    }
 
     return { success: true, dev: false, messageId: info.messageId };
   } catch (error) {
-    // Full error log — SMTP auth failure ba connection error dekhabe
     console.error('❌ Email send FAILED:');
     console.error('   Message :', error.message);
     console.error('   Code    :', error.code);
-    console.error('   Response:', error.response || '(none)');
-    if (error.code === 'EAUTH' || (error.response && error.response.includes('535'))) {
-      console.error('📌 FIX: Gmail App Password required!');
-      console.error('   Go to: https://myaccount.google.com/apppasswords');
-      console.error('   Set EMAIL_PASSWORD in .env to the 16-char App Password (no spaces)');
-    }
-    // Console e OTP print kora hocche jate manually test kora jay
     console.log(`📧 [FALLBACK — SMTP FAILED] OTP for ${userEmail}: ${otp}`);
     return { success: false, error: error.message };
   }
@@ -139,7 +130,6 @@ async function sendEmailVerificationOTP(userEmail, userName, otp) {
 
 // ==========================================
 // sendPasswordResetEmail — Forgot password er jonno 6-digit OTP ar reset link pathabe
-// Email-e 6-digit reset code ebong direct reset password link thakbe
 // ==========================================
 async function sendPasswordResetEmail(userEmail, userName, resetToken) {
   const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
@@ -158,7 +148,7 @@ async function sendPasswordResetEmail(userEmail, userName, resetToken) {
   }
 
   try {
-    const transporter = createEmailTransporter();
+    const transporter = getEmailTransporter();
 
     const htmlContent = `
       <!DOCTYPE html>

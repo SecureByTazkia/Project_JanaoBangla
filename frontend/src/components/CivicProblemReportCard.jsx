@@ -10,8 +10,8 @@ const CivicProblemReportCard = ({ report }) => {
   };
 
   const formatCategory = (cat) => {
-    if (cat === 'women_harassment') return '🚨 Women Harassment';
-    if (cat === 'extortion_chanda') return '💰 Illegal Money Collection';
+    if (cat === 'women_harassment') return 'Women Harassment';
+    if (cat === 'extortion_chanda') return 'Illegal Money Collection';
     return (cat || '').split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
@@ -32,7 +32,7 @@ const CivicProblemReportCard = ({ report }) => {
                   fontSize: '0.75rem'
                 }}
               >
-                {report.harassment_type === 'online' ? '🌐 Online' : '🚶 Offline'}
+                {report.harassment_type === 'online' ? 'Online' : 'Offline'}
               </span>
             )}
           </div>
@@ -60,7 +60,7 @@ const CivicProblemReportCard = ({ report }) => {
             )}
             {/* is_anonymous true hole owner er My Reports e badge dekhabe */}
             {report.is_anonymous === 1 && (
-              <span className="badge bg-secondary" title="You submitted this anonymously">🕵️ Anonymous</span>
+              <span className="badge bg-secondary" title="You submitted this anonymously">Anonymous</span>
             )}
           </div>
         </div>

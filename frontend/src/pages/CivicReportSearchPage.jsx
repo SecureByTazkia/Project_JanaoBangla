@@ -142,9 +142,6 @@ function CivicReportSearchPage() {
         
         {/* Page Header */}
         <div className="text-center mb-4">
-          <div className="d-inline-flex align-items-center justify-content-center p-2 rounded-circle mb-2" style={{ backgroundColor: '#E8F5F0' }}>
-            <span style={{ fontSize: '2rem' }}>🔍</span>
-          </div>
           <h1 className="fw-bold text-dark mb-1" style={{ fontSize: '2rem' }}>
             Search &amp; Filter Civic Reports
           </h1>
@@ -191,7 +188,6 @@ function CivicReportSearchPage() {
         ) : reports.length === 0 ? (
           /* Empty State */
           <div className="card border-0 shadow-sm rounded-3 p-5 text-center bg-white my-4">
-            <span style={{ fontSize: '3rem' }}>📂</span>
             <h5 className="fw-bold text-dark mt-3">No Civic Reports Found</h5>
             <p className="text-muted small mb-4" style={{ maxWidth: '420px', margin: '0 auto' }}>
               We couldn't find any reports matching your search or active filter criteria. Try adjusting keywords or resetting filters.
@@ -218,7 +214,7 @@ function CivicReportSearchPage() {
                         className="badge bg-primary position-absolute shadow-sm"
                         style={{ top: '12px', right: '12px', zIndex: 2, fontSize: '0.75rem' }}
                       >
-                        📍 {report.distance_km} km away
+                        {report.distance_km} km away
                       </span>
                     )}
                     <CivicProblemReportCard report={report} />
@@ -235,7 +231,7 @@ function CivicReportSearchPage() {
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page <= 1}
                 >
-                  ◀ Previous
+                  Previous
                 </button>
 
                 <span className="text-secondary small fw-semibold px-2">
@@ -247,7 +243,7 @@ function CivicReportSearchPage() {
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page >= pagination.totalPages}
                 >
-                  Next ▶
+                  Next
                 </button>
               </div>
             )}
